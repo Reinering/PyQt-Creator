@@ -95,3 +95,6 @@ nuitka*
 dist/
 *dist/
 *build/
+
+# lib
+libs
