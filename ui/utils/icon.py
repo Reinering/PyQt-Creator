@@ -24,3 +24,12 @@ class AppIcon(FluentIconBase, Enum):
 
     def path(self, theme=Theme.AUTO):
         return f"{UI_CONFIG['iconPath']}/{theme.lower()}/{self.value}.svg"
+
+
+class AppPic(FluentIconBase, Enum):
+
+    LOAD = "load"
+
+
+    def path(self, theme=Theme.AUTO):
+        return f"{UI_CONFIG['gifPath']}/{self.value}.gif"

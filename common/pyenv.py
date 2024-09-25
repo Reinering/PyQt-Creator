@@ -8,20 +8,7 @@ email: nbxlc@hotmail.com
 
 import os
 import subprocess
-
-
-class PyEnv():
-    def __init__(self):
-        self.pyenvPath = os.path.join('', 'pyenv-win/bin/pyenv')
-
-    def getPyVers(self):
-
-        result = subprocess.run([self.pyenvPath, 'install', '--list'], capture_output=True, text=True)
-        if result.returncode == 0:
-            print(f"")
-        else:
-            print(f"Error: {result.stderr}")
-
+import logging
 
 
 
@@ -33,20 +20,20 @@ class PyVenvManager():
     def __init__(self, pyenv_root_path):
         self.venvPath = os.path.join(pyenv_root_path, 'bin\\pyenv.bat')
 
-        self.setEnviron(PYTHON_BUILD_MIRROR_URL="https://npm.taobao.org/mirrors/python")
-
     def setEnviron(self, **kwargs):
         for key, value in kwargs.items():
             os.environ[key] = value
 
     def cmd(self, cmd):
+        print(f"cmd: {cmd}")
+        logging.debug(f"cmd: {cmd}")
 
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
-            # print(f"{result.stdout}")
+            logging.debug(f"{result.stdout}")
             return (True, f"{result.stdout}")
         else:
-            print(f"Error: {result.stderr}")
+            logging.debug(f"Error: {result.stderr}")
             return (False, f"Error: {result.stderr}")
 
     def list(self):
@@ -54,7 +41,15 @@ class PyVenvManager():
         return self.cmd(command)
 
     def install(self, version):
+        if not version:
+            return (False, "Error: version is empty")
         command = [self.venvPath, 'install', version]
+        return self.cmd(command)
+
+    def uninstall(self, version):
+        if not version:
+            return (False, "Error: version is empty")
+        command = [self.venvPath, 'uninstall', version]
         return self.cmd(command)
 
     def update(self):
@@ -65,31 +60,31 @@ class PyVenvManager():
         command = [self.venvPath, 'versions']
         return self.cmd(command)
 
+    def rehash(self):
+        command = [self.venvPath, 'rehash']
+        return self.cmd(command)
+
     def shell(self, version):
+        if not version:
+            return (False, "Error: version is empty")
         command = [self.venvPath, 'shell', version]
         return self.cmd(command)
 
     def global_(self, version):
+        if not version:
+            return (False, "Error: version is empty")
         command = [self.venvPath, 'global', version]
         return self.cmd(command)
 
     def lcoal_(self, version):
+        if not version:
+            return (False, "Error: version is empty")
         command = [self.venvPath, 'local', version]
-        return self.cmd(command)
-
-    def uninstall(self, version):
-        command = [self.venvPath, 'uninstall', version]
         return self.cmd(command)
 
     def help(self):
         command = [self.venvPath, 'help']
         return self.cmd(command)
-
-    def create_venv(self, env_name):
-        pass
-
-    def activate_venv(self, path):
-        pass
 
     def install_package(self, package_name):
         pass
