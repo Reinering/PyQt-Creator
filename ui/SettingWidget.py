@@ -11,21 +11,26 @@ from PySide6.QtCore import Slot, Qt, QThread, Signal
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSpacerItem, QSizePolicy
 import os
 from copy import copy
+import logging
 
 from qfluentwidgets import (
     BodyLabel, CaptionLabel,
     ComboBox,
-    PrimaryPushButton
+    PrimaryPushButton,  PrimaryDropDownPushButton, PrimaryDropDownToolButton,
+    Theme,
+    RoundMenu, Action
 )
 from qfluentwidgets.common.icon import FluentIcon
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector
+from qfluentexpand.components.label.label import GifLabel
+from qfluentexpand.common.gif import FluentGif
 from .compoments.info import Message
 from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
 from common.pyenv import PyVenvManager
-from manage import LIBS, PYTHON_BUILD_MIRROR_URLs
+from manage import LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS
 
 
 class SettingWidget(QWidget, Ui_Form):
@@ -57,7 +62,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.initWidget()
 
-        self.venvMangerTh.setCMD("list")
+        self.venvMangerTh.setCMD("init")
         self.venvMangerTh.start()
 
 
@@ -72,9 +77,8 @@ class SettingWidget(QWidget, Ui_Form):
         self.gridLayout1.addWidget(self.envCard, 2, 0, 1, 1)
         widget_mode = QWidget(self.envCard)
         envLabel = BodyLabel("模式 (全局)")
-        items = ["现有环境", "Pyenv 环境"]
         self.comboBox_mode = ComboBox(self.envCard)
-        self.comboBox_mode.addItems(items)
+        self.comboBox_mode.addItems(SETTINGS["settings"]["python_env_modes"])
         self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
         layout = QHBoxLayout(widget_mode)
         layout.setContentsMargins(30, 5, 30, 5)
@@ -84,19 +88,19 @@ class SettingWidget(QWidget, Ui_Form):
         self.envCard.addWidget(widget_mode)
 
         self.widget_env = QWidget(self.envCard)
-        envLabel = BodyLabel("Python 环境", self.envCard)
-        verLabel = CaptionLabel("版本: ", self.envCard)
-        envButton = FilePathSelector(self.envCard)
-        envButton.setText("选择")
-        envButton.setFileTypes("python.exe")
-        envButton.setFixedWidth(200)
+        label_env = BodyLabel("Python 环境", self.envCard)
+        label_ver = CaptionLabel("版本: ", self.envCard)
+        self.button_filepath = FilePathSelector(self.envCard)
+        self.button_filepath.setText("选择")
+        self.button_filepath.setFileTypes("python.exe")
+        self.button_filepath.setFixedWidth(200)
         layout = QHBoxLayout(self.widget_env)
         layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
+        layout.addWidget(label_env)
         layout.addStretch(1)
-        layout.addWidget(verLabel)
+        layout.addWidget(label_ver)
         layout.addStretch(1)
-        layout.addWidget(envButton)
+        layout.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
         self.card_pyenv = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyenv 虚拟环境管理", "",
@@ -105,48 +109,53 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.widget_pyenv_existing = QWidget(self.card_pyenv)
         label_existing = BodyLabel("现有环境")
+        self.spinner_existing = GifLabel(self.card_pyenv)
+        self.spinner_existing.setGif(FluentGif.LOADING.path())
+        self.spinner_existing.setFixedSize(30, 30)
+        self.spinner_existing.hide()
         self.comboBox_existing = ComboBox(self.card_pyenv)
         self.comboBox_existing.setMinimumWidth(100)
-        self.button_existing_update = PrimaryPushButton(self.card_pyenv)
-        self.button_existing_update.setText("更新")
-        self.button_existing_update.setIcon(FluentIcon.ROTATE)
-        self.button_existing_update.clicked.connect(self.on_button_existing_update_clicked)
+        self.comboBox_existing.currentTextChanged.connect(self.on_comboBox_existing_currentTextChanged)
 
-        self.button_existing_uninstall = PrimaryPushButton(self.card_pyenv)
-        self.button_existing_uninstall.setText("卸载")
-        self.button_existing_uninstall.setIcon(FluentIcon.ROTATE)
-        self.button_existing_uninstall.clicked.connect(self.on_button_existing_uninstall_clicked)
+        self.button_existing_uninstall = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        menu = RoundMenu(parent=self.button_existing_uninstall)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '更新', triggered=self.existing_update))
+        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.existing_uninstall))
+        self.button_existing_uninstall.setMenu(menu)
 
         layout = QHBoxLayout(self.widget_pyenv_existing)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_existing)
         layout.addStretch(1)
-        layout.addWidget(self.button_existing_update)
+        layout.addWidget(self.spinner_existing)
         layout.addWidget(self.comboBox_existing)
         layout.addWidget(self.button_existing_uninstall)
         self.card_pyenv.addWidget(self.widget_pyenv_existing)
 
         self.widget_pyenv_new = QWidget(self.card_pyenv)
         label_new = BodyLabel("安装新环境")
-        self.button_new_update = PrimaryPushButton(self.card_pyenv)
-        self.button_new_update.setText("更新")
-        self.button_new_update.setIcon(FluentIcon.ROTATE)
-        self.button_new_update.clicked.connect(self.on_button_new_update_clicked)
+        self.spinner_new = GifLabel(self.card_pyenv)
+        self.spinner_new.setGif(FluentGif.LOADING.path())
+        self.spinner_new.setFixedSize(30, 30)
+        self.spinner_new.hide()
         self.comboBox_new_maxbit = ComboBox(self.card_pyenv)
-        self.comboBox_new_maxbit.addItems(["x64", "x86"])
+        self.comboBox_new_maxbit.addItems(SETTINGS["settings"]["pyenv_maxbit"])
         self.comboBox_new_maxbit.setFixedWidth(75)
         self.comboBox_new_ver = ComboBox(self.card_pyenv)
         self.comboBox_new_ver.setMinimumWidth(100)
         self.comboBox_new_ver.addItems(["3.8", "3.9", "3.10", "3.11", "3.12"])
-        self.button_new_install = PrimaryPushButton(self.card_pyenv)
-        self.button_new_install.setText("安装")
-        self.button_new_install.clicked.connect(self.on_button_new_install_clicked)
+
+        self.button_new_install = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        menu = RoundMenu(parent=self.button_new_install)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.new_install))
+        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.new_update))
+        self.button_new_install.setMenu(menu)
 
         layout = QHBoxLayout(self.widget_pyenv_new)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_new)
         layout.addStretch(1)
-        layout.addWidget(self.button_new_update)
+        layout.addWidget(self.spinner_new)
         layout.addWidget(self.comboBox_new_maxbit)
         layout.addWidget(self.comboBox_new_ver)
         layout.addWidget(self.button_new_install)
@@ -154,42 +163,67 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.widget_pyenv_mirror_url = QWidget(self.card_pyenv)
         label_mirror_url = BodyLabel("更新源")
-        self.comboBox_mirror_url = ComboBox(self.card_pyenv)
-        self.comboBox_mirror_url.setMinimumWidth(100)
-        self.comboBox_mirror_url.setMaximumWidth(150)
-        self.comboBox_mirror_url.addItems(PYTHON_BUILD_MIRROR_URLs.keys())
-        self.comboBox_mirror_url.currentTextChanged.connect(self.on_comboBox_mirror_url_currentTextChanged)
+        self.comboBox_pyenv_mirror_url = ComboBox(self.card_pyenv)
+        self.comboBox_pyenv_mirror_url.setMinimumWidth(100)
+        self.comboBox_pyenv_mirror_url.setMaximumWidth(150)
+        self.comboBox_pyenv_mirror_url.addItems(MIRRORS["pyenv"].keys())
+        self.comboBox_pyenv_mirror_url.currentTextChanged.connect(self.on_comboBox_pyenv_mirror_url_currentTextChanged)
 
         layout = QHBoxLayout(self.widget_pyenv_mirror_url)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_mirror_url)
-        layout.addWidget(self.comboBox_mirror_url)
+        layout.addWidget(self.comboBox_pyenv_mirror_url)
         self.card_pyenv.addWidget(self.widget_pyenv_mirror_url)
+
+        self.card_pip = SettingGroupCard(FluentIcon.SPEED_OFF, "Pip 设置", "",
+                                           self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_pip, 4, 0, 1, 1)
+
+        self.widget_pip_mirror_url = QWidget(self.card_pip)
+        label_mirror_url = BodyLabel("更新源")
+        self.comboBox_pip_mirror_url = ComboBox(self.card_pip)
+        self.comboBox_pip_mirror_url.setMinimumWidth(100)
+        self.comboBox_pip_mirror_url.setMaximumWidth(150)
+        self.comboBox_pip_mirror_url.addItems(MIRRORS["pip"].keys())
+        self.comboBox_pip_mirror_url.currentTextChanged.connect(self.on_comboBox_pip_mirror_url_currentTextChanged)
+
+        layout = QHBoxLayout(self.widget_pip_mirror_url)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_mirror_url)
+        layout.addWidget(self.comboBox_pip_mirror_url)
+        self.card_pip.addWidget(self.widget_pip_mirror_url)
 
 
 
         self.infoCard = SettingGroupCard(FluentIcon.SPEED_OFF, "帮助", "",
                                          self.scrollAreaWidgetContents)
 
-        self.gridLayout1.addWidget(self.infoCard, 4, 0, 1, 1)
+        self.gridLayout1.addWidget(self.infoCard, 5, 0, 1, 1)
 
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(self.verticalSpacer)
 
+        self.configure()
 
-    def on_comboBox_mode_currentTextChanged(self, text):
-        pass
 
-    def on_comboBox_mirror_url_currentTextChanged(self, text):
-        if text != "origin" and PYTHON_BUILD_MIRROR_URLs.get(text):
-            if self.venvMangerTh.isRunning():
-                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
-                return
+    def configure(self):
 
-            self.venvMangerTh.setCMD("environ", PYTHON_BUILD_MIRROR_URL=PYTHON_BUILD_MIRROR_URLs[text])
-            self.venvMangerTh.start()
+        if CURRENT_SETTINGS["settings"]["mode"] in SETTINGS["settings"]["python_env_modes"]:
+            self.comboBox_mode.setCurrentText(CURRENT_SETTINGS["settings"]["mode"])
 
-    def on_button_new_install_clicked(self):
+        if CURRENT_SETTINGS["settings"]["custom_python_path"]:
+            self.button_filepath.setText(CURRENT_SETTINGS["settings"]["custom_python_path"])
+
+        if CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
+            self.comboBox_existing.setText(CURRENT_SETTINGS["settings"]["pyenv_current_version"])
+
+        if CURRENT_SETTINGS["settings"]["pyenv_mirror_url"]:
+            self.comboBox_pyenv_mirror_url.setText(CURRENT_SETTINGS["settings"]["pyenv_mirror_url"])
+
+        if CURRENT_SETTINGS["settings"]["pip_mirror_url"]:
+            self.comboBox_pip_mirror_url.setText(CURRENT_SETTINGS["settings"]["pip_mirror_url"])
+
+    def new_install(self):
         version = self.comboBox_new_ver.currentText()
         if not version:
             return
@@ -203,7 +237,73 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.venvMangerTh.setCMD("install", version)
         self.venvMangerTh.start()
+        self.button_new_install.setEnabled(False)
+        self.spinner_new.setState(True)
+        self.spinner_new.show()
         Message.info("安装", "安装中，请稍后", self)
+
+    def new_update(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+            return
+
+        self.venvMangerTh.setCMD("update")
+        self.venvMangerTh.start()
+        self.button_new_install.setEnabled(False)
+        self.spinner_new.setState(True)
+        self.spinner_new.show()
+
+    def existing_uninstall(self):
+        if self.comboBox_existing.currentText():
+            if self.venvMangerTh.isRunning():
+                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+                return
+
+            self.venvMangerTh.setCMD("uninstall", self.comboBox_existing.currentText())
+            self.venvMangerTh.start()
+            self.button_existing_uninstall.setEnabled(False)
+            self.spinner_existing.show()
+            self.spinner_existing.setState(True)
+            Message.info("卸载", "卸载中，请稍后", self)
+
+    def existing_update(self):
+        if os.path.exists(os.path.join(LIBS["pyenv"], "versions")):
+            if self.venvMangerTh.isRunning():
+                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+                return
+
+            self.venvMangerTh.setCMD("versions")
+            self.venvMangerTh.start()
+            self.button_existing_uninstall.setEnabled(False)
+            self.spinner_existing.setState(True)
+            self.spinner_existing.show()
+
+    def on_comboBox_mode_currentTextChanged(self, text):
+        CURRENT_SETTINGS["settings"]["mode"] = text
+        if text == "现有环境":
+            self.widget_env.show()
+            self.card_pyenv.hide()
+        elif text == "Pyenv 环境":
+            self.widget_env.hide()
+            self.card_pyenv.show()
+        else:
+            pass
+
+    def on_comboBox_existing_currentTextChanged(self, text):
+        CURRENT_SETTINGS["settings"]["pyenv_current_version"] = text
+
+    def on_comboBox_pyenv_mirror_url_currentTextChanged(self, text):
+        CURRENT_SETTINGS["settings"]["pyenv_mirror_url"] = text
+        if text != "origin" and MIRRORS["pyenv"].get(text):
+            if self.venvMangerTh.isRunning():
+                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+                return
+
+            self.venvMangerTh.setCMD("environ", PYTHON_BUILD_MIRROR_URL=MIRRORS["pyenv"][text])
+            self.venvMangerTh.start()
+
+    def on_comboBox_pip_mirror_url_currentTextChanged(self, text):
+        CURRENT_SETTINGS["settings"]["pip_mirror_url"] = text
 
     def on_button_existing_uninstall_clicked(self):
         if self.comboBox_existing.currentText():
@@ -213,15 +313,10 @@ class SettingWidget(QWidget, Ui_Form):
 
             self.venvMangerTh.setCMD("uninstall", self.comboBox_existing.currentText())
             self.venvMangerTh.start()
+            self.button_existing_uninstall.setEnabled(False)
+            self.spinner_existing.show()
+            self.spinner_existing.setState(True)
             Message.info("卸载", "卸载中，请稍后", self)
-
-    def on_button_new_update_clicked(self):
-        if self.venvMangerTh.isRunning():
-            Message.error("错误", "pyenv忙碌中，请稍后重试", self)
-            return
-
-        self.venvMangerTh.setCMD("update")
-        self.venvMangerTh.start()
 
     def on_button_existing_update_clicked(self):
         if os.path.exists(os.path.join(LIBS["pyenv"], "versions")):
@@ -231,6 +326,9 @@ class SettingWidget(QWidget, Ui_Form):
 
             self.venvMangerTh.setCMD("versions")
             self.venvMangerTh.start()
+            self.button_existing_update.setEnabled(False)
+            self.spinner_existing.setState(True)
+            self.spinner_existing.show()
 
     def receive_VMresult(self, cmd, result):
         print("receive_VMresult", cmd)
@@ -248,29 +346,53 @@ class SettingWidget(QWidget, Ui_Form):
                 self.comboBox_new_ver.clear()
                 self.comboBox_new_ver.addItems(result)
         elif cmd == "update":
+            self.button_new_install.setEnabled(True)
+            self.spinner_new.setState(False)
+            self.spinner_new.hide()
+
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
+
             self.venvMangerTh.setCMD("list")
             self.venvMangerTh.start()
         elif cmd == "install":
+            self.button_new_install.setEnabled(True)
+            self.spinner_new.setState(False)
+            self.spinner_new.hide()
+
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
+
             Message.info("成功", "安装成功", self)
         elif cmd == "uninstall":
+            self.button_existing_uninstall.setEnabled(True)
+            self.spinner_existing.setState(False)
+            self.spinner_existing.hide()
+
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
+
             Message.info("成功", "卸载成功", self)
         elif cmd == "versions":
+            self.button_existing_uninstall.setEnabled(True)
+            self.spinner_existing.setState(False)
+            self.spinner_existing.hide()
+
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
+
             result = list(filter(None, result[1].split("\n")))
+            tmp = []
+            for res in result:
+                res.strip()
+                tmp.append(res.strip())
             if result:
                 self.comboBox_existing.clear()
-                self.comboBox_existing.addItems(result)
+                self.comboBox_existing.addItems(tmp)
         else:
             pass
 
@@ -293,8 +415,12 @@ class VenvManagerThread(QThread):
         self.kwargs = kwargs
 
     def run(self):
-
-        if self.cmd == "list":
+        if self.cmd == "init":
+            result = self.venvManger.list()
+            self.signal_result.emit("list", result)
+            result = self.venvManger.versions()
+            self.signal_result.emit("versions", result)
+        elif self.cmd == "list":
             result = self.venvManger.list()
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "update":
@@ -303,6 +429,7 @@ class VenvManagerThread(QThread):
         elif self.cmd == "install":
             result = self.venvManger.install(self.args[0])
             self.signal_result.emit(self.cmd, result)
+            self.venvManger.rehash()
         elif self.cmd == "uninstall":
             result = self.venvManger.uninstall(self.args[0])
             self.signal_result.emit(self.cmd, result)
