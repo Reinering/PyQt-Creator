@@ -439,7 +439,7 @@ class VenvManagerThread(QThread):
             result = self.venvManger.versions()
             self.signal_result.emit(self.cmd, result)
         else:
-            pass
+            self.signal_result.emit(self.cmd, ["False", "未知命令"])
 
 
 
