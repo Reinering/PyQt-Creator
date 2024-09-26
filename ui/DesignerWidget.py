@@ -19,6 +19,9 @@ from qfluentwidgets import (
     CardWidget,
     IconWidget,
     SettingCard,
+    PrimaryDropDownPushButton,
+    RoundMenu,
+    Action
 )
 from qfluentwidgets.common.icon import FluentIcon
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
@@ -33,7 +36,7 @@ from .utils.stylesheets import StyleSheet
 from .compoments.info import Message
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
-from manage import LIBS, SETTINGS, CURRENT_SETTINGS
+from manage import LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
 
 
 class DesignerWidget(QWidget, Ui_Form):
@@ -91,11 +94,12 @@ class DesignerWidget(QWidget, Ui_Form):
         vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         hBoxLayout.addLayout(vBoxLayout)
 
-        self.button_open = PrimaryPushButton(self.titleCard)
-        self.button_open.setText("打开")
-        self.button_open.setMinimumWidth(100)
-        self.button_open.setMinimumHeight(40)
-        self.button_open.clicked.connect(self.on_button_open_clicked)
+        self.button_open = PrimaryDropDownPushButton(FluentIcon.MAIL, '打开')
+        menu = RoundMenu(parent=self.button_open)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '原生', triggered=self.open_origin))
+        menu.addAction(Action(FluentIcon.ALBUM, '插件', triggered=self.open_plugin))
+        self.button_open.setMenu(menu)
+
         hBoxLayout.addWidget(self.button_open, 0, Qt.AlignmentFlag.AlignRight)
 
     def initWidget(self):
@@ -136,7 +140,7 @@ class DesignerWidget(QWidget, Ui_Form):
         self.gridLayout1.addWidget(self.designerSetCard, 2, 0, 1, 1)
         widget = QWidget(self.designerSetCard)
         label_designer_install = BodyLabel("安装Designer环境")
-        self.spinner_designer_install = GifLabel(self.envCard)
+        self.spinner_designer_install = GifLabel(self.designerSetCard)
         self.spinner_designer_install.setGif(FluentGif.LOADING.path())
         self.spinner_designer_install.setFixedSize(30, 30)
         self.spinner_designer_install.hide()
@@ -150,6 +154,23 @@ class DesignerWidget(QWidget, Ui_Form):
         layout.addWidget(self.spinner_designer_install)
         layout.addWidget(self.button_designer_install)
         self.designerSetCard.addWidget(widget)
+
+        widget_plugin = QWidget(self.designerSetCard)
+        label_designer_plugin_install = BodyLabel("安装第三方插件")
+        self.spinner_designer_plugin_install = GifLabel(self.designerSetCard)
+        self.spinner_designer_plugin_install.setGif(FluentGif.LOADING.path())
+        self.spinner_designer_plugin_install.setFixedSize(30, 30)
+        self.spinner_designer_plugin_install.hide()
+        self.button_designer_plugin_install = PrimaryPushButton(self.designerSetCard)
+        self.button_designer_plugin_install.setText("安装")
+        self.button_designer_plugin_install.clicked.connect(self.on_button_designer_plugin_install_clicked)
+        layout = QHBoxLayout(widget_plugin)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_designer_plugin_install)
+        layout.addStretch(1)
+        layout.addWidget(self.spinner_designer_plugin_install)
+        layout.addWidget(self.button_designer_plugin_install)
+        self.designerSetCard.addWidget(widget_plugin)
 
 
 
@@ -187,11 +208,9 @@ class DesignerWidget(QWidget, Ui_Form):
             pass
         return path
 
-    def on_button_open_clicked(self):
-        PyPath.PYSIDE6_DESIGNER.path()
-
+    def open_origin(self):
         if self.venvMangerTh.isRunning():
-            Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+            Message.error("错误", "env忙碌中，请稍后重试", self)
             return
 
         path = self.getPyPath()
@@ -200,10 +219,31 @@ class DesignerWidget(QWidget, Ui_Form):
             return
 
         self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("designer", PyPath.PYSIDE6_DESIGNER.path())
+        self.venvMangerTh.setCMD("designer", PyPath.PYSIDE6_DESIGNER.path(path))
         self.venvMangerTh.start()
 
         self.button_open.setEnabled(False)
+
+    def open_plugin(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+
+        self.venvMangerTh.setPyInterpreter(path)
+        plugin_1 = os.path.abspath(PyPath.PYSIDE6_PLUGINS.path(path))
+        plugins = os.path.join(plugin_1, "expand") + ';' + plugin_1
+        self.venvMangerTh.setCMD("environ", PYSIDE_DESIGNER_PLUGINS=plugins)
+        self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), '-p', plugins)
+        self.venvMangerTh.start()
+
+        self.button_open.setEnabled(False)
+
+        Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候", self)
 
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["designer"]["mode"] = text
@@ -219,7 +259,7 @@ class DesignerWidget(QWidget, Ui_Form):
 
     def on_button_designer_install_clicked(self):
         if self.venvMangerTh.isRunning():
-            Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+            Message.error("错误", "env忙碌中，请稍后重试", self)
             return
 
         path = self.getPyPath()
@@ -236,6 +276,24 @@ class DesignerWidget(QWidget, Ui_Form):
         self.spinner_designer_install.show()
         Message.info("安装", "安装中，请稍后", self)
 
+    def on_button_designer_plugin_install_clicked(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("plugin")
+        self.venvMangerTh.start()
+
+        self.button_designer_plugin_install.setEnabled(False)
+        self.spinner_designer_plugin_install.setState(True)
+        self.spinner_designer_plugin_install.show()
+        Message.info("安装", "安装中，请稍后", self)
 
     def receive_VMresult(self, cmd, result):
         if cmd == "init":
@@ -250,10 +308,26 @@ class DesignerWidget(QWidget, Ui_Form):
                 return
 
             Message.info("成功", "安装成功", self)
-        elif cmd == "uninstall":
-            pass
-        elif cmd == "update":
-            pass
+        elif cmd == "plugin":
+            self.button_designer_plugin_install.setEnabled(True)
+            self.spinner_designer_plugin_install.setState(False)
+            self.spinner_designer_plugin_install.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("成功", "安装成功", self)
+        elif cmd == "designer":
+            self.button_open.setEnabled(True)
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+        elif cmd == "designer_plugin":
+            self.button_open.setEnabled(True)
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
         else:
             pass
 
@@ -283,8 +357,23 @@ class VenvManagerThread(QThread):
     def run(self):
         if self.cmd == "init":
             pass
+        elif self.cmd == "environ":
+            self.pyI.setEnviron(**self.kwargs)
         elif self.cmd == "install":
             result = self.pyI.pip(self.cmd, *self.args)
             self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "plugin":
+            result = self.pyI.pip("install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
+            if not result[0]:
+                self.signal_result.emit(self.cmd, result)
+                return
+            result = self.pyI.pip("install", "git+" + REQUIREMENTS_URLS["qfluentexpand"])
+            self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "designer":
+            result = self.pyI.popen(self.args[0])
+            self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "designer_plugin":
+            result = self.pyI.py_popen(self.args)
+            self.signal_result.emit(self.cmd, result)
         else:
-            pass
+            self.signal_result.emit(self.cmd, ["False", "未知命令"])
