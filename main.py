@@ -13,13 +13,14 @@ import logging.handlers
 import os
 import platform
 import time
+import simplejson as json
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSplashScreen
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 
-from manage import UI_CONFIG, LOGLEVEL, LOGFILE, ROOT_PATH, SettingPath, SettingFile, SETTINGS, RUNTIMEENV, BUNDLE_DIR
+from manage import UI_CONFIG, LOGLEVEL, LOGFILE, ROOT_PATH, SettingPath, SettingFile, CURRENT_SETTINGS, RUNTIMEENV, BUNDLE_DIR
 from common.config import Config
 from ui.MainWindow import MainWindow
 
@@ -78,12 +79,21 @@ def create_file(fullPath):
         fd = open(fullPath, mode="w", encoding="utf-8")
         fd.close()
 
-def defaultConfig():
+def readConfig():
     if not os.path.exists(os.path.join(ROOT_PATH, SettingPath)):
         os.mkdir(SettingPath)
 
     if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, SettingFile)):
-        os.system("cp ./default/base.cfg {}".format(os.path.join(ROOT_PATH, SettingPath, SettingFile)))
+        with open(os.path.join(ROOT_PATH, SettingPath, SettingFile), "w") as f:
+            json.dump(CURRENT_SETTINGS, f, indent=4)
+            f.flush()
+            f.close()
+    else:
+        with open(os.path.join(ROOT_PATH, SettingPath, SettingFile), "r") as f:
+            data = json.load(f)
+            CURRENT_SETTINGS.clear()
+            for key in data.keys():
+                CURRENT_SETTINGS[key] = data[key]
 
 # @trace()
 def main(argv=None):
@@ -92,8 +102,6 @@ def main(argv=None):
         argv = sys.argv
     try:
         try:
-            configPath = os.path.join(ROOT_PATH, SettingPath, SettingFile)
-            create_file(configPath)
 
             # opts, args = getopt.getopt(argv[1:], "h", ["help"])
             log(LOGLEVEL)
@@ -101,18 +109,7 @@ def main(argv=None):
             app.setAttribute(Qt.ApplicationAttribute.AA_DontCreateNativeWidgetSiblings)
 
             # 没有运行配置时，复制默认配置
-
-            # # config parse
-            config = Config()
-            config.setFile(configPath)
-            try:
-                config.read(SETTINGS)
-            except Exception as e:
-                print("从配置文件中未读取到正确内容", e)
-                config.init(SETTINGS)
-            except KeyError as e:
-                print("从配置文件中未读取到正确内容", e)
-                config.init(SETTINGS)
+            readConfig()
 
             # log enable
             log(LOGLEVEL)
