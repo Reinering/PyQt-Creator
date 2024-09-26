@@ -51,6 +51,10 @@ class PyPath(Enum):
     PYSIDE6_UIC = os.path.join(PYSIDE6, SCRIPTS, "pyside6-uic.exe")
     PYSIDE6_RCC = os.path.join(PYSIDE6, SCRIPTS, "pyside6-rcc.exe")
 
+    QFLUENTEXPAND = "Lib\\site-packages\\qfluentexpand"
+    DESIGNER_PYSIDE6 = os.path.join(QFLUENTEXPAND, "tools\\pyside6-designer.py")
+    PYSIDE6_PLUGINS = os.path.join(QFLUENTEXPAND, "plugins")
+
     # pyinstaller
     PYINSTALLER = os.path.join(SCRIPTS, "pyinstaller.exe")
 
@@ -59,7 +63,8 @@ class PyPath(Enum):
 
 
     def path(self, interpreterPath):
-        return os.path.join(interpreterPath, self.value)
+        (interpreterFolder, name) = os.path.split(interpreterPath)
+        return os.path.join(interpreterFolder, self.value)
 
 
 class PyInterpreter:
@@ -68,10 +73,27 @@ class PyInterpreter:
         self.interpreterPath = path
         (self.interpreterFolder, name) = os.path.split(path)
 
+    def setEnviron(self, **kwargs):
+        for key, value in kwargs.items():
+            os.environ[key] = value
+
     def cmd(self, cmd):
         print(f"cmd: {cmd}")
 
         result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"{result.stdout}")
+            logging.debug(f"{result.stdout}")
+            return (True, f"{result.stdout}")
+        else:
+            print(f"Error: {result.stderr}")
+            logging.debug(f"Error: {result.stderr}")
+            return (False, f"Error: {result.stderr}")
+
+    def popen(self, cmd):
+        print(f"cmd: {cmd}")
+
+        result = subprocess.run(cmd, capture_output=True, shell=True)
         if result.returncode == 0:
             print(f"{result.stdout}")
             logging.debug(f"{result.stdout}")
@@ -89,6 +111,11 @@ class PyInterpreter:
     def py(self, cmd):
         command = [self.interpreterPath, cmd]
         return self.cmd(command)
+
+    def py_popen(self, cmd):
+        command = list(cmd)
+        command.insert(0, self.interpreterPath)
+        return self.popen(command)
 
 
 
