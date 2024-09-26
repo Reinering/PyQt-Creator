@@ -36,8 +36,9 @@ SettingFile = "setting.json"
 UI_CONFIG = {
     "theme": "Light",
 
-    "startLogo": "public/images/logo.png",
+    "startLogo": "resource/images/logo.png",
     "iconPath": ":/images/icons",
+    "gifPath": ":/images/gifs",
     "stylesheetPath": ":/qss/stylesheets",
 
     "Material": {
@@ -77,65 +78,41 @@ LIBS = {
     "pyenv": os.path.join(LIBSPATH, "pyenv-win"),
 }
 
-PYTHON_BUILD_MIRROR_URLs = {
-    "origin": "https://www.python.org/ftp/python",
-    "taobao": "https://npm.taobao.org/mirrors/python",
+
+MIRRORS = {
+    "pyenv": {
+        "origin": "https://www.python.org/ftp/python",
+        # "taobao": "https://npm.taobao.org/mirrors/python",
+        "huawei": "https://repo.huaweicloud.com/python/",
+    },
+    "pip": {
+        "origin": "https://pypi.org/simple/",
+        "tsinghua": "https://pypi.tuna.tsinghua.edu.cn/simple/",
+        "aliyun": "https://mirrors.aliyun.com/pypi/simple/",
+        "tencent": "https://mirrors.cloud.tencent.com/pypi/simple/",
+        "huawei": "https://mirrors.huaweicloud.com/repository/pypi/simple/",
+        "douban": "https://pypi.douban.com/simple/",
+    },
 }
 
+REQUIREMENTS_URLS = {
+   "qfluentwidgets": {
+       "pyqt5": "PyQt-Fluent-Widgets[full]",
+       "pyqt6": "PyQt6-Fluent-Widgets[full]",
+       "pyside6": "PySide6-Fluent-Widgets[full]"
+   },
+    "qfluentexpand": "https://github.com/Reinering/qfluentexpand.git"
+}
 
 SETTINGS = {
-    "default": {
-        "wiresharkPath": "",
-    },
-    "linux": {
-        "host": [],
-        "port": [],
-        "user": [],
-        "password": [],
-        "su_user": [],
-        "su_password": [],
-        "cmd": []
-    },
-    "esxi": {
-        "host": [],
-        "port": [],
-        "user": [],
-        "password": [],
-        "tcpdump": [],
-        "pktcap": []
-    },
-    "tcpdump": [
-
-    ],
-    "tcpdump-uw": [
-
-    ],
-    "pktcap-uw": {
-        "capture": ['Drop', 'Dynamic', 'UplinkRcv', 'UplinkSnd', 'VnicTx', 'VnicRx', 'PortInput',
-                    'IOChain', 'EtherswitchDispath', 'EtherswitchOutput', 'PortOutput',
-                    'TcpipDispatch', 'PreDVFilter', 'PostDVFilter', 'Drop', 'VdrRxLeaf',
-                    'VdrTxLeaf', 'VdrRxTerminal', 'VdrTxTerminal', 'PktFree', 'TcpipRx',
-                    'TcpipTx', 'UplinkRcvKernel', 'UplinkSndKernel', 'PreOverlayInput',
-                    'PostOverlayInput', 'PreOverlayOutput', 'PostOverlayOutput', 'EnsPortReaderRx',
-                    'EnsPortWriterTx', 'EnsPortWriterQueue', 'EnsPortWriterFlush'],
-        "outfile": [],
-        "count": [],
-        "snapLen": [],
-        "switchport": [],
-        "dir": ['0', 'input', '1', 'output', '2', 'inputAndOutput'],
-        "vlan": [],
-        "other": []
-    },
-
     "project": {
 
     },
     "designer": {
-        "mode": ['project', 'global', 'standalone'],
-        "env": []
-
+        "python_env_modes": ["跟随项目", "跟随全局", "独立模式"],
     },
     "pack": {
+        "python_env_modes": ["跟随项目", "跟随全局", "独立模式"],       # ['project', 'global', 'standalone']
         "pyinstaller": {},
         "nuitka": {},
 
@@ -144,6 +121,39 @@ SETTINGS = {
         "theme": ['Light', 'Dark'],
         "language": ['Auto', 'zh_CN', 'en_US'],
         "dpi": ['Auto', '96', '120', '144', '192'],
-        "update": ['CheckUpdateAtStartUp', 'CheckUpdateAtEnd']
+        "update": ['CheckUpdateAtStartUp', 'CheckUpdateAtEnd'],
+        "python_env_modes": ["现有环境", "Pyenv 环境"],           # ["system", "venv", "pyenv", "conda"]
+        "pyenv_maxbit": ['x64', 'x86'],
+
+    }
+}
+
+
+CURRENT_SETTINGS = {
+    "project": {
+
+    },
+    "designer": {
+        "mode": 'global',
+        "custom_python_path": ""
+
+    },
+    "pack": {
+        "mode": 'global',
+        "custom_python_path": "",
+        "pyinstaller": {},
+        "nuitka": {},
+
+    },
+    "settings": {
+        "theme": 'Light',
+        "language": 'Auto',
+        "dpi": 'Auto',
+        "update": 'CheckUpdateAtStartUp',
+        "mode": "system",
+        "custom_python_path": "",
+        "pyenv_current_version": "",
+        "pyenv_mirror_url": "origin",
+        "pip_mirror_url": "origin"
     }
 }
