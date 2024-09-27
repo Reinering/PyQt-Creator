@@ -27,6 +27,8 @@ def getPyVer():
     # 打印Python版本列表
     return python_versions
 
+# from pathlib import Path
+# pyinstaller_path = Path(sys.executable).parent.joinpath('Scripts\pyinstaller.exe')
 
 
 class PyPath(Enum):
@@ -61,6 +63,8 @@ class PyPath(Enum):
     # nuitka
     NUITKA = os.path.join(SCRIPTS, "nuitka.bat")
 
+    # pipreqs
+    PIPREQS = os.path.join(SCRIPTS, "pipreqs.exe")
 
     def path(self, interpreterPath):
         (interpreterFolder, name) = os.path.split(interpreterPath)
