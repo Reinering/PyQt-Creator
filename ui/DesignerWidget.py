@@ -162,15 +162,23 @@ class DesignerWidget(QWidget, Ui_Form):
         self.spinner_designer_plugin_install.setGif(FluentGif.LOADING.path())
         self.spinner_designer_plugin_install.setFixedSize(30, 30)
         self.spinner_designer_plugin_install.hide()
-        self.button_designer_plugin_install = PrimaryPushButton(self.designerSetCard)
-        self.button_designer_plugin_install.setText("安装")
-        self.button_designer_plugin_install.clicked.connect(self.on_button_designer_plugin_install_clicked)
+        # self.button_designer_plugin_install = PrimaryPushButton(self.designerSetCard)
+        # self.button_designer_plugin_install.setText("安装")
+        # self.button_designer_plugin_install.clicked.connect(self.on_button_designer_plugin_install_clicked)
+
+        self.button_designer_thirdplugin = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        menu = RoundMenu(parent=self.button_designer_thirdplugin)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.thirdplugin_install))
+        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.thirdplugin_upgrade))
+        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.thirdplugin_uninstall))
+        self.button_designer_thirdplugin.setMenu(menu)
+
         layout = QHBoxLayout(widget_plugin)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_designer_plugin_install)
         layout.addStretch(1)
         layout.addWidget(self.spinner_designer_plugin_install)
-        layout.addWidget(self.button_designer_plugin_install)
+        layout.addWidget(self.button_designer_thirdplugin)
         self.designerSetCard.addWidget(widget_plugin)
 
 
@@ -247,6 +255,63 @@ class DesignerWidget(QWidget, Ui_Form):
 
         Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候", self)
 
+    def thirdplugin_install(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("thirdplugin_install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
+        self.venvMangerTh.start()
+
+        self.button_designer_thirdplugin.setEnabled(False)
+        self.spinner_designer_plugin_install.setState(True)
+        self.spinner_designer_plugin_install.show()
+        Message.info("提示", "安装中，请稍后", self)
+
+    def thirdplugin_upgrade(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("thirdplugin_upgrade", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
+        self.venvMangerTh.start()
+
+        self.button_designer_thirdplugin.setEnabled(False)
+        self.spinner_designer_plugin_install.setState(True)
+        self.spinner_designer_plugin_install.show()
+        Message.info("提示", "更新中，请稍后", self)
+
+    def thirdplugin_uninstall(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("thirdplugin_uninstall", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
+        self.venvMangerTh.start()
+
+        self.button_designer_thirdplugin.setEnabled(False)
+        self.spinner_designer_plugin_install.setState(True)
+        self.spinner_designer_plugin_install.show()
+        Message.info("提示", "卸载中，请稍后", self)
+
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["designer"]["mode"] = text
 
@@ -316,16 +381,6 @@ class DesignerWidget(QWidget, Ui_Form):
                 return
 
             Message.info("成功", "安装成功", self)
-        elif cmd == "plugin":
-            self.button_designer_plugin_install.setEnabled(True)
-            self.spinner_designer_plugin_install.setState(False)
-            self.spinner_designer_plugin_install.hide()
-
-            if not result[0]:
-                Message.error("错误", result[1], self)
-                return
-
-            Message.info("成功", "安装成功", self)
         elif cmd == "designer":
             self.button_open.setEnabled(True)
             if not result[0]:
@@ -336,6 +391,20 @@ class DesignerWidget(QWidget, Ui_Form):
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
+        elif "thirdplugin" in cmd:
+            self.button_designer_thirdplugin.setEnabled(True)
+            self.spinner_designer_plugin_install.setState(False)
+            self.spinner_designer_plugin_install.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+            if "install" in cmd:
+                Message.info("成功", "安装成功", self)
+            elif "upgrade" in cmd:
+                Message.info("成功", "更新成功", self)
+            elif "uninstall" in cmd:
+                Message.info("成功", "卸载成功", self)
         else:
             pass
 
@@ -370,12 +439,26 @@ class VenvManagerThread(QThread):
         elif self.cmd == "install":
             result = self.pyI.pip(self.cmd, *self.args)
             self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "plugin":
+        elif self.cmd == "thirdplugin_install":
             result = self.pyI.pip("install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
             if not result[0]:
                 self.signal_result.emit(self.cmd, result)
                 return
             result = self.pyI.pip("install", "git+" + REQUIREMENTS_URLS["qfluentexpand"])
+            self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "thirdplugin_upgrade":
+            result = self.pyI.pip("install", "--upgrade", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
+            if not result[0]:
+                self.signal_result.emit(self.cmd, result)
+                return
+            result = self.pyI.pip("install", "--upgrade", "git+" + REQUIREMENTS_URLS["qfluentexpand"])
+            self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "thirdplugin_uninstall":
+            result = self.pyI.pip("uninstall", "-y", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
+            if not result[0]:
+                self.signal_result.emit(self.cmd, result)
+                return
+            result = self.pyI.pip("uninstall", "-y", "qfluentexpand")
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "designer":
             result = self.pyI.popen(self.args[0])
