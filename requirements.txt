@@ -1,0 +1,13 @@
+cachetools==5.5.0
+paramiko==3.5.0
+PySide6==6.7.2
+PySide6==6.7.2
+PySide6_Addons==6.7.2
+PySide6_Essentials==6.7.2
+PySide6_Fluent_Widgets==1.6.5
+pywin32==306
+qfluentexpand==0.0.0
+Requests==2.32.3
+scp==0.15.0
+simplejson==3.19.3
+virtualenv==20.26.5
