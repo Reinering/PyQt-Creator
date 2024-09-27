@@ -92,7 +92,6 @@ class SettingWidget(QWidget, Ui_Form):
         label_env = BodyLabel("Python 环境", self.envCard)
         label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
-        self.button_filepath.setText("选择")
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)

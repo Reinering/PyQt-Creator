@@ -129,7 +129,6 @@ class OtherWidget(QWidget, Ui_Form):
         widget_env = QWidget(self.envCard)
         envLabel = BodyLabel("项目目录")
         self.button_env_folder = FolderPathSelector(self.envCard)
-        self.button_env_folder.setText("选择")
         self.button_env_folder.setMaximumWidth(300)
         self.button_env_folder.setFixedWidth(200)
         layout = QHBoxLayout(widget_env)
