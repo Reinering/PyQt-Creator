@@ -23,7 +23,7 @@ from qfluentwidgets import (
 from qfluentwidgets.common.icon import FluentIcon
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
-from qfluentexpand.components.line.selector import FilePathSelector
+from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import FluentGif
 from .compoments.info import Message
@@ -108,6 +108,18 @@ class SettingWidget(QWidget, Ui_Form):
                                           self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pyenv, 3, 0, 1, 1)
 
+        self.widget_pyenv_path = QWidget(self.card_pyenv)
+        label_pyenv_path = BodyLabel("pyenv-win 根目录")
+        self.button_pyenv_path = FolderPathSelector(self.envCard)
+        self.button_pyenv_path.setFixedWidth(200)
+        self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
+        layout = QHBoxLayout(self.widget_pyenv_path)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_pyenv_path)
+        layout.addStretch(1)
+        layout.addWidget(self.button_pyenv_path)
+        self.card_pyenv.addWidget(self.widget_pyenv_path)
+
         self.widget_pyenv_existing = QWidget(self.card_pyenv)
         label_existing = BodyLabel("现有环境")
         self.spinner_existing = GifLabel(self.card_pyenv)
@@ -144,7 +156,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_new_maxbit.setFixedWidth(75)
         self.comboBox_new_ver = ComboBox(self.card_pyenv)
         self.comboBox_new_ver.setMinimumWidth(100)
-        self.comboBox_new_ver.addItems(["3.8", "3.9", "3.10", "3.11", "3.12"])
 
         self.button_new_install = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(parent=self.button_new_install)
@@ -214,6 +225,9 @@ class SettingWidget(QWidget, Ui_Form):
 
         if CURRENT_SETTINGS["settings"]["custom_python_path"]:
             self.button_filepath.setText(CURRENT_SETTINGS["settings"]["custom_python_path"])
+
+        if CURRENT_SETTINGS["settings"]["pyenv_path"]:
+            self.button_pyenv_path.setText(CURRENT_SETTINGS["settings"]["pyenv_path"])
 
         if CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
             self.comboBox_existing.setText(CURRENT_SETTINGS["settings"]["pyenv_current_version"])
@@ -295,6 +309,11 @@ class SettingWidget(QWidget, Ui_Form):
     def on_button_filepath_textChanged(self, text):
         if text:
             CURRENT_SETTINGS["settings"]["custom_python_path"] = text
+            write_config()
+
+    def on_button_pyenv_path_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["settings"]["pyenv_path"] = text
             write_config()
 
     def on_comboBox_existing_currentTextChanged(self, text):

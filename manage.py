@@ -75,7 +75,7 @@ else:
 LIBS = {
     "pyinstaller": os.path.join(LIBSPATH, "pyinstaller"),
     "nuitka": os.path.join(LIBSPATH, "nuitka"),
-    "pyenv": os.path.join(LIBSPATH, "pyenv-win"),
+    "pyenv": os.path.join("libs", "pyenv-win"),
 }
 
 
@@ -163,6 +163,7 @@ CURRENT_SETTINGS = {
         "update": 'CheckUpdateAtStartUp',
         "mode": "system",
         "custom_python_path": "",
+        "pyenv_path": LIBS["pyenv"],
         "pyenv_current_version": "",
         "pyenv_mirror_url": "origin",
         "pip_mirror_url": "origin"
