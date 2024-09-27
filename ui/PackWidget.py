@@ -11,6 +11,7 @@ from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
 import os
+import simplejson as json
 
 from qfluentwidgets import (
     ExpandGroupSettingCard,
@@ -24,16 +25,19 @@ from qfluentwidgets import (
 from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBase as FIF, FluentIcon
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard
-from qfluentexpand.components.line.selector import FilePathSelector
+from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import FluentGif
 
 from .Ui_PackWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
+from .utils.config import write_config
 from .compoments.info import Message
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
-from manage import LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
+from common.pyinstaller import PyinstallerPackage
+from common.nuitka import NuitkaPackage
+from manage import ROOT_PATH, SettingPath, LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
 
 
 class PackWidget(QWidget, Ui_Form):
@@ -65,7 +69,6 @@ class PackWidget(QWidget, Ui_Form):
         self.initTitle()
         self.initWidget()
 
-
     def initTitle(self):
         self.titleCard = CardWidget(self)
         self.titleCard.setMinimumHeight(200)
@@ -91,14 +94,25 @@ class PackWidget(QWidget, Ui_Form):
         vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         hBoxLayout.addLayout(vBoxLayout)
 
+        layout = QHBoxLayout(self.titleCard)
+        layout.setSpacing(10)
+
+        horizontalSpacer = QSpacerItem(1000, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.spinner_open = GifLabel(self.titleCard)
+        self.spinner_open.setGif(FluentGif.LOADING.path())
+        self.spinner_open.setFixedSize(30, 30)
+        self.spinner_open.hide()
         self.button_open = PrimaryDropDownPushButton(FluentIcon.MAIL, '打包')
         menu = RoundMenu(parent=self.button_open)
         menu.addAction(Action(FluentIcon.BASKETBALL, 'pyinstaller', triggered=self.open_pyinstaller))
         menu.addAction(Action(FluentIcon.ALBUM, 'nuitka', triggered=self.open_nuitka))
         self.button_open.setMenu(menu)
-        hBoxLayout.addWidget(self.button_open , 0, Qt.AlignmentFlag.AlignRight)
 
-
+        layout.addItem(horizontalSpacer)
+        layout.addWidget(self.spinner_open)
+        layout.addWidget(self.button_open)
+        hBoxLayout.addLayout(layout, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
     def initWidget(self):
         self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
@@ -123,6 +137,7 @@ class PackWidget(QWidget, Ui_Form):
         self.button_filepath.setText("选择")
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
+        self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
         layout = QHBoxLayout(self.widget_env)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
@@ -132,8 +147,37 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
+        self.widget_env_main = QWidget(self.envCard)
+        label_env = BodyLabel("程序入口", self.envCard)
+        self.button_filepath_main = FilePathSelector(self.envCard)
+        self.button_filepath_main.setText("选择")
+        self.button_filepath_main.setFileTypes("python(*.py)")
+        self.button_filepath_main.setMaximumWidth(300)
+        self.button_filepath_main.setFixedWidth(200)
+        layout = QHBoxLayout(self.widget_env_main)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_env)
+        layout.addStretch(1)
+        layout.addWidget(self.button_filepath_main)
+        self.envCard.addWidget(self.widget_env_main)
+
+        self.widget_env_out = QWidget(self.envCard)
+        label_env = BodyLabel("输出", self.envCard)
+        self.button_filepath_out = FolderPathSelector(self.envCard)
+        self.button_filepath_out.setText("选择")
+        self.button_filepath_out.setPlaceholderText("默认为当前路径")
+        self.button_filepath_out.setMaximumWidth(300)
+        self.button_filepath_out.setFixedWidth(200)
+        layout = QHBoxLayout(self.widget_env_out)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_env)
+        layout.addStretch(1)
+        layout.addWidget(self.button_filepath_out)
+        self.envCard.addWidget(self.widget_env_out)
+
         self.card_pyinstaller = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyinstaller 设置", "",
                                                 self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_pyinstaller, 2, 0, 1, 1)
         widget_pyinstaller = QWidget(self.card_pyinstaller)
         label_pyinstaller = BodyLabel("安装Pyinstaller环境")
         self.spinner_pyinstaller = GifLabel(self.card_pyinstaller)
@@ -150,10 +194,28 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.spinner_pyinstaller)
         layout.addWidget(self.button_pyinstaller)
         self.card_pyinstaller.addWidget(widget_pyinstaller)
-        self.gridLayout1.addWidget(self.card_pyinstaller, 2, 0, 1, 1)
+
+        widget_pyinstaller_settingfile = QWidget(self.card_pyinstaller)
+        label_pyinstaller = BodyLabel("pyinstaller配置文件")
+        self.spinner_pyinstaller_settingfile = GifLabel(self.card_pyinstaller)
+        self.spinner_pyinstaller_settingfile.setGif(FluentGif.LOADING.path())
+        self.spinner_pyinstaller_settingfile.setFixedSize(30, 30)
+        self.spinner_pyinstaller_settingfile.hide()
+        self.button_pyinstaller_settingfile = PrimaryPushButton(self.card_pyinstaller)
+        self.button_pyinstaller_settingfile.setText("编辑")
+        self.button_pyinstaller_settingfile.clicked.connect(self.on_button_pyinstaller_settingfile_clicked)
+        layout = QHBoxLayout(widget_pyinstaller_settingfile)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_pyinstaller)
+        layout.addStretch(1)
+        layout.addWidget(self.spinner_pyinstaller_settingfile)
+        layout.addWidget(self.button_pyinstaller_settingfile)
+        self.card_pyinstaller.addWidget(widget_pyinstaller_settingfile)
+
 
         self.card_nuitka = SettingGroupCard(FluentIcon.SPEED_OFF, "Nuitka 设置", "",
                                                 self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_nuitka, 3, 0, 1, 1)
         widget_nuitka = QWidget(self.card_nuitka)
         label_nuitka = BodyLabel("安装Nuitka环境")
         self.spinner_nuitka = GifLabel(self.card_nuitka)
@@ -170,18 +232,37 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.spinner_nuitka)
         layout.addWidget(self.button_nuitka)
         self.card_nuitka.addWidget(widget_nuitka)
-        self.gridLayout1.addWidget(self.card_nuitka, 3, 0, 1, 1)
+
+        widget_nuitka_settingfile = QWidget(self.card_nuitka)
+        label_nuitka = BodyLabel("nuitka配置文件")
+        self.spinner_nuitka_settingfile = GifLabel(self.card_nuitka)
+        self.spinner_nuitka_settingfile.setGif(FluentGif.LOADING.path())
+        self.spinner_nuitka_settingfile.setFixedSize(30, 30)
+        self.spinner_nuitka_settingfile.hide()
+        self.button_nuitka_settingfile = PrimaryPushButton(self.card_nuitka)
+        self.button_nuitka_settingfile.setText("编辑")
+        self.button_nuitka_settingfile.clicked.connect(self.on_button_nuitka_settingfile_clicked)
+        layout = QHBoxLayout(widget_nuitka_settingfile)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_nuitka)
+        layout.addStretch(1)
+        layout.addWidget(self.spinner_nuitka_settingfile)
+        layout.addWidget(self.button_nuitka_settingfile)
+        self.card_nuitka.addWidget(widget_nuitka_settingfile)
 
 
 
-        self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.gridLayout1.addItem(self.verticalSpacer, 4, 0, 1, 1)
+        verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
 
         self.configure()
 
     def configure(self):
         if CURRENT_SETTINGS["pack"]["mode"] in SETTINGS["pack"]["python_env_modes"]:
             self.comboBox_mode.setCurrentText(CURRENT_SETTINGS["pack"]["mode"])
+
+        if CURRENT_SETTINGS["pack"]["custom_python_path"]:
+            self.button_filepath.setText(CURRENT_SETTINGS["pack"]["custom_python_path"])
 
     def getPyPath(self):
         path = ""
@@ -208,10 +289,80 @@ class PackWidget(QWidget, Ui_Form):
         return path
 
     def open_pyinstaller(self):
-        pass
+        if not self.button_filepath_main.text() or self.button_filepath_main.text() == "选择":
+            Message.error("错误", "请选择程序入口", self)
+            return
+
+        if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")):
+            Message.error("错误", "配置文件不存在", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+
+        with open(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json"), "r") as f:
+            data = json.load(f)
+            PyinstallerPackage.PYINSTALLER_PARAMS.clear()
+            for key in data.keys():
+                PyinstallerPackage.PYINSTALLER_PARAMS[key] = data[key]
+
+        file = self.button_filepath_main.text()
+        (filepath, filename) = os.path.split(file)
+        PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = filepath
+        cmd = PyPath.PYINSTALLER.path(path) + ' ' + PyinstallerPackage().getCMD() + " " + file
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("pack_pyinstaller", cmd)
+        self.venvMangerTh.start()
+
+        self.button_open.setEnabled(False)
+        self.spinner_open.setState(True)
+        self.spinner_open.show()
+
+        Message.info("提示", "打包中，请稍后", self)
 
     def open_nuitka(self):
-        pass
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        if not self.button_filepath_main.text() or self.button_filepath_main.text() == "选择":
+            Message.error("错误", "请选择程序入口", self)
+            return
+
+        if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")):
+            Message.error("错误", "配置文件不存在", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+
+        with open(os.path.join(ROOT_PATH, SettingPath, "nuitka.json"), "r") as f:
+            data = json.load(f)
+            NuitkaPackage.NUITKA_PARAMS.clear()
+            for key in data.keys():
+                NuitkaPackage.NUITKA_PARAMS[key] = data[key]
+
+        file = self.button_filepath_main.text()
+        (filepath, filename) = os.path.split(file)
+        PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = filepath
+
+        cmd = ''
+
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("pack_pyinstaller", cmd)
+        self.venvMangerTh.start()
+
+        self.button_open.setEnabled(False)
+        self.spinner_open.setState(True)
+        self.spinner_open.show()
+
+        Message.info("提示", "打包中，请稍后", self)
 
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["pack"]["mode"] = text
@@ -224,6 +375,13 @@ class PackWidget(QWidget, Ui_Form):
             self.widget_env.show()
         else:
             pass
+
+        write_config()
+
+    def on_button_filepath_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["pack"]["custom_python_path"] = text
+            write_config()
 
     def on_button_pyinstaller_clicked(self):
         if self.venvMangerTh.isRunning():
@@ -242,6 +400,7 @@ class PackWidget(QWidget, Ui_Form):
         self.button_pyinstaller.setEnabled(False)
         self.spinner_pyinstaller.setState(True)
         self.spinner_pyinstaller.show()
+
         Message.info("安装", "安装中，请稍后", self)
 
     def on_button_nuitka_clicked(self):
@@ -261,7 +420,20 @@ class PackWidget(QWidget, Ui_Form):
         self.button_nuitka.setEnabled(False)
         self.spinner_nuitka.setState(True)
         self.spinner_nuitka.show()
+
         Message.info("安装", "安装中，请稍后", self)
+
+    def on_button_pyinstaller_settingfile_clicked(self):
+        if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")):
+            Message.error("错误", "配置文件不存在", self)
+            return
+        os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")}')
+
+    def on_button_nuitka_settingfile_clicked(self):
+        if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "nuitka.json")):
+            Message.error("错误", "配置文件不存在", self)
+            return
+        os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "nuitka.json")}')
 
     def receive_VMresult(self, cmd, result):
         if cmd == "init":
@@ -286,6 +458,16 @@ class PackWidget(QWidget, Ui_Form):
                 return
 
             Message.info("成功", "安装成功", self)
+        elif cmd == "pack_pyinstaller" or cmd == "pack_nuitka":
+            self.button_open.setEnabled(True)
+            self.spinner_open.setState(False)
+            self.spinner_open.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("成功", "打包成功", self)
         else:
             pass
 
@@ -321,6 +503,12 @@ class VenvManagerThread(QThread):
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "install_nuitka":
             result = self.pyI.pip("install", *self.args)
+            self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "pack_pyinstaller":
+            result = self.pyI.popen(self.args[0])
+            self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "pack_nuitka":
+            result = self.pyI.pip(*self.args)
             self.signal_result.emit(self.cmd, result)
         else:
             self.signal_result.emit(self.cmd, ["False", "未知命令"])
