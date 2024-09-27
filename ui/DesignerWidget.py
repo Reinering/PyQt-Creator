@@ -162,10 +162,6 @@ class DesignerWidget(QWidget, Ui_Form):
         self.spinner_designer_plugin_install.setGif(FluentGif.LOADING.path())
         self.spinner_designer_plugin_install.setFixedSize(30, 30)
         self.spinner_designer_plugin_install.hide()
-        # self.button_designer_plugin_install = PrimaryPushButton(self.designerSetCard)
-        # self.button_designer_plugin_install.setText("安装")
-        # self.button_designer_plugin_install.clicked.connect(self.on_button_designer_plugin_install_clicked)
-
         self.button_designer_thirdplugin = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(parent=self.button_designer_thirdplugin)
         menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.thirdplugin_install))
