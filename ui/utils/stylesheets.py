@@ -21,6 +21,7 @@ class StyleSheet(StyleSheetBase, Enum):
     PACK = "PACK"
     OTHER = "OTHER"
     CONSOLE = "CONSOLE"
+    DOCUMENT = "DOCUMENT"
     SETTING = "SETTING"
 
     def path(self, theme=Theme.AUTO):
