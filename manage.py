@@ -104,6 +104,7 @@ REQUIREMENTS_URLS = {
     "qfluentexpand": "https://github.com/Reinering/qfluentexpand.git"
 }
 
+
 SETTINGS = {
     "project": {
 
@@ -116,6 +117,9 @@ SETTINGS = {
         "pyinstaller": {},
         "nuitka": {},
 
+    },
+    "other": {
+        "python_env_modes": ["跟随项目", "跟随全局", "独立模式"],
     },
     "settings": {
         "theme": ['Light', 'Dark'],
@@ -143,6 +147,11 @@ CURRENT_SETTINGS = {
         "custom_python_path": "",
         "pyinstaller": {},
         "nuitka": {},
+
+    },
+    "other": {
+        "mode": 'global',
+        "custom_python_path": ""
 
     },
     "settings": {
