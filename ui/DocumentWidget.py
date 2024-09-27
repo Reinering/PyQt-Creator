@@ -9,6 +9,8 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QWidget
 
 from .Ui_DocumentWidget import Ui_Form
+from .utils.stylesheets import StyleSheet
+
 
 
 class DocumentWidget(QWidget, Ui_Form):
@@ -25,5 +27,5 @@ class DocumentWidget(QWidget, Ui_Form):
         """
         super().__init__(parent)
         self.setupUi(self)
-
         self.setObjectName("document")
+        StyleSheet.DOCUMENT.apply(self)

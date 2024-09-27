@@ -15,13 +15,29 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QSizePolicy, QWidget)
+from PySide6.QtWidgets import (QApplication, QGridLayout, QSizePolicy, QWidget)
+
+from qfluentwidgets import ScrollArea
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(240, 320)
+        Form.resize(779, 717)
+        self.gridLayout = QGridLayout(Form)
+        self.gridLayout.setSpacing(1)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setContentsMargins(1, 1, 1, 1)
+        self.ScrollArea = ScrollArea(Form)
+        self.ScrollArea.setObjectName(u"ScrollArea")
+        self.ScrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 775, 713))
+        self.ScrollArea.setWidget(self.scrollAreaWidgetContents)
+
+        self.gridLayout.addWidget(self.ScrollArea, 0, 0, 1, 1)
+
 
         self.retranslateUi(Form)
 
