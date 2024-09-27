@@ -572,7 +572,6 @@ class VenvManagerThread(QThread):
             result = self.pyI.pip("install", *self.args)
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "pyinstaller_upgrade":
-            print(self.args)
             result = self.pyI.pip("install", "--upgrade", *self.args)
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "pyinstaller_uninstall":
