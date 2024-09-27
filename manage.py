@@ -145,6 +145,8 @@ CURRENT_SETTINGS = {
     "pack": {
         "mode": 'global',
         "custom_python_path": "",
+        "main": "",
+        "outPath": "",
         "pyinstaller": {},
         "nuitka": {},
 
