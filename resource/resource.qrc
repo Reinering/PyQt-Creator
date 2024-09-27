@@ -2,32 +2,37 @@
   <qresource prefix="/logo">
     <file>images/logo.png</file>
   </qresource>
+  <qresource prefix="gifs">
+    <file>images/gifs/load.gif</file>
+  </qresource>
   <qresource prefix="/qss">
     <file>stylesheets/light/designer.qss</file>
-    <file>stylesheets/light/console.qss</file>
-    <file>stylesheets/light/project.qss</file>
-    <file>stylesheets/dark/console.qss</file>
-    <file>stylesheets/dark/project.qss</file>
     <file>stylesheets/dark/designer.qss</file>
-    <file>stylesheets/dark/main.qss</file>
-    <file>stylesheets/dark/pack.qss</file>
-    <file>stylesheets/dark/setting.qss</file>
-    <file>stylesheets/light/main.qss</file>
+    <file>stylesheets/light/console.qss</file>
+    <file>stylesheets/dark/console.qss</file>
+    <file>stylesheets/light/project.qss</file>
+    <file>stylesheets/dark/project.qss</file>
+    <file>stylesheets/dark/other.qss</file>
+    <file>stylesheets/light/other.qss</file>
     <file>stylesheets/light/pack.qss</file>
+    <file>stylesheets/dark/pack.qss</file>
+    <file>stylesheets/dark/main.qss</file>
+    <file>stylesheets/light/main.qss</file>
+    <file>stylesheets/dark/setting.qss</file>
     <file>stylesheets/light/setting.qss</file>
   </qresource>
   <qresource prefix="images">
     <file>icons/dark/document.svg</file>
-    <file>icons/dark/esxi.svg</file>
-    <file>icons/dark/linux.svg</file>
-    <file>icons/dark/log.svg</file>
     <file>icons/light/document.svg</file>
+    <file>icons/dark/esxi.svg</file>
     <file>icons/light/esxi.svg</file>
+    <file>icons/dark/linux.svg</file>
     <file>icons/light/linux.svg</file>
+    <file>icons/dark/log.svg</file>
     <file>icons/light/log.svg</file>
     <file>icons/dark/home.svg</file>
-    <file>icons/dark/settings.svg</file>
     <file>icons/light/home.svg</file>
+    <file>icons/dark/settings.svg</file>
     <file>icons/light/settings.svg</file>
     <file>images/index.png</file>
   </qresource>
