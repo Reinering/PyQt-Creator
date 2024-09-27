@@ -89,6 +89,7 @@ yarn.lock
 *.pem
 config.json
 config/base.cfg
+main.exe
 
 # nuitka
 nuitka*
