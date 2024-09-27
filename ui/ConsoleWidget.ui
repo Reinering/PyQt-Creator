@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>506</width>
+    <width>706</width>
     <height>488</height>
    </rect>
   </property>
@@ -35,35 +35,27 @@
     <number>1</number>
    </property>
    <item row="0" column="0">
-    <widget class="ScrollArea" name="ScrollArea">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>502</width>
-        <height>484</height>
-       </rect>
-      </property>
-     </widget>
+    <widget class="TabBar" name="TabBar"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QStackedWidget" name="stackedWidget">
+     <widget class="QWidget" name="page"/>
+     <widget class="QWidget" name="page_2"/>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ScrollArea</class>
+   <class>SingleDirectionScrollArea</class>
    <extends>QScrollArea</extends>
    <header>qfluentwidgets</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TabBar</class>
+   <extends>SingleDirectionScrollArea</extends>
+   <header>qfluentwidgets</header>
   </customwidget>
  </customwidgets>
  <resources/>
