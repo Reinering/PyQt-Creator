@@ -152,6 +152,7 @@ class PackWidget(QWidget, Ui_Form):
         self.button_filepath_main.setFileTypes("python(*.py)")
         self.button_filepath_main.setMaximumWidth(300)
         self.button_filepath_main.setFixedWidth(200)
+        self.button_filepath_main.textChanged.connect(self.on_button_filepath_main_textChanged)
         layout = QHBoxLayout(self.widget_env_main)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
@@ -160,12 +161,12 @@ class PackWidget(QWidget, Ui_Form):
         self.envCard.addWidget(self.widget_env_main)
 
         self.widget_env_out = QWidget(self.envCard)
-        label_env = BodyLabel("输出", self.envCard)
+        label_env = BodyLabel("输出目录", self.envCard)
         self.button_filepath_out = FolderPathSelector(self.envCard)
-        self.button_filepath_out.setText("选择")
-        self.button_filepath_out.setPlaceholderText("默认为当前路径")
+        self.button_filepath_out.setPlaceholderText("默认为程序入口目录")
         self.button_filepath_out.setMaximumWidth(300)
         self.button_filepath_out.setFixedWidth(200)
+        self.button_filepath_out.textChanged.connect(self.on_button_filepath_out_textChanged)
         layout = QHBoxLayout(self.widget_env_out)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
@@ -268,6 +269,12 @@ class PackWidget(QWidget, Ui_Form):
 
         if CURRENT_SETTINGS["pack"]["custom_python_path"]:
             self.button_filepath.setText(CURRENT_SETTINGS["pack"]["custom_python_path"])
+
+        if CURRENT_SETTINGS["pack"]["main"]:
+            self.button_filepath_main.setText(CURRENT_SETTINGS["pack"]["main"])
+
+        if CURRENT_SETTINGS["pack"]["outPath"]:
+            self.button_filepath_out.setText(CURRENT_SETTINGS["pack"]["outPath"])
 
     def getPyPath(self):
         path = ""
@@ -433,7 +440,6 @@ class PackWidget(QWidget, Ui_Form):
 
         return True
 
-
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["pack"]["mode"] = text
 
@@ -451,6 +457,16 @@ class PackWidget(QWidget, Ui_Form):
     def on_button_filepath_textChanged(self, text):
         if text:
             CURRENT_SETTINGS["pack"]["custom_python_path"] = text
+            write_config()
+
+    def on_button_filepath_main_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["pack"]["main"] = text
+            write_config()
+
+    def on_button_filepath_out_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["pack"]["outPath"] = text
             write_config()
 
     def on_button_pyinstaller_settingfile_clicked(self):
