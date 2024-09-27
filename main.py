@@ -20,9 +20,15 @@ from PySide6.QtWidgets import QSplashScreen
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 
-from manage import UI_CONFIG, LOGLEVEL, LOGFILE, ROOT_PATH, SettingPath, SettingFile, CURRENT_SETTINGS, RUNTIMEENV, BUNDLE_DIR
-from common.config import Config
+from manage import (
+    UI_CONFIG, LOGLEVEL, LOGFILE, ROOT_PATH,
+    SettingPath, SettingFile, CURRENT_SETTINGS,
+    RUNTIMEENV, BUNDLE_DIR
+)
 from ui.MainWindow import MainWindow
+from common.pyinstaller import PyinstallerPackage
+from common.nuitka import NuitkaPackage
+from common.pipreqs import Pipreqs
 
 
 # from pycrunch_trace.client.api import trace
@@ -94,6 +100,18 @@ def readConfig():
             CURRENT_SETTINGS.clear()
             for key in data.keys():
                 CURRENT_SETTINGS[key] = data[key]
+
+    if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")):
+        with open(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json"), "w") as f:
+            json.dump(PyinstallerPackage.PYINSTALLER_PARAMS, f, indent=4)
+
+    if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "nuitka.json")):
+        with open(os.path.join(ROOT_PATH, SettingPath, "nuitka.json"), "w") as f:
+            json.dump(NuitkaPackage.NUITKA_PARAMS, f, indent=4)
+
+    if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")):
+        with open(os.path.join(ROOT_PATH, SettingPath, "pipreqs.json"), "w") as f:
+            json.dump(Pipreqs.PIPREQS_PARAMS, f, indent=4)
 
 # @trace()
 def main(argv=None):
