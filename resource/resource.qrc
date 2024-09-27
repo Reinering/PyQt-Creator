@@ -6,20 +6,22 @@
     <file>images/gifs/load.gif</file>
   </qresource>
   <qresource prefix="/qss">
-    <file>stylesheets/light/designer.qss</file>
-    <file>stylesheets/dark/designer.qss</file>
-    <file>stylesheets/light/console.qss</file>
-    <file>stylesheets/dark/console.qss</file>
+    <file>stylesheets/light/main.qss</file>
+    <file>stylesheets/dark/main.qss</file>
     <file>stylesheets/light/project.qss</file>
     <file>stylesheets/dark/project.qss</file>
-    <file>stylesheets/dark/other.qss</file>
-    <file>stylesheets/light/other.qss</file>
+    <file>stylesheets/light/designer.qss</file>
+    <file>stylesheets/dark/designer.qss</file>
     <file>stylesheets/light/pack.qss</file>
     <file>stylesheets/dark/pack.qss</file>
-    <file>stylesheets/dark/main.qss</file>
-    <file>stylesheets/light/main.qss</file>
-    <file>stylesheets/dark/setting.qss</file>
+    <file>stylesheets/light/other.qss</file>
+    <file>stylesheets/dark/other.qss</file>
+    <file>stylesheets/light/console.qss</file>
+    <file>stylesheets/dark/console.qss</file>
+    <file>stylesheets/light/document.qss</file>
+    <file>stylesheets/dark/document.qss</file>
     <file>stylesheets/light/setting.qss</file>
+    <file>stylesheets/dark/setting.qss</file>
   </qresource>
   <qresource prefix="images">
     <file>icons/dark/document.svg</file>
