@@ -90,9 +90,6 @@ class OtherWidget(QWidget, Ui_Form):
         vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         hBoxLayout.addLayout(vBoxLayout)
 
-
-
-
     def initWidget(self):
         self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
                                         self.scrollAreaWidgetContents)
@@ -148,9 +145,13 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_pipreqs.setGif(FluentGif.LOADING.path())
         self.spinner_pipreqs.setFixedSize(30, 30)
         self.spinner_pipreqs.hide()
-        self.button_pipreqs = PrimaryPushButton(self.card_requirements)
-        self.button_pipreqs.setText("安装")
-        self.button_pipreqs.clicked.connect(self.on_button_pipreqs_clicked)
+        self.button_pipreqs = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        menu = RoundMenu(parent=self.button_pipreqs)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.pipreqs_install))
+        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.pipreqs_upgrade))
+        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.pipreqs_uninstall))
+        self.button_pipreqs.setMenu(menu)
+
         layout = QHBoxLayout(widget_pipreqs)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(envLabel)
@@ -227,6 +228,38 @@ class OtherWidget(QWidget, Ui_Form):
         elif self.comboBox_mode.currentText() == "跟随项目":
             pass
         return path
+
+    def pipreqs_install(self):
+        if self.pipreqs("pipreqs_install", "pipreqs"):
+            Message.info("提示", "安装中，请稍后", self)
+
+    def pipreqs_upgrade(self):
+        if self.pipreqs("pipreqs_upgrade", "pipreqs"):
+            Message.info("提示", "更新中，请稍后", self)
+
+    def pipreqs_uninstall(self):
+        if self.pipreqs("pipreqs_uninstall", "pipreqs"):
+            Message.info("提示", "卸载中，请稍后", self)
+
+    def pipreqs(self, cmd, args):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return False
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD(cmd, args)
+        self.venvMangerTh.start()
+
+        self.button_pipreqs.setEnabled(False)
+        self.spinner_pipreqs.setState(True)
+        self.spinner_pipreqs.show()
+
+        return True
 
     def generate_requirements(self):
         if self.venvMangerTh.isRunning():
@@ -309,26 +342,6 @@ class OtherWidget(QWidget, Ui_Form):
             CURRENT_SETTINGS["other"]["custom_python_path"] = text
             write_config()
 
-    def on_button_pipreqs_clicked(self):
-        if self.venvMangerTh.isRunning():
-            Message.error("错误", "env忙碌中，请稍后重试", self)
-            return
-
-        path = self.getPyPath()
-        if not path:
-            Message.error("错误", "python解释器获取失败", self)
-            return
-
-        self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("install", "pipreqs")
-        self.venvMangerTh.start()
-
-        self.button_pipreqs.setEnabled(False)
-        self.spinner_pipreqs.setState(True)
-        self.spinner_pipreqs.show()
-
-        Message.info("安装", "安装中，请稍后", self)
-
     def on_button_pipreqs_edit_clicked(self):
         if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")):
             Message.error("错误", "pipreqs配置文件不存在", self)
@@ -339,7 +352,7 @@ class OtherWidget(QWidget, Ui_Form):
     def receive_VMresult(self,  cmd, result):
         if cmd == "init":
             pass
-        elif cmd == "install":
+        elif "pipreqs" in cmd:
             self.button_pipreqs.setEnabled(True)
             self.spinner_pipreqs.setState(False)
             self.spinner_pipreqs.hide()
@@ -347,7 +360,12 @@ class OtherWidget(QWidget, Ui_Form):
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
-            Message.info("成功", "安装成功", self)
+            if "install" in cmd:
+                Message.info("提示", "安装成功", self)
+            elif "upgrade" in cmd:
+                Message.info("提示", "更新成功", self)
+            elif "uninstall" in cmd:
+                Message.info("提示", "卸载成功", self)
         elif "requirements" in cmd:
             self.button_requirements.setEnabled(True)
             self.spinner_requirements.setState(False)
@@ -358,9 +376,9 @@ class OtherWidget(QWidget, Ui_Form):
                 return
 
             if "install" in cmd:
-                Message.info("成功", "安装成功", self)
+                Message.info("提示", "安装成功", self)
             elif "generate" in cmd:
-                Message.info("成功", "生成成功", self)
+                Message.info("提示", "生成成功", self)
         else:
             pass
 
@@ -389,8 +407,14 @@ class VenvManagerThread(QThread):
     def run(self):
         if self.cmd == "init":
             pass
-        elif "install" in self.cmd:
-            result = self.pyI.pip("install", *self.args)
+        if "pipreqs" in self.cmd:
+            if "uninstall" in self.cmd:
+                result = self.pyI.pip("uninstall", '-y', *self.args)
+            elif "install" in self.cmd:
+                result = self.pyI.pip("install", *self.args)
+            elif "upgrade" in self.cmd:
+                result = self.pyI.pip("install", "--upgrade", *self.args)
+
             self.signal_result.emit(self.cmd, result)
         elif "generate" in self.cmd:
             result = self.pyI.cmd(self.args[0])
