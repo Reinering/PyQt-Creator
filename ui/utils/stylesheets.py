@@ -19,6 +19,7 @@ class StyleSheet(StyleSheetBase, Enum):
     PROJECT = "PROJECT"
     DESIGNER = "DESIGNER"
     PACK = "PACK"
+    OTHER = "OTHER"
     CONSOLE = "CONSOLE"
     SETTING = "SETTING"
 
