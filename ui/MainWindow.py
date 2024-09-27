@@ -23,6 +23,7 @@ from .PackWidget import PackWidget
 from .DocumentWidget import DocumentWidget
 from .SettingWidget import SettingWidget
 from .ConsoleWidget import ConsoleWidget
+from .OtherWidget import OtherWidget
 
 from .utils.icon import AppIcon
 from .utils.stylesheets import StyleSheet
@@ -88,6 +89,9 @@ class MainWindow(FluentWindow, Ui_Form):
         self.settings = SettingWidget(self)
         self.subInterfaceList.append(self.settings)
 
+        self.other = OtherWidget(self)
+        self.subInterfaceList.append(self.other)
+
         self.addSubInterface(
             self.home,
             AppIcon.HOME.icon(UI_CONFIG["theme"].lower()),
@@ -110,6 +114,12 @@ class MainWindow(FluentWindow, Ui_Form):
             self.pack,
             AppIcon.LINUX.icon(UI_CONFIG["theme"].lower()),
             "Pack",
+            NavigationItemPosition.SCROLL
+        )
+        self.addSubInterface(
+            self.other,
+            AppIcon.LINUX.icon(UI_CONFIG["theme"].lower()),
+            "Other",
             NavigationItemPosition.SCROLL
         )
         self.addSubInterface(
