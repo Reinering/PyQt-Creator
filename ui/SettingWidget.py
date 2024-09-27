@@ -29,6 +29,7 @@ from qfluentexpand.common.gif import FluentGif
 from .compoments.info import Message
 from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
+from .utils.config import write_config
 from common.pyenv import PyVenvManager
 from manage import LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS
 
@@ -94,6 +95,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.button_filepath.setText("选择")
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
+        self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
         layout = QHBoxLayout(self.widget_env)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
@@ -289,8 +291,17 @@ class SettingWidget(QWidget, Ui_Form):
         else:
             pass
 
+        write_config()
+
+    def on_button_filepath_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["settings"]["custom_python_path"] = text
+            write_config()
+
     def on_comboBox_existing_currentTextChanged(self, text):
         CURRENT_SETTINGS["settings"]["pyenv_current_version"] = text
+
+        write_config()
 
     def on_comboBox_pyenv_mirror_url_currentTextChanged(self, text):
         CURRENT_SETTINGS["settings"]["pyenv_mirror_url"] = text
@@ -302,8 +313,12 @@ class SettingWidget(QWidget, Ui_Form):
             self.venvMangerTh.setCMD("environ", PYTHON_BUILD_MIRROR_URL=MIRRORS["pyenv"][text])
             self.venvMangerTh.start()
 
+            write_config()
+
     def on_comboBox_pip_mirror_url_currentTextChanged(self, text):
         CURRENT_SETTINGS["settings"]["pip_mirror_url"] = text
+
+        write_config()
 
     def on_button_existing_uninstall_clicked(self):
         if self.comboBox_existing.currentText():
@@ -317,18 +332,6 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_existing.show()
             self.spinner_existing.setState(True)
             Message.info("卸载", "卸载中，请稍后", self)
-
-    def on_button_existing_update_clicked(self):
-        if os.path.exists(os.path.join(LIBS["pyenv"], "versions")):
-            if self.venvMangerTh.isRunning():
-                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
-                return
-
-            self.venvMangerTh.setCMD("versions")
-            self.venvMangerTh.start()
-            self.button_existing_update.setEnabled(False)
-            self.spinner_existing.setState(True)
-            self.spinner_existing.show()
 
     def receive_VMresult(self, cmd, result):
         print("receive_VMresult", cmd)
