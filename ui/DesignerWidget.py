@@ -33,10 +33,11 @@ from qfluentexpand.common.gif import FluentGif
 
 from .Ui_DesignerWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
+from .utils.config import write_config
 from .compoments.info import Message
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
-from manage import LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
+from manage import ROOT_PATH, SettingPath, SettingFile, LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
 
 
 class DesignerWidget(QWidget, Ui_Form):
@@ -125,6 +126,7 @@ class DesignerWidget(QWidget, Ui_Form):
         self.button_filepath.setText("选择")
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
+        self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
         layout = QHBoxLayout(self.widget_env)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
@@ -173,7 +175,6 @@ class DesignerWidget(QWidget, Ui_Form):
         self.designerSetCard.addWidget(widget_plugin)
 
 
-
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(self.verticalSpacer, 3, 0, 1, 1)
 
@@ -183,6 +184,8 @@ class DesignerWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["designer"]["mode"] in SETTINGS["designer"]["python_env_modes"]:
             self.comboBox_mode.setCurrentText(CURRENT_SETTINGS["designer"]["mode"])
 
+        if CURRENT_SETTINGS["designer"]["custom_python_path"]:
+            self.button_filepath.setText(CURRENT_SETTINGS["designer"]["custom_python_path"])
 
     def getPyPath(self):
         path = ""
@@ -256,6 +259,12 @@ class DesignerWidget(QWidget, Ui_Form):
             self.widget_env.show()
         else:
             pass
+        write_config()
+
+    def on_button_filepath_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["designer"]["custom_python_path"] = text
+            write_config()
 
     def on_button_designer_install_clicked(self):
         if self.venvMangerTh.isRunning():
