@@ -252,61 +252,36 @@ class DesignerWidget(QWidget, Ui_Form):
         Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候", self)
 
     def thirdplugin_install(self):
-        if self.venvMangerTh.isRunning():
-            Message.error("错误", "env忙碌中，请稍后重试", self)
-            return
-
-        path = self.getPyPath()
-        if not path:
-            Message.error("错误", "python解释器获取失败", self)
-            return
-
-        self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("thirdplugin_install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
-        self.venvMangerTh.start()
-
-        self.button_designer_thirdplugin.setEnabled(False)
-        self.spinner_designer_plugin_install.setState(True)
-        self.spinner_designer_plugin_install.show()
-        Message.info("提示", "安装中，请稍后", self)
+        if self.thirdplugin("thirdplugin_install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"]):
+            Message.info("提示", "安装中，请稍后", self)
 
     def thirdplugin_upgrade(self):
-        if self.venvMangerTh.isRunning():
-            Message.error("错误", "env忙碌中，请稍后重试", self)
-            return
-
-        path = self.getPyPath()
-        if not path:
-            Message.error("错误", "python解释器获取失败", self)
-            return
-
-        self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("thirdplugin_upgrade", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
-        self.venvMangerTh.start()
-
-        self.button_designer_thirdplugin.setEnabled(False)
-        self.spinner_designer_plugin_install.setState(True)
-        self.spinner_designer_plugin_install.show()
-        Message.info("提示", "更新中，请稍后", self)
+        if self.thirdplugin("thirdplugin_upgrade", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"]):
+            Message.info("提示", "更新中，请稍后", self)
 
     def thirdplugin_uninstall(self):
+        if self.thirdplugin("thirdplugin_uninstall", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"]):
+            Message.info("提示", "卸载中，请稍后", self)
+
+    def thirdplugin(self, cmd, args):
         if self.venvMangerTh.isRunning():
             Message.error("错误", "env忙碌中，请稍后重试", self)
-            return
+            return False
 
         path = self.getPyPath()
         if not path:
             Message.error("错误", "python解释器获取失败", self)
-            return
+            return False
 
         self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("thirdplugin_uninstall", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
+        self.venvMangerTh.setCMD(cmd, args)
         self.venvMangerTh.start()
 
         self.button_designer_thirdplugin.setEnabled(False)
         self.spinner_designer_plugin_install.setState(True)
         self.spinner_designer_plugin_install.show()
-        Message.info("提示", "卸载中，请稍后", self)
+
+        return True
 
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["designer"]["mode"] = text
