@@ -8,7 +8,8 @@ Module implementing SettingWidget.
 
 
 from PySide6.QtCore import Slot, Qt, QThread, Signal
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSpacerItem, QSizePolicy
+from PySide6.QtGui import QIcon, QFont
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel
 import os
 from copy import copy
 import logging
@@ -21,6 +22,7 @@ from qfluentwidgets import (
     RoundMenu, Action
 )
 from qfluentwidgets.common.icon import FluentIcon
+from qfluentwidgets.common.style_sheet import FluentStyleSheet, getStyleSheetFromFile
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
@@ -31,6 +33,7 @@ from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from common.pyenv import PyVenvManager
+from common.py import PyInterpreter, PyPath
 from manage import LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS
 
 
@@ -90,7 +93,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.widget_env = QWidget(self.envCard)
         label_env = BodyLabel("Python 环境", self.envCard)
-        label_ver = CaptionLabel("版本: ", self.envCard)
+        self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
@@ -99,25 +102,45 @@ class SettingWidget(QWidget, Ui_Form):
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
         layout.addStretch(1)
-        layout.addWidget(label_ver)
+        layout.addWidget(self.label_ver)
         layout.addStretch(1)
         layout.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
-        self.card_pyenv = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyenv 虚拟环境管理", "",
+        self.card_pyenv = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyenv 虚拟环境管理", "https://github.com/pyenv-win/pyenv-win",
                                           self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pyenv, 3, 0, 1, 1)
 
         self.widget_pyenv_path = QWidget(self.card_pyenv)
+        hBoxLayout = QHBoxLayout(self.widget_pyenv_path)
+        hBoxLayout.setContentsMargins(30, 0, 30, 0)
+        hBoxLayout.setSpacing(0)
+        hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+        vBoxLayout = QVBoxLayout(self.widget_pyenv_path)
+        vBoxLayout.setSpacing(0)
+        vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
         label_pyenv_path = BodyLabel("pyenv-win 根目录")
+        # label_content = QLabel('asdfas' or '', self)
+        # label_content.setFont(QFont("5px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC'"))
+        # contentLabel.setStyleSheet({"font": "11px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC'",
+        #                             "color": "rgb(96, 96, 96)",
+        #                             "padding": "0"
+        #                             })
+
+        hBoxLayout.addLayout(vBoxLayout)
+        vBoxLayout.addWidget(label_pyenv_path, 0, Qt.AlignmentFlag.AlignLeft)
+        # vBoxLayout.addWidget(label_content, 0, Qt.AlignmentFlag.AlignLeft)
+        hBoxLayout.addSpacing(16)
+        hBoxLayout.addStretch(1)
+
         self.button_pyenv_path = FolderPathSelector(self.envCard)
         self.button_pyenv_path.setFixedWidth(200)
         self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
-        layout = QHBoxLayout(self.widget_pyenv_path)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_pyenv_path)
-        layout.addStretch(1)
-        layout.addWidget(self.button_pyenv_path)
+        hBoxLayout.addWidget(self.button_pyenv_path)
+
         self.card_pyenv.addWidget(self.widget_pyenv_path)
 
         self.widget_pyenv_existing = QWidget(self.card_pyenv)
@@ -206,7 +229,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.card_pip.addWidget(self.widget_pip_mirror_url)
 
 
-
         self.infoCard = SettingGroupCard(FluentIcon.SPEED_OFF, "帮助", "",
                                          self.scrollAreaWidgetContents)
 
@@ -214,6 +236,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(self.verticalSpacer)
+
 
         self.configure()
 
@@ -228,6 +251,8 @@ class SettingWidget(QWidget, Ui_Form):
 
         if CURRENT_SETTINGS["settings"]["pyenv_path"]:
             self.button_pyenv_path.setText(CURRENT_SETTINGS["settings"]["pyenv_path"])
+        else:
+            self.button_pyenv_path.setText(LIBS["pyenv"])
 
         if CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
             self.comboBox_existing.setText(CURRENT_SETTINGS["settings"]["pyenv_current_version"])
@@ -308,7 +333,12 @@ class SettingWidget(QWidget, Ui_Form):
 
     def on_button_filepath_textChanged(self, text):
         if text:
-            CURRENT_SETTINGS["settings"]["custom_python_path"] = text
+            self.venvMangerTh.setPyInterpreter(text)
+            self.venvMangerTh.setCMD("py_version")
+            self.venvMangerTh.start()
+        else:
+            self.label_ver.setText("版本: ")
+            CURRENT_SETTINGS["settings"]["custom_python_path"] = ""
             write_config()
 
     def on_button_pyenv_path_textChanged(self, text):
@@ -353,7 +383,11 @@ class SettingWidget(QWidget, Ui_Form):
 
     def receive_VMresult(self, cmd, result):
         print("receive_VMresult", cmd)
-        if cmd == "list":
+        if cmd == "py_version":
+            self.label_ver.setText("版本: " + result[1])
+            CURRENT_SETTINGS["settings"]["custom_python_path"] = self.button_filepath.text()
+            write_config()
+        elif cmd == "list":
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
@@ -387,6 +421,7 @@ class SettingWidget(QWidget, Ui_Form):
                 return
 
             Message.info("成功", "安装成功", self)
+            self.existing_update()
         elif cmd == "uninstall":
             self.button_existing_uninstall.setEnabled(True)
             self.spinner_existing.setState(False)
@@ -425,6 +460,7 @@ class VenvManagerThread(QThread):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.venvManger = PyVenvManager(LIBS["pyenv"])
+        self.pyI = PyInterpreter()
         self.stop = False
 
     def stop(self):
@@ -435,8 +471,14 @@ class VenvManagerThread(QThread):
         self.args = args
         self.kwargs = kwargs
 
+    def setPyInterpreter(self, path):
+        self.pyI.setInterpreter(path)
+
     def run(self):
-        if self.cmd == "init":
+        if self.cmd == "py_version":
+            result = self.pyI.version()
+            self.signal_result.emit(self.cmd, result)
+        elif self.cmd == "init":
             result = self.venvManger.list()
             self.signal_result.emit("list", result)
             result = self.venvManger.versions()

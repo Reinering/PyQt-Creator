@@ -121,7 +121,7 @@ class DesignerWidget(QWidget, Ui_Form):
 
         self.widget_env = QWidget(self.envCard)
         label_env = BodyLabel("Python 环境", self.envCard)
-        label_ver = CaptionLabel("版本: ", self.envCard)
+        self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
@@ -130,7 +130,7 @@ class DesignerWidget(QWidget, Ui_Form):
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
         layout.addStretch(1)
-        layout.addWidget(label_ver)
+        layout.addWidget(self.label_ver)
         layout.addStretch(1)
         layout.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
@@ -298,7 +298,12 @@ class DesignerWidget(QWidget, Ui_Form):
 
     def on_button_filepath_textChanged(self, text):
         if text:
-            CURRENT_SETTINGS["designer"]["custom_python_path"] = text
+            self.venvMangerTh.setPyInterpreter(text)
+            self.venvMangerTh.setCMD("py_version")
+            self.venvMangerTh.start()
+        else:
+            self.label_ver.setText("版本: ")
+            CURRENT_SETTINGS["designer"]["custom_python_path"] = ""
             write_config()
 
     def on_button_designer_install_clicked(self):
@@ -320,28 +325,13 @@ class DesignerWidget(QWidget, Ui_Form):
         self.spinner_designer_install.show()
         Message.info("安装", "安装中，请稍后", self)
 
-    def on_button_designer_plugin_install_clicked(self):
-        if self.venvMangerTh.isRunning():
-            Message.error("错误", "env忙碌中，请稍后重试", self)
-            return
-
-        path = self.getPyPath()
-        if not path:
-            Message.error("错误", "python解释器获取失败", self)
-            return
-
-        self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("plugin")
-        self.venvMangerTh.start()
-
-        self.button_designer_plugin_install.setEnabled(False)
-        self.spinner_designer_plugin_install.setState(True)
-        self.spinner_designer_plugin_install.show()
-        Message.info("安装", "安装中，请稍后", self)
-
     def receive_VMresult(self, cmd, result):
         if cmd == "init":
             pass
+        elif "py_version" in cmd:
+            self.label_ver.setText("版本: " + result[1])
+            CURRENT_SETTINGS["designer"]["custom_python_path"] = self.button_filepath.text()
+            write_config()
         elif cmd == "install":
             self.button_designer_install.setEnabled(True)
             self.spinner_designer_install.setState(False)
@@ -370,6 +360,7 @@ class DesignerWidget(QWidget, Ui_Form):
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
+
             if "install" in cmd:
                 Message.info("成功", "安装成功", self)
             elif "upgrade" in cmd:
@@ -407,6 +398,9 @@ class VenvManagerThread(QThread):
             pass
         elif self.cmd == "environ":
             self.pyI.setEnviron(**self.kwargs)
+        elif self.cmd == "py_version":
+            result = self.pyI.version()
+            self.signal_result.emit(self.cmd, result)
         elif self.cmd == "install":
             result = self.pyI.pip(self.cmd, *self.args)
             self.signal_result.emit(self.cmd, result)
@@ -432,7 +426,7 @@ class VenvManagerThread(QThread):
             result = self.pyI.pip("uninstall", "-y", "qfluentexpand")
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "designer":
-            result = self.pyI.popen(self.args[0])
+            result = self.pyI.cmd(self.args[0])
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "designer_plugin":
             result = self.pyI.py_popen(self.args)

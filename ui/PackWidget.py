@@ -11,7 +11,9 @@ from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
 import os
+import datetime
 import simplejson as json
+from pathlib import Path
 
 from qfluentwidgets import (
     ExpandGroupSettingCard,
@@ -132,7 +134,7 @@ class PackWidget(QWidget, Ui_Form):
 
         self.widget_env = QWidget(self.envCard)
         label_env = BodyLabel("Python 环境", self.envCard)
-        label_ver = CaptionLabel("版本: ", self.envCard)
+        self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
@@ -141,7 +143,7 @@ class PackWidget(QWidget, Ui_Form):
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_env)
         layout.addStretch(1)
-        layout.addWidget(label_ver)
+        layout.addWidget(self.label_ver)
         layout.addStretch(1)
         layout.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
@@ -320,13 +322,30 @@ class PackWidget(QWidget, Ui_Form):
             for key in data.keys():
                 PyinstallerPackage.PYINSTALLER_PARAMS[key] = data[key]
 
+
+
         file = self.button_filepath_main.text()
         (filepath, filename) = os.path.split(file)
-        PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = filepath
+        (name, suffix) = os.path.splitext(filename)
+        if self.button_filepath_out.text():
+            PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = self.button_filepath_out.text()
+        else:
+            PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = filepath
+        now = datetime.datetime.now().strftime("%Y%m%d%H%M")
+        PyinstallerPackage.PYINSTALLER_PARAMS["outName"] = name
+
+        tmp = PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"]
+        if not Path(tmp).is_absolute():
+            PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"] = os.path.join(filepath, tmp)
+
         cmd = PyPath.PYINSTALLER.path(path) + ' ' + PyinstallerPackage().getCMD() + " " + file
 
+        PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"] = tmp
+
+        cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + ".exe") + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_" + now + ".exe")
+
         self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("pack_pyinstaller", cmd)
+        self.venvMangerTh.setCMD("pack_pyinstaller", cmd, cmd1)
         self.venvMangerTh.start()
 
         self.button_open.setEnabled(False)
@@ -456,7 +475,12 @@ class PackWidget(QWidget, Ui_Form):
 
     def on_button_filepath_textChanged(self, text):
         if text:
-            CURRENT_SETTINGS["pack"]["custom_python_path"] = text
+            self.venvMangerTh.setPyInterpreter(text)
+            self.venvMangerTh.setCMD("py_version")
+            self.venvMangerTh.start()
+        else:
+            self.label_ver.setText("版本: ")
+            CURRENT_SETTINGS["pack"]["custom_python_path"] = ""
             write_config()
 
     def on_button_filepath_main_textChanged(self, text):
@@ -484,6 +508,10 @@ class PackWidget(QWidget, Ui_Form):
     def receive_VMresult(self, cmd, result):
         if cmd == "init":
             pass
+        elif cmd == "py_version":
+            self.label_ver.setText("版本: " + result[1])
+            CURRENT_SETTINGS["pack"]["custom_python_path"] = self.button_filepath.text()
+            write_config()
         elif cmd == "pyinstaller_install":
             self.button_pyinstaller.setEnabled(True)
             self.spinner_pyinstaller.setState(False)
@@ -584,6 +612,9 @@ class VenvManagerThread(QThread):
             pass
         elif self.cmd == "environ":
             self.pyI.setEnviron(**self.kwargs)
+        elif self.cmd == "py_version":
+            result = self.pyI.version()
+            self.signal_result.emit(self.cmd, result)
         elif self.cmd == "pyinstaller_install":
             result = self.pyI.pip("install", *self.args)
             self.signal_result.emit(self.cmd, result)
@@ -603,7 +634,12 @@ class VenvManagerThread(QThread):
             result = self.pyI.pip("uninstall", '-y', *self.args)
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "pack_pyinstaller":
-            result = self.pyI.popen(self.args[0])
+            result = self.pyI.cmd(self.args[0])
+            if result[0]:
+                result = self.pyI.cmd(self.args[1])
+            else:
+                self.signal_result.emit(self.cmd, result)
+                return
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "pack_nuitka":
             result = self.pyI.pip(*self.args)

@@ -66,9 +66,12 @@ class PyPath(Enum):
     # pipreqs
     PIPREQS = os.path.join(SCRIPTS, "pipreqs.exe")
 
-    def path(self, interpreterPath):
-        (interpreterFolder, name) = os.path.split(interpreterPath)
-        return os.path.join(interpreterFolder, self.value)
+    def path(self, interpreterPath=None):
+        if interpreterPath:
+            (interpreterFolder, name) = os.path.split(interpreterPath)
+            return os.path.join(interpreterFolder, self.value)
+        else:
+            return self.value
 
 
 class PyInterpreter:
@@ -83,8 +86,9 @@ class PyInterpreter:
 
     def cmd(self, cmd):
         print(f"cmd: {cmd}")
+        logging.debug(f"cmd: {cmd}")
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
         if result.returncode == 0:
             print(f"{result.stdout}")
             logging.debug(f"{result.stdout}")
@@ -119,7 +123,9 @@ class PyInterpreter:
     def py_popen(self, cmd):
         command = list(cmd)
         command.insert(0, self.interpreterPath)
-        return self.popen(command)
+        return self.cmd(command)
 
+    def version(self):
+        return self.cmd([self.interpreterPath, '--version'])
 
 
