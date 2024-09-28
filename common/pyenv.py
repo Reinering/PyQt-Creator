@@ -28,7 +28,7 @@ class PyVenvManager():
         print(f"cmd: {cmd}")
         logging.debug(f"cmd: {cmd}")
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
         if result.returncode == 0:
             logging.debug(f"{result.stdout}")
             return (True, f"{result.stdout}")

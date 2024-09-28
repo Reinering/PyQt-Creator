@@ -83,13 +83,13 @@ class PyinstallerPackage():
 
 
         self.packageArgs = {
-            'console': True,  # [True, False] -w 关闭， -c(默认) 开启 开启或关闭显示控制台 (只对Windows有效)
+            'console': False,  # [True, False] -w 关闭， -c(默认) 开启 开启或关闭显示控制台 (只对Windows有效)
             'debug': False,  # [True, False] -d [{all,imports,bootloader,noarchive} 产生debug版本的可执行文件
             'specPath': '',
             # --specpath 指定spec文件的生成目录,如果没有指定,而且当前目录是PyInstaller的根目录,会自动创建一个用于输出(spec和生成的可执行文件)的目录.如果没有指定,而当前目录不是PyInstaller的根目录,则会输出到当前的目录下.
             'importPath': '',
             # -p, -–path=DIR 设置导入路径(和使用PYTHONPATH效果相似).可以用路径分割符(Windows使用分号,Linux使用冒号)分割,指定多个目录.也可以使用多个-p参数来设置多个导入路径
-            'excludeModule': '',  # –exclude-module 需要排除的module
+            'excludeModule': [],  # –exclude-module 需要排除的module
             'hiddenImport': [],  # –hidden-import 打包额外py库
             'iconPath': '',
             # -i 指定程序图标 –icon=<FILE.ICO> 将file.ico添加为可执行文件的资源 –icon=<FILE.EXE,N> 将file.exe的第n个图标添加为可执行文件的资源  (只对Windows系统有效)
@@ -115,6 +115,8 @@ class PyinstallerPackage():
         }
 
     def getCMD(self):
+        now = datetime.datetime.now().strftime("%Y%m%d%H%M")
+
         cmd = ''
 
         if not self.PYINSTALLER_PARAMS['console']:
@@ -130,7 +132,7 @@ class PyinstallerPackage():
             cmd = cmd + ' -p ' + self.PYINSTALLER_PARAMS['importPath']
 
         if self.PYINSTALLER_PARAMS['excludeModule']:
-            cmd = cmd + ' –exclude-module ' + self.PYINSTALLER_PARAMS['excludeModule']
+            cmd = cmd + ' –exclude-module ' + ' '.join(self.PYINSTALLER_PARAMS['excludeModule'])
 
         if self.PYINSTALLER_PARAMS['hiddenImport']:
             for tmp in self.PYINSTALLER_PARAMS['hiddenImport']:
@@ -192,115 +194,3 @@ class PyinstallerPackage():
             pass
 
         return cmd
-
-    def getCMD1(self):
-
-        cmd = ''
-
-        if not self.packageArgs['console'] or self.typeNum == 4:
-            cmd = cmd + ' -w'
-
-        if self.packageArgs['debug']:
-            cmd = cmd + ' -d'
-
-        if self.packageArgs['specPath']:
-            cmd = cmd + ' --specpath ' + self.packageArgs['specPath']
-
-        if self.packageArgs['importPath']:
-            cmd = cmd + ' -p ' + self.packageArgs['importPath']
-
-        if self.packageArgs['excludeModule']:
-            cmd = cmd + ' –exclude-module ' + self.packageArgs['excludeModule']
-
-        if self.packageArgs['hiddenImport']:
-            for tmp in self.packageArgs['hiddenImport']:
-                cmd = cmd + ' --hiddenimport ' + tmp
-
-        if self.packageArgs['iconPath']:
-            cmd = cmd + ' -i ' + self.packageArgs['iconPath']
-
-        if self.packageArgs['workpath']:
-            cmd = cmd + ' --workpath ' + self.packageArgs['workpath']
-
-        if self.packageArgs['logLevel'] != 'INFO':
-            cmd = cmd + ' --log-level ' + self.packageArgs['logLevel']
-
-        if self.packageArgs['outType'] == 'FILE':
-            cmd = cmd + ' -F'
-
-        if self.packageArgs['outName']:
-            cmd = cmd + ' -n ' + self.packageArgs['outName']
-
-        if self.packageArgs['distpath']:
-            cmd = cmd + ' --distpath ' + self.packageArgs['distpath']
-        else:
-            cmd = cmd + ' --distpath ' + self.cacheOutPath
-            self.packageArgs['distpath'] = self.cacheOutPath
-
-        if self.packageArgs['addData']:
-            for tmp in self.packageArgs['addData']:
-                cmd = cmd + ' --add-data ' + tmp
-
-        if self.packageArgs['addBinary']:
-            pass
-
-        if self.packageArgs['isClean']:
-            cmd = cmd + ' --clean'
-
-        if self.packageArgs['encode']:
-            cmd = cmd + ' -a'
-
-        if self.packageArgs['isCover']:
-            cmd = cmd + ' -y'
-
-        if self.packageArgs['upxDir']:
-            cmd = cmd + ' --upx-dir ' + self.packageArgs['upxDir']
-
-        if self.packageArgs['versionFile']:
-            cmd = cmd + ' --version-file ' + self.packageArgs['versionFile']
-
-        if self.packageArgs['manifest']:
-            cmd = cmd + ' -m ' + self.packageArgs['manifest']
-
-        if self.packageArgs['additionalHooksDir']:
-            pass
-
-        if self.packageArgs['runtimeHook']:
-            pass
-
-        if self.packageArgs['runtimeTmpdir']:
-            pass
-
-        return cmd
-
-    def run(self):
-        cmd = self.getCMD()
-
-        cmd = cmd + ' ' + self.mainFile
-        cmd = 'cd /d ' + self.projectFolder + ' && ' + cmd
-        print(cmd)
-
-        subprocess.run(cmd, shell=True)
-
-        if self.packageArgs['outName']:
-            if self.typeNum == 4:
-                tmp = 'cd /d ' + self.projectFolder + ' && ' + 'move ' + self.packageArgs['distpath'] + '\\' +self.packageArgs['outName'] + '.exe'\
-                      + ' ' + self.packageArgs['distpath'] + '\\"' + self.packageArgs['outName'] + '_' + self.computer_digits + '_' + self.now + '.exe"'
-            else:
-                tmp = 'cd /d ' + self.projectFolder + ' && ' + 'move ' + self.packageArgs['distpath'] + '\\' + self.packageArgs['outName'] + '.exe' \
-                      + ' ' + self.packageArgs['distpath'] + '\\"' + self.packageArgs['outName'] + '_' + Type[self.typeNum] + self.computer_digits + '_' + self.now + '.exe"'
-        else:
-            if self.typeNum == 4:
-                tmp = 'cd /d ' + self.projectFolder + ' && ' + 'move ' + self.packageArgs['distpath'] + '\\' + self.mainFile.replace('.py', '.exe') \
-                      + ' ' + self.packageArgs['distpath'] + '\\"' + self.mainFile.replace('.py', '') + '_' + self.computer_digits + '_' + self.now + '.exe"'
-            else:
-                tmp = 'cd /d ' + self.projectFolder + ' && ' + 'move ' + self.packageArgs['distpath'] + '\\' + self.mainFile.replace('.py', '.exe') \
-                      + ' ' + self.packageArgs['distpath'] + '\\"' + self.mainFile.replace('.py', '') + '_' + Type[self.typeNum] + self.computer_digits + '_' + self.now + '.exe"'
-
-        subprocess.run(tmp, shell=True)
-
-        if self.packageArgs['isClean']:
-            if self.packageArgs['outName']:
-                subprocess.run('cd /d ' + self.projectFolder + ' && ' + "RD /Q /S " + "build\\" + self.packageArgs['outName'], shell=True)
-            else:
-                subprocess.run('cd /d ' + self.projectFolder + ' && ' + "RD /Q /S " + "build\\" + self.mainFile.replace('.py', ''), shell=True)
