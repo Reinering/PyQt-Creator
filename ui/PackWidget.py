@@ -316,8 +316,13 @@ class PackWidget(QWidget, Ui_Form):
             Message.error("错误", "python解释器获取失败", self)
             return
 
+
         with open(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json"), "r") as f:
-            data = json.load(f)
+            try:
+                data = json.load(f)
+            except:
+                Message.error("错误", "配置文件格式错误", self)
+                return
             PyinstallerPackage.PYINSTALLER_PARAMS.clear()
             for key in data.keys():
                 PyinstallerPackage.PYINSTALLER_PARAMS[key] = data[key]
@@ -373,7 +378,11 @@ class PackWidget(QWidget, Ui_Form):
             return
 
         with open(os.path.join(ROOT_PATH, SettingPath, "nuitka.json"), "r") as f:
-            data = json.load(f)
+            try:
+                data = json.load(f)
+            except:
+                Message.error("错误", "配置文件格式错误", self)
+                return
             NuitkaPackage.NUITKA_PARAMS.clear()
             for key in data.keys():
                 NuitkaPackage.NUITKA_PARAMS[key] = data[key]
