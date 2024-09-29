@@ -643,46 +643,47 @@ class VenvManagerThread(QThread):
         self.pyI.setInterpreter(path)
 
     def run(self):
-        if self.cmd == "init":
+        cmd = self.cmd
+        if cmd == "init":
             pass
-        elif self.cmd == "environ":
+        elif cmd == "environ":
             self.pyI.setEnviron(**self.kwargs)
-        elif self.cmd == "py_version":
+        elif cmd == "py_version":
             result = self.pyI.version()
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "pyinstaller_install":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "pyinstaller_install":
             result = self.pyI.pip("install", *self.args)
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "pyinstaller_upgrade":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "pyinstaller_upgrade":
             result = self.pyI.pip("install", "--upgrade", *self.args)
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "pyinstaller_uninstall":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "pyinstaller_uninstall":
             result = self.pyI.pip("uninstall", '-y', *self.args)
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "nuitka_install":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "nuitka_install":
             result = self.pyI.pip("install", *self.args)
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "nuitka_upgrade":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "nuitka_upgrade":
             result = self.pyI.pip("install", "--upgrade", *self.args)
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "nuitka_uninstall":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "nuitka_uninstall":
             result = self.pyI.pip("uninstall", '-y', *self.args)
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "pack_pyinstaller":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "pack_pyinstaller":
             result = self.pyI.cmd(self.args[0])
             if result[0]:
                 result = self.pyI.cmd(self.args[1])
             else:
-                self.signal_result.emit(self.cmd, result)
+                self.signal_result.emit(cmd, result)
                 return
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "pack_nuitka":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "pack_nuitka":
             result = self.pyI.cmd(self.args[0])
             if result[0]:
                 result = self.pyI.cmd(self.args[1])
             else:
-                self.signal_result.emit(self.cmd, result)
+                self.signal_result.emit(cmd, result)
                 return
-            self.signal_result.emit(self.cmd, result)
+            self.signal_result.emit(cmd, result)
         else:
-            self.signal_result.emit(self.cmd, ["False", "未知命令"])
+            self.signal_result.emit(cmd, ["False", "未知命令"])
