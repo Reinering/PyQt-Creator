@@ -110,16 +110,16 @@ SETTINGS = {
 
     },
     "designer": {
-        "python_env_modes": ["跟随项目", "跟随全局", "独立模式"],
+        "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],
     },
     "pack": {
-        "python_env_modes": ["跟随项目", "跟随全局", "独立模式"],       # ['project', 'global', 'standalone']
+        "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],       # ['project', 'global', 'standalone']
         "pyinstaller": {},
         "nuitka": {},
 
     },
     "other": {
-        "python_env_modes": ["跟随项目", "跟随全局", "独立模式"],
+        "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],
     },
     "settings": {
         "theme": ['Light', 'Dark'],
