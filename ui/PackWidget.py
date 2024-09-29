@@ -14,6 +14,7 @@ import os
 import datetime
 import simplejson as json
 from pathlib import Path
+import logging
 
 from qfluentwidgets import (
     ExpandGroupSettingCard,
@@ -327,8 +328,6 @@ class PackWidget(QWidget, Ui_Form):
             for key in data.keys():
                 PyinstallerPackage.PYINSTALLER_PARAMS[key] = data[key]
 
-
-
         file = self.button_filepath_main.text()
         (filepath, filename) = os.path.split(file)
         (name, suffix) = os.path.splitext(filename)
@@ -387,15 +386,35 @@ class PackWidget(QWidget, Ui_Form):
             for key in data.keys():
                 NuitkaPackage.NUITKA_PARAMS[key] = data[key]
 
+        now = datetime.datetime.now().strftime("%Y%m%d%H%M")
         file = self.button_filepath_main.text()
         (filepath, filename) = os.path.split(file)
-        PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = filepath
+        (name, suffix) = os.path.splitext(filename)
 
-        cmd = ''
+        # if not NuitkaPackage.NUITKA_PARAMS["main"]:
+        #     NuitkaPackage.NUITKA_PARAMS["main"] = file
 
+        if self.button_filepath_out.text():
+            NuitkaPackage.NUITKA_PARAMS["output-dir"] = self.button_filepath_out.text()
+        else:
+            NuitkaPackage.NUITKA_PARAMS["output-dir"] = filepath
+
+        tmp = False
+        if not NuitkaPackage.NUITKA_PARAMS["output-filename"]:
+            NuitkaPackage.NUITKA_PARAMS["output-filename"] = name
+            tmp = True
+
+        cmd = path + " -m nuitka " + NuitkaPackage().getCMD() + ' ' + file
+
+        cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
+                                      NuitkaPackage.NUITKA_PARAMS["output-filename"] + ".exe") + " " + os.path.join(
+            NuitkaPackage.NUITKA_PARAMS["output-dir"],  NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_" + now + ".exe")
+
+        if tmp:
+            NuitkaPackage.NUITKA_PARAMS["output-filename"] = ''
 
         self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("pack_pyinstaller", cmd)
+        self.venvMangerTh.setCMD("pack_nuitka", cmd, cmd1)
         self.venvMangerTh.start()
 
         self.button_open.setEnabled(False)
@@ -515,6 +534,7 @@ class PackWidget(QWidget, Ui_Form):
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "nuitka.json")}')
 
     def receive_VMresult(self, cmd, result):
+        logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "init":
             pass
         elif cmd == "py_version":
@@ -651,7 +671,12 @@ class VenvManagerThread(QThread):
                 return
             self.signal_result.emit(self.cmd, result)
         elif self.cmd == "pack_nuitka":
-            result = self.pyI.pip(*self.args)
+            result = self.pyI.cmd(self.args[0])
+            if result[0]:
+                result = self.pyI.cmd(self.args[1])
+            else:
+                self.signal_result.emit(self.cmd, result)
+                return
             self.signal_result.emit(self.cmd, result)
         else:
             self.signal_result.emit(self.cmd, ["False", "未知命令"])
