@@ -383,7 +383,6 @@ class SettingWidget(QWidget, Ui_Form):
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "py_version":
-
             if not result[0]:
                 Message.error("解释器错误", result[1], self)
                 return
@@ -478,34 +477,35 @@ class VenvManagerThread(QThread):
         self.pyI.setInterpreter(path)
 
     def run(self):
-        if self.cmd == "py_version":
+        cmd = self.cmd
+        if cmd == "py_version":
             result = self.pyI.version()
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "init":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "init":
             result = self.venvManger.list()
             self.signal_result.emit("list", result)
             result = self.venvManger.versions()
             self.signal_result.emit("versions", result)
-        elif self.cmd == "list":
+        elif cmd == "list":
             result = self.venvManger.list()
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "update":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "update":
             result = self.venvManger.update()
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "install":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "install":
             result = self.venvManger.install(self.args[0])
-            self.signal_result.emit(self.cmd, result)
+            self.signal_result.emit(cmd, result)
             self.venvManger.rehash()
-        elif self.cmd == "uninstall":
+        elif cmd == "uninstall":
             result = self.venvManger.uninstall(self.args[0])
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "environ":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "environ":
             self.venvManger.setEnviron(**self.kwargs)
-        elif self.cmd == "versions":
+        elif cmd == "versions":
             result = self.venvManger.versions()
-            self.signal_result.emit(self.cmd, result)
+            self.signal_result.emit(cmd, result)
         else:
-            self.signal_result.emit(self.cmd, ["False", "未知命令"])
+            self.signal_result.emit(cmd, ["False", "未知命令"])
 
 
 

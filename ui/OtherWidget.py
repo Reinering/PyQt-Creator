@@ -422,22 +422,23 @@ class VenvManagerThread(QThread):
         self.pyI.setInterpreter(path)
 
     def run(self):
-        if self.cmd == "init":
+        cmd = self.cmd
+        if cmd == "init":
             pass
-        elif self.cmd == "py_version":
+        elif cmd == "py_version":
             result = self.pyI.version()
-            self.signal_result.emit(self.cmd, result)
-        elif "pipreqs" in self.cmd:
-            if "uninstall" in self.cmd:
+            self.signal_result.emit(cmd, result)
+        elif "pipreqs" in cmd:
+            if "uninstall" in cmd:
                 result = self.pyI.pip("uninstall", '-y', *self.args)
-            elif "install" in self.cmd:
+            elif "install" in cmd:
                 result = self.pyI.pip("install", *self.args)
-            elif "upgrade" in self.cmd:
+            elif "upgrade" in cmd:
                 result = self.pyI.pip("install", "--upgrade", *self.args)
 
-            self.signal_result.emit(self.cmd, result)
-        elif "generate" in self.cmd:
+            self.signal_result.emit(cmd, result)
+        elif "generate" in cmd:
             result = self.pyI.cmd(self.args[0])
-            self.signal_result.emit(self.cmd, result)
+            self.signal_result.emit(cmd, result)
         else:
-            self.signal_result.emit(self.cmd, ["False", "未知命令"])
+            self.signal_result.emit(cmd, ["False", "未知命令"])
