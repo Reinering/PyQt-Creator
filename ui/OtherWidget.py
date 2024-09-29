@@ -123,17 +123,17 @@ class OtherWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
-        widget_env = QWidget(self.envCard)
+        self.widget_env_project = QWidget(self.envCard)
         envLabel = BodyLabel("项目目录")
         self.button_env_folder = FolderPathSelector(self.envCard)
         self.button_env_folder.setMaximumWidth(300)
         self.button_env_folder.setFixedWidth(200)
-        layout = QHBoxLayout(widget_env)
+        layout = QHBoxLayout(self.widget_env_project)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(envLabel)
         layout.addStretch(1)
         layout.addWidget(self.button_env_folder)
-        self.envCard.addWidget(widget_env)
+        self.envCard.addWidget(self.widget_env_project)
 
         self.card_requirements = SettingGroupCard(FluentIcon.SPEED_OFF, "pipreqs 设置", "",
                                         self.scrollAreaWidgetContents)
@@ -328,10 +328,13 @@ class OtherWidget(QWidget, Ui_Form):
 
         if text == "跟随项目":
             self.widget_env.hide()
+            self.widget_env_project.hide()
         elif text == "跟随全局":
             self.widget_env.hide()
+            self.widget_env_project.show()
         elif text == "独立模式":
             self.widget_env.show()
+            self.widget_env_project.show()
         else:
             pass
 
