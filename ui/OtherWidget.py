@@ -9,6 +9,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
 import os
 import simplejson as json
+import logging
 
 from qfluentwidgets import (
     ExpandGroupSettingCard,
@@ -107,8 +108,8 @@ class OtherWidget(QWidget, Ui_Form):
         self.envCard.addWidget(widget_mode)
 
         self.widget_env = QWidget(self.envCard)
-        label_env = BodyLabel("Python 环境", self.envCard)
-        label_ver = CaptionLabel("版本: ", self.envCard)
+        self.label_env = BodyLabel("Python 环境", self.envCard)
+        self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setText("选择")
         self.button_filepath.setFileTypes("python.exe")
@@ -116,9 +117,9 @@ class OtherWidget(QWidget, Ui_Form):
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
         layout = QHBoxLayout(self.widget_env)
         layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_env)
+        layout.addWidget(self.label_env)
         layout.addStretch(1)
-        layout.addWidget(label_ver)
+        layout.addWidget(self.label_ver)
         layout.addStretch(1)
         layout.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
@@ -341,8 +342,13 @@ class OtherWidget(QWidget, Ui_Form):
         write_config()
 
     def on_button_filepath_textChanged(self, text):
-        if text:
-            CURRENT_SETTINGS["other"]["custom_python_path"] = text
+        if text and "python.exe" in text:
+            self.venvMangerTh.setPyInterpreter(text)
+            self.venvMangerTh.setCMD("py_version")
+            self.venvMangerTh.start()
+        else:
+            self.label_ver.setText("版本: ")
+            CURRENT_SETTINGS["other"]["custom_python_path"] = ""
             write_config()
 
     def on_button_pipreqs_edit_clicked(self):
@@ -353,8 +359,16 @@ class OtherWidget(QWidget, Ui_Form):
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")}')
 
     def receive_VMresult(self,  cmd, result):
+        logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "init":
             pass
+        elif "py_version" in cmd:
+            if not result[0]:
+                Message.error("解释器错误", result[1], self)
+                return
+            self.label_ver.setText("版本: " + result[1])
+            CURRENT_SETTINGS["other"]["custom_python_path"] = self.button_filepath.text()
+            write_config()
         elif "pipreqs" in cmd:
             self.button_pipreqs.setEnabled(True)
             self.spinner_pipreqs.setState(False)
@@ -410,7 +424,10 @@ class VenvManagerThread(QThread):
     def run(self):
         if self.cmd == "init":
             pass
-        if "pipreqs" in self.cmd:
+        elif self.cmd == "py_version":
+            result = self.pyI.version()
+            self.signal_result.emit(self.cmd, result)
+        elif "pipreqs" in self.cmd:
             if "uninstall" in self.cmd:
                 result = self.pyI.pip("uninstall", '-y', *self.args)
             elif "install" in self.cmd:
