@@ -240,7 +240,6 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.configure()
 
-
     def configure(self):
 
         if CURRENT_SETTINGS["settings"]["mode"] in SETTINGS["settings"]["python_env_modes"]:
@@ -332,7 +331,7 @@ class SettingWidget(QWidget, Ui_Form):
         write_config()
 
     def on_button_filepath_textChanged(self, text):
-        if text:
+        if text and "python.exe" in text:
             self.venvMangerTh.setPyInterpreter(text)
             self.venvMangerTh.setCMD("py_version")
             self.venvMangerTh.start()
@@ -382,10 +381,13 @@ class SettingWidget(QWidget, Ui_Form):
             Message.info("卸载", "卸载中，请稍后", self)
 
     def receive_VMresult(self, cmd, result):
-        print("receive_VMresult", cmd)
+        logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "py_version":
+            if not result[0]:
+                Message.error("解释器错误", result[1], self)
+                return
             self.label_ver.setText("版本: " + result[1])
-            CURRENT_SETTINGS["settings"]["custom_python_path"] = self.button_filepath.text()
+            CURRENT_SETTINGS["other"]["custom_python_path"] = self.button_filepath.text()
             write_config()
         elif cmd == "list":
             if not result[0]:
