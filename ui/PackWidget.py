@@ -544,7 +544,7 @@ class PackWidget(QWidget, Ui_Form):
             if not result[0]:
                 Message.error("解释器错误", result[1], self)
                 return
-            self.label_ver.setText("版本: " + result[1])
+            self.label_ver.setText("版本: " + result[1].strip('\n'))
             CURRENT_SETTINGS["pack"]["custom_python_path"] = self.button_filepath.text()
             write_config()
         elif cmd == "pyinstaller_install":

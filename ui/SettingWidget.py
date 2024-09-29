@@ -383,11 +383,12 @@ class SettingWidget(QWidget, Ui_Form):
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "py_version":
+
             if not result[0]:
                 Message.error("解释器错误", result[1], self)
                 return
-            self.label_ver.setText("版本: " + result[1])
-            CURRENT_SETTINGS["other"]["custom_python_path"] = self.button_filepath.text()
+            self.label_ver.setText("版本: " + result[1].strip('\n'))
+            CURRENT_SETTINGS["settings"]["custom_python_path"] = self.button_filepath.text()
             write_config()
         elif cmd == "list":
             if not result[0]:
