@@ -408,7 +408,7 @@ class VenvManagerThread(QThread):
         super().__init__(parent)
         # self.venvManger = PyVenvManager(LIBS["pyenv"])
         self.pyI = PyInterpreter()
-        self.stop = False
+        self.stopBool = False
 
     def stop(self):
         self.stop = True
