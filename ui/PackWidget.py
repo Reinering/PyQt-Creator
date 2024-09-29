@@ -492,10 +492,13 @@ class PackWidget(QWidget, Ui_Form):
 
         if text == "跟随项目":
             self.widget_env.hide()
+            self.widget_env_main.hide()
         elif text == "跟随全局":
             self.widget_env.hide()
+            self.widget_env_main.show()
         elif text == "独立模式":
             self.widget_env.show()
+            self.widget_env_main.show()
         else:
             pass
 
