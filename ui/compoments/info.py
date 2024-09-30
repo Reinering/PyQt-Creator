@@ -40,7 +40,7 @@ class Message():
         )
 
     @staticmethod
-    def error(title, content, parent, isClosable=True, duration=10000, position=InfoBarPosition.BOTTOM):
+    def error(title, content, parent, isClosable=True, duration=30000, position=InfoBarPosition.BOTTOM):
         InfoBar.error(
             title=title,
             content=content,
