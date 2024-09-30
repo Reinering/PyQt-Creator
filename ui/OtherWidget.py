@@ -37,6 +37,8 @@ from common.pipreqs import Pipreqs
 
 from manage import ROOT_PATH, SettingPath, LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
 
+
+
 class OtherWidget(QWidget, Ui_Form):
     """
     Class documentation goes here.
@@ -411,7 +413,12 @@ class VenvManagerThread(QThread):
         self.stopBool = False
 
     def stop(self):
-        self.stop = True
+        try:
+            self.stopBool = True
+            self.pyI.stop()
+            self.terminate()
+        except Exception as e:
+            print(e)
 
     def setCMD(self, cmd, *args, **kwargs):
         self.cmd = cmd
@@ -419,6 +426,7 @@ class VenvManagerThread(QThread):
         self.kwargs = kwargs
 
     def setPyInterpreter(self, path):
+        self.interpreter = path
         self.pyI.setInterpreter(path)
 
     def run(self):
@@ -439,6 +447,9 @@ class VenvManagerThread(QThread):
             self.signal_result.emit(cmd, result)
         elif "generate" in cmd:
             result = self.pyI.cmd(self.args[0])
+            self.signal_result.emit(cmd, result)
+        elif "install_requirements" in cmd:
+            result = self.pyI.pip("install", *self.args)
             self.signal_result.emit(cmd, result)
         else:
             self.signal_result.emit(cmd, ["False", "未知命令"])
