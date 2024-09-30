@@ -54,6 +54,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.setObjectName("setting")
         StyleSheet.SETTING.apply(self)
+        self.initState = True
 
         self.gridLayout1 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout1.setObjectName(u"gridLayout")
@@ -65,10 +66,8 @@ class SettingWidget(QWidget, Ui_Form):
         self.venvMangerTh.signal_result.connect(self.receive_VMresult)
 
         self.initWidget()
-
         self.venvMangerTh.setCMD("init")
         self.venvMangerTh.start()
-
 
     def initWidget(self):
         self.basicCard = SettingGroupCard(FluentIcon.SPEED_OFF, "基本设置", "",
@@ -237,9 +236,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(self.verticalSpacer)
 
-
-        self.configure()
-
     def configure(self):
 
         if CURRENT_SETTINGS["settings"]["mode"] in SETTINGS["settings"]["python_env_modes"]:
@@ -254,13 +250,13 @@ class SettingWidget(QWidget, Ui_Form):
             self.button_pyenv_path.setText(LIBS["pyenv"])
 
         if CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
-            self.comboBox_existing.setText(CURRENT_SETTINGS["settings"]["pyenv_current_version"])
+            self.comboBox_existing.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_current_version"])
 
         if CURRENT_SETTINGS["settings"]["pyenv_mirror_url"]:
-            self.comboBox_pyenv_mirror_url.setText(CURRENT_SETTINGS["settings"]["pyenv_mirror_url"])
+            self.comboBox_pyenv_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_mirror_url"])
 
         if CURRENT_SETTINGS["settings"]["pip_mirror_url"]:
-            self.comboBox_pip_mirror_url.setText(CURRENT_SETTINGS["settings"]["pip_mirror_url"])
+            self.comboBox_pip_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pip_mirror_url"])
 
     def new_install(self):
         version = self.comboBox_new_ver.currentText()
@@ -346,9 +342,9 @@ class SettingWidget(QWidget, Ui_Form):
             write_config()
 
     def on_comboBox_existing_currentTextChanged(self, text):
-        CURRENT_SETTINGS["settings"]["pyenv_current_version"] = text
-
-        write_config()
+        if not self.initState:
+            CURRENT_SETTINGS["settings"]["pyenv_current_version"] = text
+            write_config()
 
     def on_comboBox_pyenv_mirror_url_currentTextChanged(self, text):
         CURRENT_SETTINGS["settings"]["pyenv_mirror_url"] = text
@@ -382,7 +378,10 @@ class SettingWidget(QWidget, Ui_Form):
 
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
-        if cmd == "py_version":
+        if cmd == "init":
+            self.initState = False
+            self.configure()
+        elif cmd == "py_version":
             if not result[0]:
                 Message.error("解释器错误", result[1], self)
                 return
@@ -486,6 +485,7 @@ class VenvManagerThread(QThread):
             self.signal_result.emit("list", result)
             result = self.venvManger.versions()
             self.signal_result.emit("versions", result)
+            self.signal_result.emit("init", result)
         elif cmd == "list":
             result = self.venvManger.list()
             self.signal_result.emit(cmd, result)
