@@ -374,9 +374,10 @@ class SettingWidget(QWidget, Ui_Form):
             self.button_existing_uninstall.setEnabled(False)
             self.spinner_existing.show()
             self.spinner_existing.setState(True)
+
             Message.info("卸载", "卸载中，请稍后", self)
 
-    def receive_VMresult(self, cmd, result):
+    def receive_VMresult(self, cmd, result, isClose=True):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "init":
             self.initState = False
@@ -410,8 +411,10 @@ class SettingWidget(QWidget, Ui_Form):
                 Message.error("错误", result[1], self)
                 return
 
+            self.venvMangerTh.stop()
             self.venvMangerTh.setCMD("list")
             self.venvMangerTh.start()
+            return
         elif cmd == "install":
             self.button_new_install.setEnabled(True)
             self.spinner_new.setState(False)
@@ -422,7 +425,10 @@ class SettingWidget(QWidget, Ui_Form):
                 return
 
             Message.info("成功", "安装成功", self)
+
+            self.venvMangerTh.stop()
             self.existing_update()
+            return
         elif cmd == "uninstall":
             self.button_existing_uninstall.setEnabled(True)
             self.spinner_existing.setState(False)
@@ -433,6 +439,11 @@ class SettingWidget(QWidget, Ui_Form):
                 return
 
             Message.info("成功", "卸载成功", self)
+
+            self.venvMangerTh.stop()
+            self.existing_update()
+            return
+
         elif cmd == "versions":
             self.button_existing_uninstall.setEnabled(True)
             self.spinner_existing.setState(False)
@@ -453,10 +464,13 @@ class SettingWidget(QWidget, Ui_Form):
         else:
             pass
 
+        if isClose:
+            self.venvMangerTh.stop()
+
 
 class VenvManagerThread(QThread):
 
-    signal_result = Signal(str, tuple)
+    signal_result = Signal(str, tuple, bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -465,7 +479,12 @@ class VenvManagerThread(QThread):
         self.stopBool = False
 
     def stop(self):
-        self.stop = True
+        try:
+            self.stopBool = True
+            self.pyI.stop()
+            self.terminate()
+        except Exception as e:
+            print(e)
 
     def setCMD(self, cmd, *args, **kwargs):
         self.cmd = cmd
@@ -482,30 +501,30 @@ class VenvManagerThread(QThread):
             self.signal_result.emit(cmd, result)
         elif cmd == "init":
             result = self.venvManger.list()
-            self.signal_result.emit("list", result)
+            self.signal_result.emit("list", result, False)
             result = self.venvManger.versions()
-            self.signal_result.emit("versions", result)
-            self.signal_result.emit("init", result)
+            self.signal_result.emit("versions", result, True)
+            self.signal_result.emit("init", result, True)
         elif cmd == "list":
             result = self.venvManger.list()
-            self.signal_result.emit(cmd, result)
+            self.signal_result.emit(cmd, result, True)
         elif cmd == "update":
             result = self.venvManger.update()
-            self.signal_result.emit(cmd, result)
+            self.signal_result.emit(cmd, result, True)
         elif cmd == "install":
             result = self.venvManger.install(self.args[0])
-            self.signal_result.emit(cmd, result)
+            self.signal_result.emit(cmd, result, True)
             self.venvManger.rehash()
         elif cmd == "uninstall":
             result = self.venvManger.uninstall(self.args[0])
-            self.signal_result.emit(cmd, result)
+            self.signal_result.emit(cmd, result, True)
         elif cmd == "environ":
             self.venvManger.setEnviron(**self.kwargs)
         elif cmd == "versions":
             result = self.venvManger.versions()
-            self.signal_result.emit(cmd, result)
+            self.signal_result.emit(cmd, result, True)
         else:
-            self.signal_result.emit(cmd, ["False", "未知命令"])
+            self.signal_result.emit(cmd, ["False", "未知命令"], )
 
 
 
