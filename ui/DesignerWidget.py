@@ -243,16 +243,18 @@ class DesignerWidget(QWidget, Ui_Form):
             return
 
         self.venvMangerTh.setPyInterpreter(path)
-        plugin_1 = os.path.abspath(PyPath.PYSIDE6_PLUGINS.path(path))
-        plugins = os.path.join(plugin_1, "expand") + ';' + plugin_1
+
+        # plugin_1 = os.path.abspath(PyPath.PYSIDE6_PLUGINS.path(path))
+        # plugins = os.path.join(plugin_1, "expand") + ';' + plugin_1
         # self.venvMangerTh.setCMD("environ", PYSIDE_DESIGNER_PLUGINS=plugins)
-        # self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), '-p', plugins)
-        self.venvMangerTh.setCMD("designer_plugin1", '-i', path, '-p', plugins)
+        # self.venvMangerTh.setCMD("designer_plugin1", '-i', path, '-p', plugins)
+
+        self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path))
         self.venvMangerTh.start()
 
         self.button_open.setEnabled(False)
 
-        Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候", self)
+        Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候。正常开启后若要关闭请稍等15s...", self)
 
     def thirdplugin_install(self):
         if self.thirdplugin("thirdplugin_install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"]):
@@ -368,12 +370,14 @@ class DesignerWidget(QWidget, Ui_Form):
                 Message.error("错误", result[1], self)
                 return
 
-            if "install" in cmd:
+            if "uninstall" in cmd:
+                Message.info("成功", "卸载成功", self)
+            elif "install" in cmd:
                 Message.info("成功", "安装成功", self)
             elif "upgrade" in cmd:
                 Message.info("成功", "更新成功", self)
-            elif "uninstall" in cmd:
-                Message.info("成功", "卸载成功", self)
+            else:
+                Message.error("错误", "命令识别错误", self)
         else:
             pass
 
@@ -437,7 +441,8 @@ class VenvManagerThread(QThread):
             result = self.pyI.cmd(self.args[0])
             self.signal_result.emit(cmd, result)
         elif cmd == "designer_plugin":
-            result = self.pyI.py_popen(self.args)
+            # result = self.pyI.py_popen(self.args)
+            result = self.pyI.py(self.args[0])
             self.signal_result.emit(cmd, result)
         elif cmd == "designer_plugin1":
             result = designer.main()
