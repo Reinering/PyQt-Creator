@@ -7,8 +7,7 @@
 
 
 
-### pack
+### installation
 ```
     pip install -r requirements.txt
-    python scripts/pack.py
 ```

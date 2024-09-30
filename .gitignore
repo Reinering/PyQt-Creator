@@ -93,9 +93,10 @@ main.exe
 
 # nuitka
 nuitka*
+!common/nuitka*
 dist/
 *dist/
 *build/
 
 # lib
-libs
+libs/*
