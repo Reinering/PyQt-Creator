@@ -10,6 +10,7 @@ Module implementing DesignerWidget.
 from PySide6.QtCore import Slot, Qt, QRect, QThread, Signal
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
 import os
+import logging
 
 from qfluentwidgets import (
     ScrollArea,
@@ -37,7 +38,8 @@ from .utils.config import write_config
 from .compoments.info import Message
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
-from manage import ROOT_PATH, SettingPath, SettingFile, LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
+from qfluentexpand.tools import designer
+from manage import LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
 
 
 class DesignerWidget(QWidget, Ui_Form):
@@ -243,8 +245,9 @@ class DesignerWidget(QWidget, Ui_Form):
         self.venvMangerTh.setPyInterpreter(path)
         plugin_1 = os.path.abspath(PyPath.PYSIDE6_PLUGINS.path(path))
         plugins = os.path.join(plugin_1, "expand") + ';' + plugin_1
-        self.venvMangerTh.setCMD("environ", PYSIDE_DESIGNER_PLUGINS=plugins)
-        self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), '-p', plugins)
+        # self.venvMangerTh.setCMD("environ", PYSIDE_DESIGNER_PLUGINS=plugins)
+        # self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), '-p', plugins)
+        self.venvMangerTh.setCMD("designer_plugin1", '-i', path, '-p', plugins)
         self.venvMangerTh.start()
 
         self.button_open.setEnabled(False)
@@ -297,7 +300,7 @@ class DesignerWidget(QWidget, Ui_Form):
         write_config()
 
     def on_button_filepath_textChanged(self, text):
-        if text:
+        if text and "python.exe" in text:
             self.venvMangerTh.setPyInterpreter(text)
             self.venvMangerTh.setCMD("py_version")
             self.venvMangerTh.start()
@@ -326,10 +329,14 @@ class DesignerWidget(QWidget, Ui_Form):
         Message.info("安装", "安装中，请稍后", self)
 
     def receive_VMresult(self, cmd, result):
+        logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "init":
             pass
         elif "py_version" in cmd:
-            self.label_ver.setText("版本: " + result[1])
+            if not result[0]:
+                Message.error("解释器错误", result[1], self)
+                return
+            self.label_ver.setText("版本: " + result[1].strip('\n'))
             CURRENT_SETTINGS["designer"]["custom_python_path"] = self.button_filepath.text()
             write_config()
         elif cmd == "install":
@@ -347,7 +354,7 @@ class DesignerWidget(QWidget, Ui_Form):
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
-        elif cmd == "designer_plugin":
+        elif "designer_plugin" in cmd:
             self.button_open.setEnabled(True)
             if not result[0]:
                 Message.error("错误", result[1], self)
@@ -380,7 +387,7 @@ class VenvManagerThread(QThread):
         super().__init__(parent)
         # self.venvManger = PyVenvManager(LIBS["pyenv"])
         self.pyI = PyInterpreter()
-        self.stop = False
+        self.stopBool = False
 
     def stop(self):
         self.stop = True
@@ -394,42 +401,46 @@ class VenvManagerThread(QThread):
         self.pyI.setInterpreter(path)
 
     def run(self):
-        if self.cmd == "init":
+        cmd = self.cmd
+        if cmd == "init":
             pass
-        elif self.cmd == "environ":
+        elif cmd == "environ":
             self.pyI.setEnviron(**self.kwargs)
-        elif self.cmd == "py_version":
+        elif cmd == "py_version":
             result = self.pyI.version()
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "install":
-            result = self.pyI.pip(self.cmd, *self.args)
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "thirdplugin_install":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "install":
+            result = self.pyI.pip(cmd, *self.args)
+            self.signal_result.emit(cmd, result)
+        elif cmd == "thirdplugin_install":
             result = self.pyI.pip("install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
             if not result[0]:
-                self.signal_result.emit(self.cmd, result)
+                self.signal_result.emit(cmd, result)
                 return
-            result = self.pyI.pip("install", "git+" + REQUIREMENTS_URLS["qfluentexpand"])
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "thirdplugin_upgrade":
+            result = self.pyI.pip("install", "git+" + REQUIREMENTS_URLS["qfluentexpand"] + "@pyside6")
+            self.signal_result.emit(cmd, result)
+        elif cmd == "thirdplugin_upgrade":
             result = self.pyI.pip("install", "--upgrade", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
             if not result[0]:
-                self.signal_result.emit(self.cmd, result)
+                self.signal_result.emit(cmd, result)
                 return
-            result = self.pyI.pip("install", "--upgrade", "git+" + REQUIREMENTS_URLS["qfluentexpand"])
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "thirdplugin_uninstall":
+            result = self.pyI.pip("install", "--upgrade", "git+" + REQUIREMENTS_URLS["qfluentexpand"] + "@pyside6")
+            self.signal_result.emit(cmd, result)
+        elif cmd == "thirdplugin_uninstall":
             result = self.pyI.pip("uninstall", "-y", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"])
             if not result[0]:
-                self.signal_result.emit(self.cmd, result)
+                self.signal_result.emit(cmd, result)
                 return
             result = self.pyI.pip("uninstall", "-y", "qfluentexpand")
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "designer":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "designer":
             result = self.pyI.cmd(self.args[0])
-            self.signal_result.emit(self.cmd, result)
-        elif self.cmd == "designer_plugin":
+            self.signal_result.emit(cmd, result)
+        elif cmd == "designer_plugin":
             result = self.pyI.py_popen(self.args)
-            self.signal_result.emit(self.cmd, result)
+            self.signal_result.emit(cmd, result)
+        elif cmd == "designer_plugin1":
+            result = designer.main()
+            self.signal_result.emit(cmd, result)
         else:
-            self.signal_result.emit(self.cmd, ["False", "未知命令"])
+            self.signal_result.emit(cmd, ["False", "未知命令"])
