@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QS
 
 
 from qfluentwidgets import (
-    ExpandGroupSettingCard,
+    ExpandGroupSettingCard, PrimaryPushSettingCard,
     PrimaryPushButton, PrimaryDropDownPushButton,
     BodyLabel, TitleLabel, CaptionLabel,
     ScrollArea,
@@ -26,6 +26,8 @@ from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import FluentGif
 
 from .Ui_DocumentWidget import Ui_Form
+from .PyinstallerDocDialog import PyinstallerDocDialog
+from .NuitkaDocDialog import NuitkaDocDialog
 from .utils.stylesheets import StyleSheet
 
 
@@ -82,26 +84,48 @@ class DocumentWidget(QWidget, Ui_Form):
         hBoxLayout.addLayout(vBoxLayout)
 
     def initWidget(self):
-        self.card_pyinstaller = SettingGroupCard(FluentIcon.SPEED_OFF, "pyinstaller", "",
-                                        self.scrollAreaWidgetContents)
+        self.card_pyinstaller = PrimaryPushSettingCard(
+                                    text="打开",
+                                    icon=FluentIcon.HELP,
+                                    title="pyinstaller",
+                                    content="文档"
+                                )
+        self.card_pyinstaller.clicked.connect(self.open_pyinstaller)
         self.gridLayout1.addWidget(self.card_pyinstaller, 1, 0, 1, 1)
 
 
 
 
-        self.card_nuitka = SettingGroupCard(FluentIcon.SPEED_OFF, "nuitka", "",
-                                                 self.scrollAreaWidgetContents)
+        self.card_nuitka = PrimaryPushSettingCard(
+                                    text="打开",
+                                    icon=FluentIcon.HELP,
+                                    title="nuitka",
+                                    content="文档"
+                                )
+        self.card_nuitka.clicked.connect(self.open_nuitka)
         self.gridLayout1.addWidget(self.card_nuitka, 2, 0, 1, 1)
 
 
 
 
-        self.card_nuitka = SettingGroupCard(FluentIcon.SPEED_OFF, "pipreqs", "",
+        self.card_pipreqs = SettingGroupCard(FluentIcon.SPEED_OFF, "pipreqs", "",
                                             self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_nuitka, 3, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_pipreqs, 3, 0, 1, 1)
 
 
 
 
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
+
+    def open_pyinstaller(self):
+        self.pyinstallerDialog = PyinstallerDocDialog()
+        self.pyinstallerDialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self.pyinstallerDialog.setModal(False)
+        self.pyinstallerDialog.show()
+
+    def open_nuitka(self):
+        self.nuitkaDialog = NuitkaDocDialog()
+        self.nuitkaDialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self.nuitkaDialog.setModal(False)
+        self.nuitkaDialog.show()
