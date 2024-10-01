@@ -92,8 +92,9 @@ config/base.cfg
 main.exe
 
 # nuitka
-nuitka*
+# nuitka*
 !common/nuitka*
+nuitka-crash-report.xml
 dist/
 *dist/
 *build/
