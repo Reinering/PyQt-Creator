@@ -8,7 +8,6 @@ email: nbxlc@hotmail.com
 
 import os
 import subprocess
-import logging
 
 
 
@@ -19,22 +18,25 @@ class PyVenvManager():
 
     def __init__(self, pyenv_root_path):
         self.venvPath = os.path.join(pyenv_root_path, 'bin\\pyenv.bat')
+        self.process = None
 
     def setEnviron(self, **kwargs):
         for key, value in kwargs.items():
             os.environ[key] = value
 
+    def stop(self):
+        if self.process:
+            self.process.terminate()
+            self.process = None
+
     def cmd(self, cmd):
         print(f"cmd: {cmd}")
-        logging.debug(f"cmd: {cmd}")
 
-        result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
-        if result.returncode == 0:
-            logging.debug(f"{result.stdout}")
-            return (True, f"{result.stdout}")
+        self.process = subprocess.run(cmd, capture_output=True, text=True, shell=True)
+        if self.process.returncode == 0:
+            return (True, f"{self.process.stdout}")
         else:
-            logging.debug(f"Error: {result.stderr}")
-            return (False, f"Error: {result.stderr}")
+            return (False, f"Error: {self.process.stderr}")
 
     def list(self):
         command = [self.venvPath, 'install', '--list']
