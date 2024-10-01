@@ -254,7 +254,7 @@ class DesignerWidget(QWidget, Ui_Form):
 
         self.button_open.setEnabled(False)
 
-        Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候。正常开启后若要关闭请稍等15s...", self)
+        Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候。正常开启后若要关闭请稍等20s...", self)
 
     def thirdplugin_install(self):
         if self.thirdplugin("thirdplugin_install", REQUIREMENTS_URLS["qfluentwidgets"]["pyside6"]):
