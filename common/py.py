@@ -10,7 +10,6 @@ import sys
 import os
 import subprocess
 import requests
-import logging
 
 
 
@@ -54,7 +53,7 @@ class PyPath(Enum):
     PYSIDE6_RCC = os.path.join(PYSIDE6, SCRIPTS, "pyside6-rcc.exe")
 
     QFLUENTEXPAND = "Lib\\site-packages\\qfluentexpand"
-    DESIGNER_PYSIDE6 = os.path.join(QFLUENTEXPAND, "tools\\pyside6-designer.py")
+    DESIGNER_PYSIDE6 = os.path.join(QFLUENTEXPAND, "tools\\designer.py")
     PYSIDE6_PLUGINS = os.path.join(QFLUENTEXPAND, "plugins")
 
     # pyinstaller
@@ -76,6 +75,9 @@ class PyPath(Enum):
 
 class PyInterpreter:
 
+    def __init__(self):
+        self.process = None
+
     def setInterpreter(self, path):
         self.interpreterPath = path
         (self.interpreterFolder, name) = os.path.split(path)
@@ -84,32 +86,33 @@ class PyInterpreter:
         for key, value in kwargs.items():
             os.environ[key] = value
 
+    def stop(self):
+        if self.process:
+            self.process.kill()
+            self.process = None
+
     def cmd(self, cmd):
         print(f"cmd: {cmd}")
-        logging.debug(f"cmd: {cmd}")
 
-        result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
-        if result.returncode == 0:
-            print(f"{result.stdout}")
-            logging.debug(f"{result.stdout}")
-            return (True, f"{result.stdout}")
+        self.process = subprocess.run(cmd, capture_output=True, text=True, shell=True)
+        if self.process.returncode == 0:
+            print(f"{self.process.stdout}")
+            return [True, f"{self.process.stdout}"]
         else:
-            print(f"Error: {result.stderr}")
-            logging.debug(f"Error: {result.stderr}")
-            return (False, f"Error: {result.stderr}")
+            print(f"Error: {self.process.stderr}")
+            return (False, f"Error: {self.process.stderr}")
+
 
     def popen(self, cmd):
         print(f"cmd: {cmd}")
 
-        result = subprocess.run(cmd, capture_output=True, shell=True)
-        if result.returncode == 0:
-            print(f"{result.stdout}")
-            logging.debug(f"{result.stdout}")
-            return (True, f"{result.stdout}")
+        self.process = subprocess.Popen(cmd, capture_output=True, shell=True)
+        if self.process.returncode == 0:
+            print(f"{self.process.stdout}")
+            return [True, f"{self.process.stdout}"]
         else:
-            print(f"Error: {result.stderr}")
-            logging.debug(f"Error: {result.stderr}")
-            return (False, f"Error: {result.stderr}")
+            print(f"Error: {self.process.stderr}")
+            return (False, f"Error: {self.process.stderr}")
 
     def pip(self, *args):
         command = [self.interpreterPath, '-m', 'pip']

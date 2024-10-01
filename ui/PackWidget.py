@@ -11,7 +11,7 @@ from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
 import os
-import datetime
+import datetime, time
 import simplejson as json
 from pathlib import Path
 import logging
@@ -110,6 +110,7 @@ class PackWidget(QWidget, Ui_Form):
         menu = RoundMenu(parent=self.button_open)
         menu.addAction(Action(FluentIcon.BASKETBALL, 'pyinstaller', triggered=self.open_pyinstaller))
         menu.addAction(Action(FluentIcon.ALBUM, 'nuitka', triggered=self.open_nuitka))
+        menu.addAction(Action(FluentIcon.ALBUM, '停止', triggered=self.open_stop))
         self.button_open.setMenu(menu)
 
         layout.addItem(horizontalSpacer)
@@ -177,7 +178,7 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_filepath_out)
         self.envCard.addWidget(self.widget_env_out)
 
-        self.card_pyinstaller = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyinstaller 设置", "",
+        self.card_pyinstaller = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyinstaller 设置", "参考文档配置参数",
                                                 self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pyinstaller, 2, 0, 1, 1)
         widget_pyinstaller = QWidget(self.card_pyinstaller)
@@ -218,7 +219,7 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_pyinstaller_settingfile)
         self.card_pyinstaller.addWidget(widget_pyinstaller_settingfile)
 
-        self.card_nuitka = SettingGroupCard(FluentIcon.SPEED_OFF, "Nuitka 设置", "",
+        self.card_nuitka = SettingGroupCard(FluentIcon.SPEED_OFF, "Nuitka 设置", "参考文档配置参数",
                                                 self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_nuitka, 3, 0, 1, 1)
         widget_nuitka = QWidget(self.card_nuitka)
@@ -303,6 +304,16 @@ class PackWidget(QWidget, Ui_Form):
             pass
         return path
 
+    def open_stop(self):
+        if not self.venvMangerTh.isRunning():
+            return
+
+        self.venvMangerTh.stop()
+        self.spinner_open.setState(False)
+        self.spinner_open.hide()
+
+        Message.info("提示", "线程已停止", self)
+
     def open_pyinstaller(self):
         if not self.button_filepath_main.text() or self.button_filepath_main.text() == "选择":
             Message.error("错误", "请选择程序入口", self)
@@ -346,13 +357,15 @@ class PackWidget(QWidget, Ui_Form):
 
         PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"] = tmp
 
-        cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + ".exe") + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_" + now + ".exe")
+        if PyinstallerPackage.PYINSTALLER_PARAMS["console"]:
+            cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + ".exe") + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_Beta_" + now + ".exe")
+        else:
+            cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + ".exe") + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_" + now + ".exe")
 
         self.venvMangerTh.setPyInterpreter(path)
         self.venvMangerTh.setCMD("pack_pyinstaller", cmd, cmd1)
         self.venvMangerTh.start()
 
-        self.button_open.setEnabled(False)
         self.spinner_open.setState(True)
         self.spinner_open.show()
 
@@ -406,9 +419,15 @@ class PackWidget(QWidget, Ui_Form):
 
         cmd = path + " -m nuitka " + NuitkaPackage().getCMD() + ' ' + file
 
-        cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
+        if NuitkaPackage.NUITKA_PARAMS["windows-console-mode"] != "disable":
+            cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
                                       NuitkaPackage.NUITKA_PARAMS["output-filename"] + ".exe") + " " + os.path.join(
-            NuitkaPackage.NUITKA_PARAMS["output-dir"],  NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_" + now + ".exe")
+            NuitkaPackage.NUITKA_PARAMS["output-dir"],  NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_Beta_" + now + ".exe")
+        else:
+            cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
+                                      NuitkaPackage.NUITKA_PARAMS["output-filename"] + ".exe") + " " + os.path.join(
+            NuitkaPackage.NUITKA_PARAMS["output-dir"],
+            NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_" + now + ".exe")
 
         if tmp:
             NuitkaPackage.NUITKA_PARAMS["output-filename"] = ''
@@ -417,7 +436,6 @@ class PackWidget(QWidget, Ui_Form):
         self.venvMangerTh.setCMD("pack_nuitka", cmd, cmd1)
         self.venvMangerTh.start()
 
-        self.button_open.setEnabled(False)
         self.spinner_open.setState(True)
         self.spinner_open.show()
 
@@ -608,15 +626,19 @@ class PackWidget(QWidget, Ui_Form):
 
             Message.info("成功", "卸载成功", self)
         elif cmd == "pack_pyinstaller" or cmd == "pack_nuitka":
-            self.button_open.setEnabled(True)
             self.spinner_open.setState(False)
+            self.spinner_open.setState(True)
             self.spinner_open.hide()
 
             if not result[0]:
                 Message.error("错误", result[1], self)
                 return
 
-            Message.info("成功", "打包成功", self)
+            if result[-1]:
+                minutes, seconds = divmod(int(result[-1]), 60)
+                Message.info("成功", f"打包成功, 耗时：{minutes}分钟 {seconds}秒", self, duration=30000)
+            else:
+                Message.info("成功", f"打包成功", self)
         else:
             pass
 
@@ -629,10 +651,15 @@ class VenvManagerThread(QThread):
         super().__init__(parent)
         # self.venvManger = PyVenvManager(LIBS["pyenv"])
         self.pyI = PyInterpreter()
-        self.stop = False
+        self.stopBool = False
 
     def stop(self):
-        self.stop = True
+        try:
+            self.stopBool = True
+            self.pyI.stop()
+            self.terminate()
+        except Exception as e:
+            print(e)
 
     def setCMD(self, cmd, *args, **kwargs):
         self.cmd = cmd
@@ -640,6 +667,7 @@ class VenvManagerThread(QThread):
         self.kwargs = kwargs
 
     def setPyInterpreter(self, path):
+        self.interpreter = path
         self.pyI.setInterpreter(path)
 
     def run(self):
@@ -670,20 +698,25 @@ class VenvManagerThread(QThread):
             result = self.pyI.pip("uninstall", '-y', *self.args)
             self.signal_result.emit(cmd, result)
         elif cmd == "pack_pyinstaller":
+            start = time.time()
             result = self.pyI.cmd(self.args[0])
             if result[0]:
-                result = self.pyI.cmd(self.args[1])
+                self.pyI.cmd(self.args[1])
             else:
                 self.signal_result.emit(cmd, result)
                 return
+
+            result.append(time.time() - start)
             self.signal_result.emit(cmd, result)
         elif cmd == "pack_nuitka":
+            start = time.time()
             result = self.pyI.cmd(self.args[0])
             if result[0]:
-                result = self.pyI.cmd(self.args[1])
+                self.pyI.cmd(self.args[1])
             else:
                 self.signal_result.emit(cmd, result)
                 return
+            result.append(time.time() - start)
             self.signal_result.emit(cmd, result)
         else:
             self.signal_result.emit(cmd, ["False", "未知命令"])
