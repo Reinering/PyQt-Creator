@@ -37,8 +37,9 @@ UI_CONFIG = {
     "theme": "Light",
 
     "startLogo": "resource/images/logo.png",
-    "iconPath": ":/images/icons",
-    "gifPath": ":/images/gifs",
+    "logoPath": f':/logo/images/logo.png',
+    "iconPath": f":/images/icons",
+    "gifPath": f":/images/gifs",
     "stylesheetPath": ":/qss/stylesheets",
 
     "Material": {

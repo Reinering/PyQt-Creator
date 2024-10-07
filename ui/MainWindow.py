@@ -141,7 +141,7 @@ class MainWindow(FluentWindow, Ui_Form):
     def initWidget(self):
         self.resize(900, 700)
         self.setWindowTitle(APPNAME)
-        self.setWindowIcon(QIcon(os.path.join(UI_CONFIG["iconPath"], "logo.png")))
+        self.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
         # self.setWindowIcon(QIcon(f':/logo/images/logo.png'))
 
         StyleSheet.MAIN.apply(self)

@@ -204,7 +204,6 @@ class OtherWidget(QWidget, Ui_Form):
         envLabel = BodyLabel("类型")
         self.comboBox_generate_code_type = ComboBox(self.card_generate_code)
         self.comboBox_generate_code_type.addItems(SETTINGS["other"]["project_types"])
-        self.comboBox_generate_code_type.currentTextChanged.connect(self.on_comboBox_generate_code_type_currentTextChanged)
         layout = QHBoxLayout(widget_generate_code_type)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(envLabel)
@@ -397,9 +396,6 @@ class OtherWidget(QWidget, Ui_Form):
 
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")}')
 
-    def on_comboBox_generate_code_type_currentTextChanged(self):
-        pass
-
     def on_button_generate_code_clicked(self):
         if not self.button_filepath_ui.text():
             Message.error("错误", "UI文件不能为空", self)
@@ -416,7 +412,7 @@ class OtherWidget(QWidget, Ui_Form):
         }
 
         dialog = GenerateCodeDialog(self.button_filepath_ui.text(), project)
-        dialog.setWindowIcon(QIcon(os.path.join(UI_CONFIG["iconPath"], "logo.png")))
+        dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
         dialog.show()
 
     def receive_VMresult(self,  cmd, result):
