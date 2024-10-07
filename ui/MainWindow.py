@@ -50,12 +50,6 @@ class MainWindow(FluentWindow, Ui_Form):
 
         self.initWidget()
 
-        # if RUNTIMEENV == "bundle":
-        #     self.plinkFile = os.path.join(BUNDLE_DIR, PUTTY_PATH, 'plink.exe')
-        # else:
-        #     self.plinkFile = os.path.join(PUTTY_PATH, 'plink.exe')
-
-
     def initNavi(self):
         # navigator setting
         # self.navigationInterface.setMenuButtonVisible(False)
@@ -147,7 +141,8 @@ class MainWindow(FluentWindow, Ui_Form):
     def initWidget(self):
         self.resize(900, 700)
         self.setWindowTitle(APPNAME)
-        self.setWindowIcon(QIcon(f':/logo/images/logo.png'))
+        self.setWindowIcon(QIcon(os.path.join(UI_CONFIG["iconPath"], "logo.png")))
+        # self.setWindowIcon(QIcon(f':/logo/images/logo.png'))
 
         StyleSheet.MAIN.apply(self)
 
