@@ -37,20 +37,20 @@ class PyPath(Enum):
     # pyqt5
     PYQT5 = "Lib\\site-packages\\PyQt5"
     PYQT5_DESIGNER = os.path.join(PYQT5, "designer.exe")
-    PYQT5_UIC = os.path.join(PYQT5, SCRIPTS, "pyuic6.exe")
-    PYQT5_RCC = os.path.join(PYQT5, SCRIPTS, "pyrcc5.exe")
+    PYQT5_UIC = os.path.join(SCRIPTS, "pyuic6.exe")
+    PYQT5_RCC = os.path.join(SCRIPTS, "pyrcc5.exe")
 
     # pyqt6
     PYQT6 = "Lib\\site-packages\\PyQt6"
     PYQT6_DESIGNER = os.path.join(PYQT6, "designer.exe")
-    PYQT6_UIC = os.path.join(PYQT6, SCRIPTS, "pyuic6.exe")
-    PYQT6_RCC = os.path.join(PYQT6, SCRIPTS, "pyrcc6.exe")
+    PYQT6_UIC = os.path.join(SCRIPTS, "pyuic6.exe")
+    PYQT6_RCC = os.path.join(SCRIPTS, "pyrcc6.exe")
 
     # pyside6
     PYSIDE6 = "Lib\\site-packages\\PySide6"
     PYSIDE6_DESIGNER = os.path.join(PYSIDE6, "designer.exe")
-    PYSIDE6_UIC = os.path.join(PYSIDE6, SCRIPTS, "pyside6-uic.exe")
-    PYSIDE6_RCC = os.path.join(PYSIDE6, SCRIPTS, "pyside6-rcc.exe")
+    PYSIDE6_UIC = os.path.join(SCRIPTS, "pyside6-uic.exe")
+    PYSIDE6_RCC = os.path.join(SCRIPTS, "pyside6-rcc.exe")
 
     QFLUENTEXPAND = "Lib\\site-packages\\qfluentexpand"
     DESIGNER_PYSIDE6 = os.path.join(QFLUENTEXPAND, "tools\\designer.py")
