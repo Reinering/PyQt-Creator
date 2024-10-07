@@ -28,6 +28,7 @@ from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import FluentGif
 
 from .Ui_OtherWidget import Ui_Form
+from .GenerateCodeDialog import GenerateCodeDialog
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .compoments.info import Message
@@ -35,7 +36,7 @@ from common.py import PyInterpreter, PyPath
 from common.pyinstaller import PyinstallerPackage
 from common.pipreqs import Pipreqs
 
-from manage import ROOT_PATH, SettingPath, LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
+from manage import ROOT_PATH, UI_CONFIG, SettingPath, LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
 
 
 
@@ -195,9 +196,42 @@ class OtherWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_requirements)
         self.card_requirements.addWidget(widget_requirements)
 
+        self.card_generate_code = SettingGroupCard(FluentIcon.SPEED_OFF, "Generate Code", "",
+                                                  self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_generate_code, 3, 0, 1, 1)
+
+        widget_generate_code_type = QWidget(self.card_generate_code)
+        envLabel = BodyLabel("类型")
+        self.comboBox_generate_code_type = ComboBox(self.card_generate_code)
+        self.comboBox_generate_code_type.addItems(SETTINGS["other"]["project_types"])
+        self.comboBox_generate_code_type.currentTextChanged.connect(self.on_comboBox_generate_code_type_currentTextChanged)
+        layout = QHBoxLayout(widget_generate_code_type)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(envLabel)
+        layout.addStretch(1)
+        layout.addWidget(self.comboBox_generate_code_type)
+        self.card_generate_code.addWidget(widget_generate_code_type)
+
+        widget_generate_code = QWidget(self.card_generate_code)
+        envLabel = BodyLabel("UI 文件")
+        self.button_filepath_ui = FilePathSelector(self.card_generate_code)
+        self.button_filepath_ui.setFileTypes("*.ui")
+        self.button_filepath_ui.setFixedWidth(200)
+        self.button_generate_code = PrimaryPushButton(self.card_generate_code)
+        self.button_generate_code.setText("打开")
+        self.button_generate_code.clicked.connect(self.on_button_generate_code_clicked)
+
+        layout = QHBoxLayout(widget_generate_code)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(envLabel)
+        layout.addStretch(1)
+        layout.addWidget(self.button_filepath_ui)
+        layout.addWidget(self.button_generate_code)
+        self.card_generate_code.addWidget(widget_generate_code)
+
 
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.gridLayout1.addItem(verticalSpacer, 3, 0, 1, 1)
+        self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
 
         self.configure()
 
@@ -207,6 +241,9 @@ class OtherWidget(QWidget, Ui_Form):
 
         if CURRENT_SETTINGS["other"]["custom_python_path"]:
             self.button_filepath.setText(CURRENT_SETTINGS["other"]["custom_python_path"])
+
+        if CURRENT_SETTINGS["other"]["project_type"]:
+            self.comboBox_generate_code_type.setCurrentText(CURRENT_SETTINGS["other"]["project_type"])
 
     def getPyPath(self):
         path = ""
@@ -359,6 +396,28 @@ class OtherWidget(QWidget, Ui_Form):
             return
 
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")}')
+
+    def on_comboBox_generate_code_type_currentTextChanged(self):
+        pass
+
+    def on_button_generate_code_clicked(self):
+        if not self.button_filepath_ui.text():
+            Message.error("错误", "UI文件不能为空", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+
+        project = {
+            "type": self.comboBox_generate_code_type.currentText(),
+            "interpreter": path
+        }
+
+        dialog = GenerateCodeDialog(self.button_filepath_ui.text(), project)
+        dialog.setWindowIcon(QIcon(os.path.join(UI_CONFIG["iconPath"], "logo.png")))
+        dialog.show()
 
     def receive_VMresult(self,  cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")

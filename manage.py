@@ -61,16 +61,17 @@ UI_CONFIG = {
     }
 }
 
-if getattr(sys, 'frozen', False):
-    BUNDLE_DIR = sys._MEIPASS
-    RUNTIMEENV = "bundle"
-    UI_CONFIG["startLogo"] = os.path.join(BUNDLE_DIR, UI_CONFIG["startLogo"])
+# if getattr(sys, 'frozen', False):
+#     BUNDLE_DIR = sys._MEIPASS
+#     RUNTIMEENV = "bundle"
+#     UI_CONFIG["startLogo"] = os.path.join(BUNDLE_DIR, UI_CONFIG["startLogo"])
+#
+#     LIBSPATH = os.path.join(BUNDLE_DIR, "libs")
+# else:
 
-    LIBSPATH = os.path.join(BUNDLE_DIR, "libs")
-else:
-    BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
+BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    LIBSPATH = os.path.join("libs")
+LIBSPATH = os.path.join("libs")
 
 LIBS = {
     "pyinstaller": os.path.join(LIBSPATH, "pyinstaller"),
@@ -120,6 +121,7 @@ SETTINGS = {
     },
     "other": {
         "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],
+        "project_types": ["PySide2", "PySide6", "PyQt5", "PyQt6"]
     },
     "settings": {
         "theme": ['Light', 'Dark'],
@@ -128,7 +130,6 @@ SETTINGS = {
         "update": ['CheckUpdateAtStartUp', 'CheckUpdateAtEnd'],
         "python_env_modes": ["现有环境", "Pyenv 环境"],           # ["system", "venv", "pyenv", "conda"]
         "pyenv_maxbit": ['x64', 'x86'],
-
     }
 }
 
@@ -153,7 +154,8 @@ CURRENT_SETTINGS = {
     },
     "other": {
         "mode": 'global',
-        "custom_python_path": ""
+        "custom_python_path": "",
+        "project_type": 'PySide6'
 
     },
     "settings": {
