@@ -8,7 +8,7 @@ email: nbxlc@hotmail.com
 
 import os
 import subprocess
-
+import psutil
 
 
 class PyVenvManager():
@@ -25,9 +25,13 @@ class PyVenvManager():
             os.environ[key] = value
 
     def stop(self):
-        if self.process:
+        if self.process and not isinstance(self.process, subprocess.CompletedProcess):
             self.process.terminate()
-            self.process = None
+            parent = psutil.Process(self.process.pid)
+            children = parent.children(recursive=True)
+            for child in children:
+                child.kill()
+            self.process.kill()
 
     def cmd(self, cmd):
         print(f"cmd: {cmd}")
@@ -36,6 +40,18 @@ class PyVenvManager():
         if self.process.returncode == 0:
             return (True, f"{self.process.stdout}")
         else:
+            return (False, f"Error: {self.process.stderr}")
+
+    def popen(self, cmd):
+        print(f"cmd: {cmd}")
+
+        self.process = subprocess.Popen(cmd, shell=True)
+        self.process.wait()
+        if self.process.returncode == 0:
+            print(f"{self.process.stdout}")
+            return [True, f"{self.process.stdout}"]
+        else:
+            print(f"Error: {self.process.stderr}")
             return (False, f"Error: {self.process.stderr}")
 
     def list(self):
