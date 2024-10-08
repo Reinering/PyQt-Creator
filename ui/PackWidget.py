@@ -357,10 +357,15 @@ class PackWidget(QWidget, Ui_Form):
 
         PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"] = tmp
 
-        if PyinstallerPackage.PYINSTALLER_PARAMS["console"]:
-            cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + ".exe") + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_Beta_" + now + ".exe")
+        if PyinstallerPackage.PYINSTALLER_PARAMS["outType"] == "FILE":
+            suffix = ".exe"
         else:
-            cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + ".exe") + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_" + now + ".exe")
+            suffix = ""
+
+        if PyinstallerPackage.PYINSTALLER_PARAMS["console"]:
+            cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + suffix) + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_Beta_" + now + suffix)
+        else:
+            cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + suffix) + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_" + now + suffix)
 
         self.venvMangerTh.setPyInterpreter(path)
         self.venvMangerTh.setCMD("pack_pyinstaller", cmd, cmd1)
@@ -419,15 +424,22 @@ class PackWidget(QWidget, Ui_Form):
 
         cmd = path + " -m nuitka " + NuitkaPackage().getCMD() + ' ' + file
 
+        if NuitkaPackage.NUITKA_PARAMS["onefile"]:
+            name = NuitkaPackage.NUITKA_PARAMS["output-filename"]
+            suffix = ".exe"
+        else:
+            name = NuitkaPackage.NUITKA_PARAMS["output-filename"] + ".onefile-build"
+            suffix = ""
+
         if NuitkaPackage.NUITKA_PARAMS["windows-console-mode"] != "disable":
             cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
-                                      NuitkaPackage.NUITKA_PARAMS["output-filename"] + ".exe") + " " + os.path.join(
-            NuitkaPackage.NUITKA_PARAMS["output-dir"],  NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_Beta_" + now + ".exe")
+                                      name + suffix) + " " + os.path.join(
+            NuitkaPackage.NUITKA_PARAMS["output-dir"],  NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_Beta_" + now + suffix)
         else:
             cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
-                                      NuitkaPackage.NUITKA_PARAMS["output-filename"] + ".exe") + " " + os.path.join(
+                                      name + suffix) + " " + os.path.join(
             NuitkaPackage.NUITKA_PARAMS["output-dir"],
-            NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_" + now + ".exe")
+            NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_" + now + suffix)
 
         if tmp:
             NuitkaPackage.NUITKA_PARAMS["output-filename"] = ''
@@ -699,7 +711,7 @@ class VenvManagerThread(QThread):
             self.signal_result.emit(cmd, result)
         elif cmd == "pack_pyinstaller":
             start = time.time()
-            result = self.pyI.cmd(self.args[0])
+            result = self.pyI.popen(self.args[0])
             if result[0]:
                 self.pyI.cmd(self.args[1])
             else:
@@ -710,7 +722,7 @@ class VenvManagerThread(QThread):
             self.signal_result.emit(cmd, result)
         elif cmd == "pack_nuitka":
             start = time.time()
-            result = self.pyI.cmd(self.args[0])
+            result = self.pyI.popen(self.args[0])
             if result[0]:
                 self.pyI.cmd(self.args[1])
             else:

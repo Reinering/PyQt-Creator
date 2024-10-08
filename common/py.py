@@ -6,8 +6,9 @@ email: nbxlc@hotmail.com
 """
 
 from enum import Enum
-import sys
 import os
+import signal
+import psutil
 import subprocess
 import requests
 
@@ -87,8 +88,27 @@ class PyInterpreter:
             os.environ[key] = value
 
     def stop(self):
-        if self.process:
+        if self.process and not isinstance(self.process, subprocess.CompletedProcess):
+            parent = psutil.Process(self.process.pid)
+            children = parent.children(recursive=True)
+            # print("pid", parent, children)
+            for child in children:
+                child.kill()
             self.process.kill()
+            # self.process.terminate()
+
+            # try:
+            #     pid = self.process.pid
+            #     cmd = "taskkill /pid {} -t -f".format(str(pid))
+            #     pp = subprocess.Popen(args=cmd,
+            #                           stdin=subprocess.PIPE,
+            #                           stdout=subprocess.PIPE,
+            #                           stderr=subprocess.PIPE,
+            #                           shell=True)
+            #     out = str(pp.stdout.read(), encoding="utf-8")
+            # except Exception as e:
+            #     print(e)
+
             self.process = None
 
     def cmd(self, cmd):
@@ -102,11 +122,11 @@ class PyInterpreter:
             print(f"Error: {self.process.stderr}")
             return (False, f"Error: {self.process.stderr}")
 
-
     def popen(self, cmd):
         print(f"cmd: {cmd}")
 
-        self.process = subprocess.Popen(cmd, capture_output=True, shell=True)
+        self.process = subprocess.Popen(cmd, shell=True)
+        self.process.wait()
         if self.process.returncode == 0:
             print(f"{self.process.stdout}")
             return [True, f"{self.process.stdout}"]

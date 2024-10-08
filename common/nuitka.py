@@ -42,7 +42,7 @@ class NuitkaPackage:
         # 数据文件
         'include-package-data': [],  # --include-package-data=PACKAGE: 包含给定包名称的数据文件
         'include-data-files': [],  # --include-data-files=DESC: 通过文件名在分发中包含数据文件
-        'include-data-dir': [],  # --include-data-dir=DIRECTORY: 在分发中包含完整目录的数据文件
+        'include-data-dir': [],  # --include-data-dir=DIRECTORY=DIRECTORY: 在分发中包含完整目录的数据文件
         'noinclude-data-files': [],  # --noinclude-data-files=PATTERN: 不包含匹配给定文件名模式的数据文件
         'include-onefile-external-data': [],  # --include-onefile-external-data=PATTERN: 在单文件二进制文件外部包含指定的数据文件模式
         'list-package-data=LIST_PACKAGE_DATA': '',  # --list-package-data=LIST_PACKAGE_DATA: 输出为给定包名称找到的数据文件
