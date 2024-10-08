@@ -347,11 +347,11 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
         env = QProcessEnvironment.systemEnvironment()
 
         if self.project["type"] in ("PyQt5", "PySide2"):
-            loadUi = os.path.join(os.path.dirname(__file__), "eric", "UicLoadUi5.py")
+            loadUi = os.path.join(os.path.dirname(__file__), "eric/uic", "UicLoadUi5.py")
         elif self.project["type"] in ("PyQt6", "E7Plugin"):
-            loadUi = os.path.join(os.path.dirname(__file__), "eric", "UicLoadUi6.py")
+            loadUi = os.path.join(os.path.dirname(__file__), "eric/uic", "UicLoadUi6.py")
         elif self.project["type"] in ("PySide6"):
-            loadUi = os.path.join(os.path.dirname(__file__), "eric", "UicLoadUipy6.py")
+            loadUi = os.path.join(os.path.dirname(__file__), "eric/uic", "UicLoadUipy6.py")
         args = [
             loadUi,
             command,
