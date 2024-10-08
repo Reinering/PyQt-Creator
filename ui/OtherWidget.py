@@ -213,17 +213,24 @@ class OtherWidget(QWidget, Ui_Form):
 
         widget_generate_code = QWidget(self.card_generate_code)
         envLabel = BodyLabel("UI 文件")
+        self.spinner_generate_code = GifLabel(self.card_requirements)
+        self.spinner_generate_code.setGif(FluentGif.LOADING.path())
+        self.spinner_generate_code.setFixedSize(30, 30)
+        self.spinner_generate_code.hide()
         self.button_filepath_ui = FilePathSelector(self.card_generate_code)
         self.button_filepath_ui.setFileTypes("*.ui")
         self.button_filepath_ui.setFixedWidth(200)
-        self.button_generate_code = PrimaryPushButton(self.card_generate_code)
-        self.button_generate_code.setText("打开")
-        self.button_generate_code.clicked.connect(self.on_button_generate_code_clicked)
+        self.button_generate_code = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        menu = RoundMenu(parent=self.button_generate_code)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '编译', triggered=self.generate_code_compile))
+        menu.addAction(Action(FluentIcon.ALBUM, '生成', triggered=self.generate_code_generate))
+        self.button_generate_code.setMenu(menu)
 
         layout = QHBoxLayout(widget_generate_code)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(envLabel)
         layout.addStretch(1)
+        layout.addWidget(self.spinner_generate_code)
         layout.addWidget(self.button_filepath_ui)
         layout.addWidget(self.button_generate_code)
         self.card_generate_code.addWidget(widget_generate_code)
@@ -396,7 +403,38 @@ class OtherWidget(QWidget, Ui_Form):
 
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")}')
 
-    def on_button_generate_code_clicked(self):
+    def generate_code_compile(self):
+        if not self.button_filepath_ui.text():
+            Message.error("错误", "UI文件不能为空", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+        cmd = ''
+        if self.comboBox_generate_code_type.currentText() == "PySide2":
+            cmd = PyPath.PYSIDE6_UIC.path(path)
+        elif self.comboBox_generate_code_type.currentText() == "PySide6":
+            cmd = PyPath.PYSIDE6_UIC.path(path)
+        elif self.comboBox_generate_code_type.currentText() == "PyQt5":
+            cmd = PyPath.PYQT5_UIC.path(path)
+        elif self.comboBox_generate_code_type.currentText() == "PyQt6":
+            cmd = PyPath.PYQT6_UIC.path(path)
+        (filePath, fileName) = os.path.split(self.button_filepath_ui.text())
+        outFile = os.path.join(filePath, 'Ui_' + fileName.replace('ui', 'py'))
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("generate_code", cmd, self.button_filepath_ui.text(), '-o', outFile)
+        self.venvMangerTh.start()
+
+        self.button_generate_code.setEnabled(False)
+        self.spinner_generate_code.setState(True)
+        self.spinner_generate_code.show()
+
+        Message.info("提示", "生成中，请稍后", self)
+
+    def generate_code_generate(self):
         if not self.button_filepath_ui.text():
             Message.error("错误", "UI文件不能为空", self)
             return
@@ -411,9 +449,13 @@ class OtherWidget(QWidget, Ui_Form):
             "interpreter": path
         }
 
+        self.spinner_generate_code.setState(True)
+        self.spinner_generate_code.show()
         dialog = GenerateCodeDialog(self.button_filepath_ui.text(), project)
         dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
         dialog.show()
+        self.spinner_generate_code.setState(False)
+        self.spinner_generate_code.hide()
 
     def receive_VMresult(self,  cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
@@ -453,6 +495,16 @@ class OtherWidget(QWidget, Ui_Form):
                 Message.info("提示", "安装成功", self)
             elif "generate" in cmd:
                 Message.info("提示", "生成成功", self)
+        elif "generate_code" in cmd:
+            self.button_generate_code.setEnabled(True)
+            self.spinner_generate_code.setState(False)
+            self.spinner_generate_code.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("提示", "生成成功", self)
         else:
             pass
 
@@ -499,6 +551,10 @@ class VenvManagerThread(QThread):
             elif "upgrade" in cmd:
                 result = self.pyI.pip("install", "--upgrade", *self.args)
 
+            self.signal_result.emit(cmd, result)
+        elif "generate_code" in cmd:
+            print("generate_code", self.args)
+            result = self.pyI.cmd(self.args)
             self.signal_result.emit(cmd, result)
         elif "generate" in cmd:
             result = self.pyI.cmd(self.args[0])
