@@ -2,3 +2,25 @@
 QScrollArea {
     border: none;
 }
+
+QSplitter {
+    border: none;
+}
+
+QFrame {
+    border: none;
+}
+
+QFrame > #leftFrame {
+    background: rgba(245, 247, 248, 0.051);
+    border: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+QFrame > #rightFrame {
+    background: rgba(255, 255, 255, 0.151);
+    border: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}

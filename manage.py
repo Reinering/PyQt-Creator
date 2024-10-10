@@ -109,6 +109,8 @@ REQUIREMENTS_URLS = {
 
 SETTINGS = {
     "project": {
+        "python_env_modes": ["独立模式", "跟随全局"],
+        "project_types": ["PySide6", "PyQt6", "PyQt5", "PySide2"]
 
     },
     "designer": {
@@ -122,7 +124,7 @@ SETTINGS = {
     },
     "other": {
         "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],
-        "project_types": ["PySide2", "PySide6", "PyQt5", "PyQt6"]
+        "project_types": ["PySide6", "PyQt6", "PyQt5", "PySide2"]
     },
     "settings": {
         "theme": ['Light', 'Dark'],
@@ -137,6 +139,12 @@ SETTINGS = {
 
 CURRENT_SETTINGS = {
     "project": {
+        "mode": 'global',
+        "custom_python_path": "",
+        "project_path": "",
+        "project_name": "",
+        "project_type": 'PySide6',
+        "recently_opened": []
 
     },
     "designer": {
