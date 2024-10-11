@@ -30,7 +30,7 @@ from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBa
 from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
-from qfluentexpand.common.gif import FluentGif
+from qfluentexpand.common.gif import APPGIF
 
 from .Ui_PackWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
@@ -103,7 +103,7 @@ class PackWidget(QWidget, Ui_Form):
         horizontalSpacer = QSpacerItem(1000, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.spinner_open = GifLabel(self.titleCard)
-        self.spinner_open.setGif(FluentGif.LOADING.path())
+        self.spinner_open.setGif(APPGIF.LOADING.path())
         self.spinner_open.setFixedSize(30, 30)
         self.spinner_open.hide()
         self.button_open = PrimaryDropDownPushButton(FluentIcon.MAIL, '打包')
@@ -184,7 +184,7 @@ class PackWidget(QWidget, Ui_Form):
         widget_pyinstaller = QWidget(self.card_pyinstaller)
         label_pyinstaller = BodyLabel("Pyinstaller 模块")
         self.spinner_pyinstaller = GifLabel(self.card_pyinstaller)
-        self.spinner_pyinstaller.setGif(FluentGif.LOADING.path())
+        self.spinner_pyinstaller.setGif(APPGIF.LOADING.path())
         self.spinner_pyinstaller.setFixedSize(30, 30)
         self.spinner_pyinstaller.hide()
         self.button_pyinstaller = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
@@ -205,7 +205,7 @@ class PackWidget(QWidget, Ui_Form):
         widget_pyinstaller_settingfile = QWidget(self.card_pyinstaller)
         label_pyinstaller = BodyLabel("pyinstaller 配置文件")
         self.spinner_pyinstaller_settingfile = GifLabel(self.card_pyinstaller)
-        self.spinner_pyinstaller_settingfile.setGif(FluentGif.LOADING.path())
+        self.spinner_pyinstaller_settingfile.setGif(APPGIF.LOADING.path())
         self.spinner_pyinstaller_settingfile.setFixedSize(30, 30)
         self.spinner_pyinstaller_settingfile.hide()
         self.button_pyinstaller_settingfile = PrimaryPushButton(self.card_pyinstaller)
@@ -225,7 +225,7 @@ class PackWidget(QWidget, Ui_Form):
         widget_nuitka = QWidget(self.card_nuitka)
         label_nuitka = BodyLabel("Nuitka 模块")
         self.spinner_nuitka = GifLabel(self.card_nuitka)
-        self.spinner_nuitka.setGif(FluentGif.LOADING.path())
+        self.spinner_nuitka.setGif(APPGIF.LOADING.path())
         self.spinner_nuitka.setFixedSize(30, 30)
         self.spinner_nuitka.hide()
         self.button_nuitka = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
@@ -246,7 +246,7 @@ class PackWidget(QWidget, Ui_Form):
         widget_nuitka_settingfile = QWidget(self.card_nuitka)
         label_nuitka = BodyLabel("nuitka 配置文件")
         self.spinner_nuitka_settingfile = GifLabel(self.card_nuitka)
-        self.spinner_nuitka_settingfile.setGif(FluentGif.LOADING.path())
+        self.spinner_nuitka_settingfile.setGif(APPGIF.LOADING.path())
         self.spinner_nuitka_settingfile.setFixedSize(30, 30)
         self.spinner_nuitka_settingfile.hide()
         self.button_nuitka_settingfile = PrimaryPushButton(self.card_nuitka)

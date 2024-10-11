@@ -27,7 +27,7 @@ from qfluentwidgets.common.style_sheet import FluentStyleSheet, getStyleSheetFro
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
-from qfluentexpand.common.gif import FluentGif
+from qfluentexpand.common.gif import APPGIF
 from .compoments.info import Message
 from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
@@ -145,7 +145,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_existing = QWidget(self.card_pyenv)
         label_existing = BodyLabel("现有环境")
         self.spinner_existing = GifLabel(self.card_pyenv)
-        self.spinner_existing.setGif(FluentGif.LOADING.path())
+        self.spinner_existing.setGif(APPGIF.LOADING.path())
         self.spinner_existing.setFixedSize(30, 30)
         self.spinner_existing.hide()
         self.comboBox_existing = ComboBox(self.card_pyenv)
@@ -170,7 +170,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_new = QWidget(self.card_pyenv)
         label_new = BodyLabel("安装新环境")
         self.spinner_new = GifLabel(self.card_pyenv)
-        self.spinner_new.setGif(FluentGif.LOADING.path())
+        self.spinner_new.setGif(APPGIF.LOADING.path())
         self.spinner_new.setFixedSize(30, 30)
         self.spinner_new.hide()
         self.comboBox_new_maxbit = ComboBox(self.card_pyenv)

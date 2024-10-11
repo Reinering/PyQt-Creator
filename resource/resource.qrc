@@ -24,18 +24,25 @@
     <file>stylesheets/dark/setting.qss</file>
   </qresource>
   <qresource prefix="images">
-    <file>icons/dark/document.svg</file>
-    <file>icons/light/document.svg</file>
-    <file>icons/dark/esxi.svg</file>
-    <file>icons/light/esxi.svg</file>
-    <file>icons/dark/linux.svg</file>
-    <file>icons/light/linux.svg</file>
-    <file>icons/dark/log.svg</file>
-    <file>icons/light/log.svg</file>
+
     <file>icons/dark/home.svg</file>
     <file>icons/light/home.svg</file>
+    <file>icons/light/project.svg</file>
+    <file>icons/dark/project.svg</file>
+    <file>icons/dark/designer.svg</file>
+    <file>icons/light/designer.svg</file>
+    <file>icons/dark/pack.svg</file>
+    <file>icons/light/pack.svg</file>
+    <file>icons/dark/other.svg</file>
+    <file>icons/light/other.svg</file>
+    <file>icons/dark/console.svg</file>
+    <file>icons/light/console.svg</file>
+    <file>icons/dark/document.svg</file>
+    <file>icons/light/document.svg</file>
     <file>icons/dark/settings.svg</file>
     <file>icons/light/settings.svg</file>
     <file>images/index.png</file>
+    <file>icons/dark/log.svg</file>
+    <file>icons/light/log.svg</file>
   </qresource>
 </RCC>

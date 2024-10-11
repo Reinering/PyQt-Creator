@@ -23,12 +23,14 @@ from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBa
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.label.label import GifLabel
-from qfluentexpand.common.gif import FluentGif
+from qfluentexpand.common.gif import APPGIF
+from qfluentexpand.common.icon import APPICON
 
 from .Ui_DocumentWidget import Ui_Form
 from .PyinstallerDocDialog import PyinstallerDocDialog
 from .NuitkaDocDialog import NuitkaDocDialog
 from .utils.stylesheets import StyleSheet
+from .utils.icon import AppIcon
 
 
 
@@ -86,7 +88,7 @@ class DocumentWidget(QWidget, Ui_Form):
     def initWidget(self):
         self.card_pyinstaller = PrimaryPushSettingCard(
                                     text="打开",
-                                    icon=FluentIcon.HELP,
+                                    icon=APPICON.SOURCE,
                                     title="pyinstaller",
                                     content="文档"
                                 )
@@ -98,7 +100,7 @@ class DocumentWidget(QWidget, Ui_Form):
 
         self.card_nuitka = PrimaryPushSettingCard(
                                     text="打开",
-                                    icon=FluentIcon.HELP,
+                                    icon=APPICON.SOURCE,
                                     title="nuitka",
                                     content="文档"
                                 )
@@ -108,7 +110,7 @@ class DocumentWidget(QWidget, Ui_Form):
 
 
 
-        self.card_pipreqs = SettingGroupCard(FluentIcon.SPEED_OFF, "pipreqs", "",
+        self.card_pipreqs = SettingGroupCard(APPICON.SOURCE, "pipreqs", "",
                                             self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pipreqs, 3, 0, 1, 1)
 
