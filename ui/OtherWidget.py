@@ -553,7 +553,6 @@ class VenvManagerThread(QThread):
 
             self.signal_result.emit(cmd, result)
         elif "generate_code" in cmd:
-            print("generate_code", self.args)
             result = self.pyI.cmd(self.args)
             self.signal_result.emit(cmd, result)
         elif "generate" in cmd:
