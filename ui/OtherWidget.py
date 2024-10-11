@@ -25,12 +25,13 @@ from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBa
 from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
-from qfluentexpand.common.gif import FluentGif
+from qfluentexpand.common.gif import APPGIF
 
 from .Ui_OtherWidget import Ui_Form
 from .GenerateCodeDialog import GenerateCodeDialog
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
+from .utils.icon import AppIcon
 from .compoments.info import Message
 from common.py import PyInterpreter, PyPath
 from common.pyinstaller import PyinstallerPackage
@@ -146,7 +147,7 @@ class OtherWidget(QWidget, Ui_Form):
         widget_pipreqs = QWidget(self.card_requirements)
         envLabel = BodyLabel("pipreqs")
         self.spinner_pipreqs = GifLabel(self.card_requirements)
-        self.spinner_pipreqs.setGif(FluentGif.LOADING.path())
+        self.spinner_pipreqs.setGif(APPGIF.LOADING.path())
         self.spinner_pipreqs.setFixedSize(30, 30)
         self.spinner_pipreqs.hide()
         self.button_pipreqs = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
@@ -179,7 +180,7 @@ class OtherWidget(QWidget, Ui_Form):
         widget_requirements = QWidget(self.card_requirements)
         envLabel = BodyLabel("requirements")
         self.spinner_requirements = GifLabel(self.card_requirements)
-        self.spinner_requirements.setGif(FluentGif.LOADING.path())
+        self.spinner_requirements.setGif(APPGIF.LOADING.path())
         self.spinner_requirements.setFixedSize(30, 30)
         self.spinner_requirements.hide()
 
@@ -214,7 +215,7 @@ class OtherWidget(QWidget, Ui_Form):
         widget_generate_code = QWidget(self.card_generate_code)
         envLabel = BodyLabel("UI 文件")
         self.spinner_generate_code = GifLabel(self.card_requirements)
-        self.spinner_generate_code.setGif(FluentGif.LOADING.path())
+        self.spinner_generate_code.setGif(APPGIF.LOADING.path())
         self.spinner_generate_code.setFixedSize(30, 30)
         self.spinner_generate_code.hide()
         self.button_filepath_ui = FilePathSelector(self.card_generate_code)

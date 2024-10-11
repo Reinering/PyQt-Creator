@@ -13,6 +13,8 @@ from PySide6.QtWidgets import QWidget, QGridLayout
 import os
 
 from qfluentwidgets import NavigationItemPosition, PipsPager
+from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIcon as FIF
+
 from qfluentexpand.window.fluent_window import FluentWindow
 
 from .Ui_MainWindow import Ui_Form
@@ -88,37 +90,37 @@ class MainWindow(FluentWindow, Ui_Form):
 
         self.addSubInterface(
             self.home,
-            AppIcon.HOME.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.HOME,
             "Home",
             NavigationItemPosition.SCROLL
         )
         self.addSubInterface(
             self.project,
-            AppIcon.LINUX.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.PROJECT,
             "Project",
             NavigationItemPosition.SCROLL
         )
         self.addSubInterface(
             self.designer,
-            AppIcon.LINUX.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.DESIGNER,
             "Designer",
             NavigationItemPosition.SCROLL
         )
         self.addSubInterface(
             self.pack,
-            AppIcon.LINUX.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.PACK,
             "Pack",
             NavigationItemPosition.SCROLL
         )
         self.addSubInterface(
             self.other,
-            AppIcon.LINUX.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.OTHER,
             "Other",
             NavigationItemPosition.SCROLL
         )
         self.addSubInterface(
             self.console,
-            AppIcon.LINUX.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.CONSOLE,
             "Console",
             NavigationItemPosition.SCROLL
         )
@@ -127,13 +129,13 @@ class MainWindow(FluentWindow, Ui_Form):
 
         self.addSubInterface(
             self.document,
-            AppIcon.DOCUMENT.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.DOCUMENT,
             "Document",
             NavigationItemPosition.BOTTOM
         )
         self.addSubInterface(
             self.settings,
-            AppIcon.SETTINGS.icon(UI_CONFIG["theme"].lower()),
+            AppIcon.SETTINGS,
             "Settings",
             NavigationItemPosition.BOTTOM
         )

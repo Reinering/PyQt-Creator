@@ -30,7 +30,7 @@ from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 from qfluentexpand.components.card.settingcard import SettingGroupCard, ComboBoxSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector
 from qfluentexpand.components.label.label import GifLabel
-from qfluentexpand.common.gif import FluentGif
+from qfluentexpand.common.gif import APPGIF
 
 from .Ui_DesignerWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
@@ -144,7 +144,7 @@ class DesignerWidget(QWidget, Ui_Form):
         widget = QWidget(self.designerSetCard)
         label_designer_install = BodyLabel("安装Designer环境")
         self.spinner_designer_install = GifLabel(self.designerSetCard)
-        self.spinner_designer_install.setGif(FluentGif.LOADING.path())
+        self.spinner_designer_install.setGif(APPGIF.LOADING.path())
         self.spinner_designer_install.setFixedSize(30, 30)
         self.spinner_designer_install.hide()
         self.button_designer_install = PrimaryPushButton(self.designerSetCard)
@@ -161,7 +161,7 @@ class DesignerWidget(QWidget, Ui_Form):
         widget_plugin = QWidget(self.designerSetCard)
         label_designer_plugin_install = BodyLabel("安装第三方插件")
         self.spinner_designer_plugin_install = GifLabel(self.designerSetCard)
-        self.spinner_designer_plugin_install.setGif(FluentGif.LOADING.path())
+        self.spinner_designer_plugin_install.setGif(APPGIF.LOADING.path())
         self.spinner_designer_plugin_install.setFixedSize(30, 30)
         self.spinner_designer_plugin_install.hide()
         self.button_designer_thirdplugin = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')

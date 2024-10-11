@@ -36,7 +36,7 @@ from qfluentwidgets.common.icon import FluentIcon
 from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.line.selector import FilePathSelector
 from qfluentexpand.components.label.label import GifLabel
-from qfluentexpand.common.gif import FluentGif
+from qfluentexpand.common.gif import APPGIF
 
 from .Ui_ProjectWidget import Ui_Form
 from .GenerateCodeDialog import GenerateCodeDialog
@@ -121,7 +121,7 @@ class ProjectWidget(QWidget, Ui_Form):
 
         self.button_project = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作', self)
         self.spinner_project = GifLabel(self.titleCard)
-        self.spinner_project.setGif(FluentGif.LOADING.path())
+        self.spinner_project.setGif(APPGIF.LOADING.path())
         self.spinner_project.setFixedSize(30, 30)
         self.spinner_project.hide()
         hBoxLayout.addItem(horizontalSpacer)
