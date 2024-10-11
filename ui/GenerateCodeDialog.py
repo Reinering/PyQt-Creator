@@ -406,7 +406,6 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
         self.LineEditor_filter.clear()
 
         output, ok = self.__runUicLoadUi("signatures")
-        print("output", output, ok)
         if ok and output:
             try:
                 objectsList = json.loads(output.strip())

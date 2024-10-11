@@ -12,14 +12,14 @@ from PySide6.QtWidgets import (
     QGridLayout, QHBoxLayout, QVBoxLayout,
     QSpacerItem, QSizePolicy, QSplitter,
     QFrame, QFileSystemModel,
-    QFileDialog, QLabel
+    QFileDialog, QLabel,
+    QTreeView
 )
 from PySide6.QtGui import QIcon
 import os.path
 import logging
 import clipboard
 import subprocess
-
 
 from qfluentwidgets import (
     CardWidget,
@@ -45,6 +45,7 @@ from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .compoments.menu import RecentFilesMenu
 from .compoments.info import Message
+from .compoments.tree import FileSystemModel, FilesystemModel
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
 from manage import CURRENT_SETTINGS, SETTINGS, LIBS, UI_CONFIG
@@ -257,6 +258,19 @@ class ProjectWidget(QWidget, Ui_Form):
             self.button_filepath.setText(CURRENT_SETTINGS["project"]["custom_python_path"])
 
     def initTree(self, rootPath):
+        self.treeTitle.setText(f"项目目录 ({rootPath})")
+        fileModel = FilesystemModel()
+        fileModel.setRootPath(rootPath)
+        self.tree.setModel(fileModel)
+        self.tree.setEditTriggers(QTreeView.EditTrigger.NoEditTriggers)
+        # self.tree.setRootIndex(fileModel.index(rootPath))
+
+        # 隐藏列
+        self.tree.setColumnHidden(1, True)
+        self.tree.setColumnHidden(2, True)
+        self.tree.setColumnHidden(3, True)
+
+    def initTree1(self, rootPath):
         self.treeTitle.setText(f"项目目录 ({rootPath})")
         fileModel = QFileSystemModel()
         fileModel.setRootPath(rootPath)
