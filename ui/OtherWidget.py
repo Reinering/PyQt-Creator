@@ -188,6 +188,7 @@ class OtherWidget(QWidget, Ui_Form):
         menu = RoundMenu(parent=self.button_requirements)
         menu.addAction(Action(FluentIcon.BASKETBALL, '生成', triggered=self.generate_requirements))
         menu.addAction(Action(FluentIcon.ALBUM, '安装', triggered=self.install_requirements))
+        menu.addAction(Action(FluentIcon.ALBUM, '编辑', triggered=self.edit_requirements))
         self.button_requirements.setMenu(menu)
         layout = QHBoxLayout(widget_requirements)
         layout.setContentsMargins(30, 5, 30, 5)
@@ -369,6 +370,20 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_requirements.show()
 
         Message.info("提示", "安装中，请稍后", self)
+
+    def edit_requirements(self):
+        folder = self.button_env_folder.text()
+        if not folder or folder == "选择":
+            Message.error("错误", "请选择项目根目录", self)
+            return
+
+        file = os.path.join(folder, "requirements.txt")
+        if not os.path.exists(file):
+            Message.error("错误", "requirements配置文件不存在", self)
+            return
+
+        os.system(f'notepad {file}')
+
 
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["other"]["mode"] = text
