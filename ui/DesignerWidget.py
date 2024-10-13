@@ -8,7 +8,7 @@ Module implementing DesignerWidget.
 
 
 from PySide6.QtCore import Slot, Qt, QRect, QThread, Signal
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
 import logging
 
@@ -183,7 +183,12 @@ class DesignerWidget(QWidget, Ui_Form):
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(self.verticalSpacer, 3, 0, 1, 1)
 
-        self.configure()
+        try:
+            self.configure()
+        except Exception as e:
+            logging.error(e)
+            QMessageBox.critical(self, "初始化错误", f"请检查配置文件{str(e)}")
+            raise Exception(f"请检查配置文件{str(e)}")
 
     def configure(self):
         if CURRENT_SETTINGS["designer"]["mode"] in SETTINGS["designer"]["python_env_modes"]:
