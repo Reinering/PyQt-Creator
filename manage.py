@@ -157,6 +157,7 @@ CURRENT_SETTINGS = {
         "custom_python_path": "",
         "main": "",
         "outPath": "",
+        "outName": "",
         "pyinstaller": {},
         "nuitka": {},
 

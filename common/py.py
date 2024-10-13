@@ -125,14 +125,41 @@ class PyInterpreter:
     def popen(self, cmd):
         print(f"cmd: {cmd}")
 
-        self.process = subprocess.Popen(cmd, shell=True)
-        self.process.wait()
+        # self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        # stdout, stderr = self.process.communicate()
+        # print(f"{stdout.decode('gbk'), stderr.decode('gbk')}")
+        # if self.process.returncode == 0:
+        #     return [True, f"{stdout.decode('gbk')}"]
+        # else:
+        #     return (False, f"Error: {stderr.decode('gbk')}", f"Log: {stdout.decode('gbk')}")
+
+        env = os.environ.copy()
+
+        self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        outs = []
+        try:
+            while True:
+                line = self.process.stdout.readline().decode('gbk').strip('\n')\
+                    .strip('\r').strip(' ').replace('\\\\', '\\').replace('\\\\', '\\')
+                if line == '' and self.process.poll() != None:
+                    break
+                elif line == '\n' or line == '\r' or line == '\r\n' or line == ' ' or line == '':
+                    continue
+                print(line)
+                outs.append(line)
+        except Exception as e:
+            print(e)
+            return (False, f"Error: {e}")
+
+        if "nuitka" in cmd:
+            if len(outs) > 50:
+                outs = outs[-50:]
+
+        # out = '\n'.join(outs)
         if self.process.returncode == 0:
-            print(f"{self.process.stdout}")
-            return [True, f"{self.process.stdout}"]
+            return [True, f"{outs}"]
         else:
-            print(f"Error: {self.process.stderr}")
-            return (False, f"Error: {self.process.stderr}")
+            return (False, f"Error: {outs}")
 
     def pip(self, *args):
         command = [self.interpreterPath, '-m', 'pip']

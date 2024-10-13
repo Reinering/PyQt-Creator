@@ -45,7 +45,7 @@ class NuitkaPackage:
         'include-data-dir': [],  # --include-data-dir=DIRECTORY=DIRECTORY: 在分发中包含完整目录的数据文件
         'noinclude-data-files': [],  # --noinclude-data-files=PATTERN: 不包含匹配给定文件名模式的数据文件
         'include-onefile-external-data': [],  # --include-onefile-external-data=PATTERN: 在单文件二进制文件外部包含指定的数据文件模式
-        'list-package-data=LIST_PACKAGE_DATA': '',  # --list-package-data=LIST_PACKAGE_DATA: 输出为给定包名称找到的数据文件
+        'list-package-data': [],  # --list-package-data=LIST_PACKAGE_DATA: 输出为给定包名称找到的数据文件
         'include-raw-dir': [],  # --include-raw-dir=DIRECTORY: 在分发中完全包含原始目录
 
         # 元数据支持
@@ -53,7 +53,7 @@ class NuitkaPackage:
 
         # DLL文件
         'noinclude-dlls': [],  # --noinclude-dlls=PATTERN: 不包含匹配给定文件名模式的DLL文件
-        'list-package-dlls=LIST_PACKAGE_DLLS': [],  # --list-package-dlls=LIST_PACKAGE_DLLS: 输出为给定包名称找到的DLL
+        'list-package-dlls': [],  # --list-package-dlls=LIST_PACKAGE_DLLS: 输出为给定包名称找到的DLL
 
         # 警告控制
         'warn-implicit-exceptions': False,  # [True, False] --warn-implicit-exceptions: 启用对编译时检测到的隐式异常的警
@@ -123,7 +123,8 @@ class NuitkaPackage:
         'quiet': False,  # [True, False] --quiet: 禁用所有信息输出，但显示警告
         'show-scons': False,  # [True, False] --show-scons: 以详细信息运行C构建后端Scons
         'no-progressbar': False,  # [True, False] --no-progressbar: 禁用进度条
-        'show-memory': False,  # [True, False] --show-progress: 过时：提供进度信息和统计
+        'show-progress': False,  # [True, False] --show-progress: 过时：提供进度信息和统计
+        'show-memory': False,  # [True, False] --show-memory: 提供内存信息和统计
         'show-modules': False,  # [True, False] --show-modules: 提供包含的模块和DLL的信息
         'show-modules-output': '',  # --show-modules-output=PATH: 输出'--show-modules'的位置
         'verbose': True,  # [True, False] --verbose: 输出所采取行动的详细信息，特别是在优化中
@@ -168,7 +169,7 @@ class NuitkaPackage:
         # 插件控制
         'enable-plugins': [],  # --enable-plugins=PLUGIN_NAME: 启用的插件
         'disable-plugins': [],  # --disable-plugins=PLUGIN_NAME: 禁用的插件
-        'user-plugin': '',  # --user-plugin=PATH: 用户插件的文件名
+        'user-plugin': [],  # --user-plugin=PATH: 用户插件的文件名
         'plugin-list': False,  # [True, False] --plugin-list: 显示所有可用插件的列表并退出
         'plugin-no-detection': False,  # [True, False] --plugin-no-detection: 禁用插件检测机制
         'module-parameter': '',  # --module-parameter=MODULE_PARAMETERS: 提供模块参数
@@ -199,16 +200,54 @@ class NuitkaPackage:
         if self.NUITKA_PARAMS['onefile']:
             cmd += ' --onefile'
 
+        if self.NUITKA_PARAMS['python-debug']:
+            cmd += ' --python-debug'
+
+        if self.NUITKA_PARAMS['python-for-scons']:
+            cmd += ' --python-for-scons=' + self.NUITKA_PARAMS['python-for-scons']
 
 
         # 模块和包的包含控制
-
-        # 导入模块的跟踪控制
-
-        # 数据文件
         if self.NUITKA_PARAMS['include-package']:
             for tmp in self.NUITKA_PARAMS['include-package']:
                 cmd += ' --include-package=' + tmp
+
+        if self.NUITKA_PARAMS['include-module']:
+            for tmp in self.NUITKA_PARAMS['include-module']:
+                cmd += ' --include-module=' + tmp
+
+        if self.NUITKA_PARAMS['include-plugin-directory']:
+            for tmp in self.NUITKA_PARAMS['include-plugin-directory']:
+                cmd += ' --include-plugin-directory=' + tmp
+
+        if self.NUITKA_PARAMS['include-plugin-files']:
+            for tmp in self.NUITKA_PARAMS['include-plugin-files']:
+                cmd += ' --include-plugin-files=' + tmp
+
+        if self.NUITKA_PARAMS['prefer-source-code']:
+            cmd += ' --prefer-source-code'
+
+
+        # 导入模块的跟踪控制
+        if self.NUITKA_PARAMS['follow-imports']:
+            cmd += ' --follow-imports'
+
+        if self.NUITKA_PARAMS['nofollow-imports']:
+            cmd += ' --nofollow-imports'
+
+        if self.NUITKA_PARAMS['follow-stdlib']:
+            cmd += ' --follow-stdlib'
+
+        if self.NUITKA_PARAMS['onefile-no-compression']:
+            cmd += ' --onefile-no-compression'
+
+        if self.NUITKA_PARAMS['onefile-as-archive']:
+            cmd += ' --onefile-as-archive'
+
+        # 数据文件
+        if self.NUITKA_PARAMS['include-package-data']:
+            for tmp in self.NUITKA_PARAMS['include-package-data']:
+                cmd += ' --include-package-data=' + tmp
 
         if self.NUITKA_PARAMS['include-data-files']:
             for tmp in self.NUITKA_PARAMS['include-data-files']:
@@ -218,15 +257,50 @@ class NuitkaPackage:
             for tmp in self.NUITKA_PARAMS['include-data-dir']:
                 cmd += ' --include-data-dir=' + tmp
 
+        if self.NUITKA_PARAMS['noinclude-data-files']:
+            for tmp in self.NUITKA_PARAMS['noinclude-data-files']:
+                cmd += ' --noinclude-data-files=' + tmp
+
+        if self.NUITKA_PARAMS['include-onefile-external-data']:
+            for tmp in self.NUITKA_PARAMS['include-onefile-external-data']:
+                cmd += ' --include-onefile-external-data=' + tmp
+
+        if self.NUITKA_PARAMS['include-raw-dir']:
+            for tmp in self.NUITKA_PARAMS['include-raw-dir']:
+                cmd += ' --include-raw-dir=' + tmp
+
         # 元数据支持
 
         # DLL文件
+        if self.NUITKA_PARAMS['noinclude-dlls']:
+            for tmp in self.NUITKA_PARAMS['noinclude-dlls']:
+                cmd += ' --noinclude-dlls=' + tmp
+
+        if self.NUITKA_PARAMS['list-package-dlls=LIST_PACKAGE_DLLS']:
+            for tmp in self.NUITKA_PARAMS['list-package-dlls=LIST_PACKAGE_DLLS']:
+                cmd += ' --list-package-dlls=LIST_PACKAGE_DLLS=' + tmp
 
         # 警告控制
+        if self.NUITKA_PARAMS['warn-implicit-exceptions']:
+            cmd += ' --warn-implicit-exceptions'
+
+        if self.NUITKA_PARAMS['warn-unusual-code']:
+            cmd += ' --warn-unusual-code'
+
+        if self.NUITKA_PARAMS['assume-yes-for-downloads']:
+            cmd += ' --assume-yes-for-downloads'
 
         # 编译后立即执行
+        if self.NUITKA_PARAMS['run']:
+            cmd += ' --run'
+
+        if self.NUITKA_PARAMS['debugger']:
+            cmd += ' --debugger=' + self.NUITKA_PARAMS['debugger']
 
         # 编译选择
+        if self.NUITKA_PARAMS['full-compat']:
+            cmd += ' --full-compat'
+
         if self.NUITKA_PARAMS['output-filename']:
             cmd += ' --output-filename=' + self.NUITKA_PARAMS['output-filename']
 
@@ -239,22 +313,93 @@ class NuitkaPackage:
         if self.NUITKA_PARAMS['remove-output']:
             cmd += ' --remove-output'
 
+        if self.NUITKA_PARAMS['no-pyi-file']:
+            cmd += ' --no-pyi-file'
+
 
         # 部署控制
+        if self.NUITKA_PARAMS['deployment']:
+            cmd += ' --deployment'
 
         # 环境控制
 
         # 调试功能
+        if self.NUITKA_PARAMS['debug']:
+            cmd += ' --debug'
+
+        if self.NUITKA_PARAMS['unstripped']:
+            cmd += ' --unstripped'
+
+        if self.NUITKA_PARAMS['profile']:
+            cmd += ' --profile'
+
+        if self.NUITKA_PARAMS['internal-graph']:
+            cmd += ' --internal-graph'
+
+        if self.NUITKA_PARAMS['trace-execution']:
+            cmd += ' --trace-execution'
+
+        if self.NUITKA_PARAMS['recompile-c-only']:
+            cmd += ' --recompile-c-only'
+
+        if self.NUITKA_PARAMS['low-memory']:
+            cmd += ' --low-memory'
+
+        if self.NUITKA_PARAMS['generate-c-only']:
+            cmd += ' --generate-c-only'
 
         # 后端C编译器
-        if self.NUITKA_PARAMS['lto']:
+        if self.NUITKA_PARAMS['clang']:
+            cmd += ' --clang'
+
+        if self.NUITKA_PARAMS['mingw64']:
+            cmd += ' --mingw64'
+
+        if self.NUITKA_PARAMS['lto'] == "yes":
             cmd += ' --lto=yes'
 
+
+
         # 缓存控制
+        if self.NUITKA_PARAMS['disable-bytecode-cache']:
+            cmd += ' --disable-bytecode-cache'
+
+        if self.NUITKA_PARAMS['disable-ccache']:
+            cmd += ' --disable-ccache'
+
+        if self.NUITKA_PARAMS['disable-dll-dependency-cache']:
+            cmd += ' --disable-dll-dependency-cache'
+
+        if self.NUITKA_PARAMS['force-dll-dependency-cache-update']:
+            cmd += ' --force-dll-dependency-cache-update'
 
         # PGO编译
+        if self.NUITKA_PARAMS['quiet']:
+            cmd += ' --quiet'
+
+        if self.NUITKA_PARAMS['show-scons']:
+            cmd += ' --show-scons'
+
+        if self.NUITKA_PARAMS['no-progressbar']:
+            cmd += ' --no-progressbar'
+
+        if self.NUITKA_PARAMS['show-progress']:
+            cmd += ' --show-progress'
+
+        if self.NUITKA_PARAMS['show-memory']:
+            cmd += ' --show-memory'
+
+        if self.NUITKA_PARAMS['show-modules']:
+            cmd += ' --show-modules'
+
+        if self.NUITKA_PARAMS['show-modules-output']:
+            cmd += ' --show-modules-output=' + self.NUITKA_PARAMS['show-modules-output']
+
         if self.NUITKA_PARAMS['verbose']:
             cmd += ' --verbose'
+
+        if self.NUITKA_PARAMS['verbose-output']:
+            cmd += ' --verbose-output=' + self.NUITKA_PARAMS['verbose-output']
 
         # 通用操作系统控制
         if self.NUITKA_PARAMS['windows-console-mode']:
@@ -267,8 +412,30 @@ class NuitkaPackage:
         # macOS特定控制
 
         # Linux特定控制
+        if self.NUITKA_PARAMS['linux-icon']:
+            cmd += ' --linux-icon=' + self.NUITKA_PARAMS['linux-icon']
 
         # 二进制版本信息
+        if self.NUITKA_PARAMS['company-name']:
+            cmd += ' --company-name=' + self.NUITKA_PARAMS['company-name']
+
+        if self.NUITKA_PARAMS['product-name']:
+            cmd += ' --product-name=' + self.NUITKA_PARAMS['product-name']
+
+        if self.NUITKA_PARAMS['file-version']:
+            cmd += ' --file-version=' + self.NUITKA_PARAMS['file-version']
+
+        if self.NUITKA_PARAMS['product-version']:
+            cmd += ' --product-version=' + self.NUITKA_PARAMS['product-version']
+
+        if self.NUITKA_PARAMS['file-description']:
+            cmd += ' --file-description=' + self.NUITKA_PARAMS['file-description']
+
+        if self.NUITKA_PARAMS['copyright']:
+            cmd += ' --copyright=' + self.NUITKA_PARAMS['copyright']
+
+        if self.NUITKA_PARAMS['trademarks']:
+            cmd += ' --trademarks=' + self.NUITKA_PARAMS['trademarks']
 
         # 插件控制
         if self.NUITKA_PARAMS['enable-plugins']:
@@ -278,6 +445,16 @@ class NuitkaPackage:
         if self.NUITKA_PARAMS['disable-plugins']:
             for tmp in self.NUITKA_PARAMS['disable-plugins']:
                 cmd += ' --disable-plugins=' + tmp
+
+        if self.NUITKA_PARAMS['user-plugin']:
+            for tmp in self.NUITKA_PARAMS['user-plugin']:
+                cmd += ' --user-plugin=' + tmp
+
+        if self.NUITKA_PARAMS['plugin-list']:
+            cmd += ' --plugin-list'
+
+        if self.NUITKA_PARAMS['plugin-no-detection']:
+            cmd += ' --plugin-no-detection'
 
 
 
