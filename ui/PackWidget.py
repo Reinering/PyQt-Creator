@@ -9,7 +9,7 @@ Module implementing PackWidget.
 
 from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
 import datetime, time
 import simplejson as json
@@ -29,6 +29,7 @@ from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBa
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
+from qfluentexpand.components.line.editor import LineEditor
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
 
@@ -139,7 +140,7 @@ class PackWidget(QWidget, Ui_Form):
         self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
-        self.button_filepath.setFixedWidth(200)
+        self.button_filepath.setFixedWidth(300)
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
         layout = QHBoxLayout(self.widget_env)
         layout.setContentsMargins(30, 5, 30, 5)
@@ -154,8 +155,8 @@ class PackWidget(QWidget, Ui_Form):
         label_env = BodyLabel("程序入口", self.envCard)
         self.button_filepath_main = FilePathSelector(self.envCard)
         self.button_filepath_main.setFileTypes("python(*.py)")
-        self.button_filepath_main.setMaximumWidth(300)
-        self.button_filepath_main.setFixedWidth(200)
+        # self.button_filepath_main.setMaximumWidth(300)
+        self.button_filepath_main.setFixedWidth(300)
         self.button_filepath_main.textChanged.connect(self.on_button_filepath_main_textChanged)
         layout = QHBoxLayout(self.widget_env_main)
         layout.setContentsMargins(30, 5, 30, 5)
@@ -168,8 +169,8 @@ class PackWidget(QWidget, Ui_Form):
         label_env = BodyLabel("输出目录", self.envCard)
         self.button_filepath_out = FolderPathSelector(self.envCard)
         self.button_filepath_out.setPlaceholderText("默认为程序入口目录")
-        self.button_filepath_out.setMaximumWidth(300)
-        self.button_filepath_out.setFixedWidth(200)
+        # self.button_filepath_out.setMaximumWidth(300)
+        self.button_filepath_out.setFixedWidth(300)
         self.button_filepath_out.textChanged.connect(self.on_button_filepath_out_textChanged)
         layout = QHBoxLayout(self.widget_env_out)
         layout.setContentsMargins(30, 5, 30, 5)
@@ -177,6 +178,20 @@ class PackWidget(QWidget, Ui_Form):
         layout.addStretch(1)
         layout.addWidget(self.button_filepath_out)
         self.envCard.addWidget(self.widget_env_out)
+
+        self.widget_env_out_file = QWidget(self.envCard)
+        label_env = BodyLabel("输出文件名", self.envCard)
+        self.button_filename_out = LineEditor(self.envCard)
+        self.button_filename_out.setPlaceholderText("默认与程序入口文件名一致")
+        # self.button_filename_out.setMaximumWidth(300)
+        self.button_filename_out.setFixedWidth(300)
+        self.button_filename_out.textChanged.connect(self.on_button_filename_out_textChanged)
+        layout = QHBoxLayout(self.widget_env_out_file)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_env)
+        layout.addStretch(1)
+        layout.addWidget(self.button_filename_out)
+        self.envCard.addWidget(self.widget_env_out_file)
 
         self.card_pyinstaller = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyinstaller 设置", "参考文档配置参数",
                                                 self.scrollAreaWidgetContents)
@@ -260,12 +275,15 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_nuitka_settingfile)
         self.card_nuitka.addWidget(widget_nuitka_settingfile)
 
-
-
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
 
-        self.configure()
+        try:
+            self.configure()
+        except Exception as e:
+            logging.error(e)
+            QMessageBox.critical(self, "初始化错误", f"请检查配置文件{str(e)}")
+            raise Exception(f"请检查配置文件{str(e)}")
 
     def configure(self):
         if CURRENT_SETTINGS["pack"]["mode"] in SETTINGS["pack"]["python_env_modes"]:
@@ -279,6 +297,9 @@ class PackWidget(QWidget, Ui_Form):
 
         if CURRENT_SETTINGS["pack"]["outPath"]:
             self.button_filepath_out.setText(CURRENT_SETTINGS["pack"]["outPath"])
+
+        if CURRENT_SETTINGS["pack"]["outName"]:
+            self.button_filename_out.setText(CURRENT_SETTINGS["pack"]["outName"])
 
     def getPyPath(self):
         path = ""
@@ -315,6 +336,10 @@ class PackWidget(QWidget, Ui_Form):
         Message.info("提示", "线程已停止", self)
 
     def open_pyinstaller(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
         if not self.button_filepath_main.text() or self.button_filepath_main.text() == "选择":
             Message.error("错误", "请选择程序入口", self)
             return
@@ -327,7 +352,8 @@ class PackWidget(QWidget, Ui_Form):
         if not path:
             Message.error("错误", "python解释器获取失败", self)
             return
-
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
 
         with open(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json"), "r") as f:
             try:
@@ -341,21 +367,49 @@ class PackWidget(QWidget, Ui_Form):
 
         file = self.button_filepath_main.text()
         (filepath, filename) = os.path.split(file)
-        (name, suffix) = os.path.splitext(filename)
+        if self.button_filename_out.text():
+            name = self.button_filename_out.text()
+        elif PyinstallerPackage.PYINSTALLER_PARAMS["outName"]:
+            name = PyinstallerPackage.PYINSTALLER_PARAMS["outName"]
+        else:
+            (name, suffix) = os.path.splitext(filename)
+
         if self.button_filepath_out.text():
             PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = self.button_filepath_out.text()
         else:
             PyinstallerPackage.PYINSTALLER_PARAMS["distpath"] = filepath
         now = datetime.datetime.now().strftime("%Y%m%d%H%M")
-        PyinstallerPackage.PYINSTALLER_PARAMS["outName"] = name
 
-        tmp = PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"]
-        if not Path(tmp).is_absolute():
-            PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"] = os.path.join(filepath, tmp)
+        tmp = False
+        if not NuitkaPackage.NUITKA_PARAMS["output-filename"]:
+            PyinstallerPackage.PYINSTALLER_PARAMS["outName"] = name
+            tmp = True
 
-        cmd = PyPath.PYINSTALLER.path(path) + ' ' + PyinstallerPackage().getCMD() + " " + file
 
-        PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"] = tmp
+        # tmp = PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"]
+        # if not Path(tmp).is_absolute():
+        #     PyinstallerPackage.PYINSTALLER_PARAMS["iconPath"] = os.path.join(filepath, tmp)
+
+        (pypath, pyfilename) = os.path.split(path)
+
+        pythonPath = []
+        pythonPath.append(path)
+        pythonPath.append(filepath)
+        pythonPath.append(pypath)
+        pythonPath.append(os.path.join(pypath, "python312.zip"))
+        pythonPath.append(os.path.join(pypath, "DLLs"))
+        pythonPath.append(os.path.join(pypath, "Lib"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "win32"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "win32", "lib"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "Pythonwin"))
+
+        try:
+            cmd = "cd /d " + filepath + ' && ' + PyPath.PYINSTALLER.path(path) + ' ' + PyinstallerPackage().getCMD() + " " + filename
+        except Exception as e:
+            logging.error(e)
+            Message.error("错误", str(e), self)
+            return
 
         if PyinstallerPackage.PYINSTALLER_PARAMS["outType"] == "FILE":
             suffix = ".exe"
@@ -367,7 +421,11 @@ class PackWidget(QWidget, Ui_Form):
         else:
             cmd1 = "move " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + suffix) + " " + os.path.join(PyinstallerPackage.PYINSTALLER_PARAMS["distpath"], name + "_" + now + suffix)
 
+        if tmp:
+            PyinstallerPackage.PYINSTALLER_PARAMS["outName"] = ''
+
         self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setEnviron(PYTHONPATH=(';').join(pythonPath))
         self.venvMangerTh.setCMD("pack_pyinstaller", cmd, cmd1)
         self.venvMangerTh.start()
 
@@ -393,6 +451,8 @@ class PackWidget(QWidget, Ui_Form):
         if not path:
             Message.error("错误", "python解释器获取失败", self)
             return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
 
         with open(os.path.join(ROOT_PATH, SettingPath, "nuitka.json"), "r") as f:
             try:
@@ -407,7 +467,13 @@ class PackWidget(QWidget, Ui_Form):
         now = datetime.datetime.now().strftime("%Y%m%d%H%M")
         file = self.button_filepath_main.text()
         (filepath, filename) = os.path.split(file)
-        (name, suffix) = os.path.splitext(filename)
+        if self.button_filename_out.text():
+            name = self.button_filename_out.text()
+            # NuitkaPackage.NUITKA_PARAMS["output-filename"] = self.button_filename_out.text()
+        elif NuitkaPackage.NUITKA_PARAMS["output-filename"]:
+            name = NuitkaPackage.NUITKA_PARAMS["output-filename"]
+        else:
+            (name, suffix) = os.path.splitext(filename)
 
         # if not NuitkaPackage.NUITKA_PARAMS["main"]:
         #     NuitkaPackage.NUITKA_PARAMS["main"] = file
@@ -422,7 +488,27 @@ class PackWidget(QWidget, Ui_Form):
             NuitkaPackage.NUITKA_PARAMS["output-filename"] = name
             tmp = True
 
-        cmd = path + " -m nuitka " + NuitkaPackage().getCMD() + ' ' + file
+        (pypath, pyfilename) = os.path.split(path)
+
+        pythonPath = []
+        pythonPath.append(path)
+        pythonPath.append(filepath)
+        pythonPath.append(pypath)
+        pythonPath.append(os.path.join(pypath, "python312.zip"))
+        pythonPath.append(os.path.join(pypath, "DLLs"))
+        pythonPath.append(os.path.join(pypath, "Lib"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "win32"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "win32", "lib"))
+        pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "Pythonwin"))
+
+        try:
+            cmd = "cd /d " + filepath + ' && ' + path + " -m nuitka " + NuitkaPackage().getCMD() + ' ' + file
+        except Exception as e:
+            logging.error(e)
+            Message.error("错误", str(e), self)
+            return
+
 
         if NuitkaPackage.NUITKA_PARAMS["onefile"]:
             name = NuitkaPackage.NUITKA_PARAMS["output-filename"]
@@ -445,9 +531,10 @@ class PackWidget(QWidget, Ui_Form):
             NuitkaPackage.NUITKA_PARAMS["output-filename"] = ''
 
         self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setEnviron(PYTHONPATH=(';').join(pythonPath))
         self.venvMangerTh.setCMD("pack_nuitka", cmd, cmd1)
         self.venvMangerTh.start()
-
+        time.sleep(2)
         self.spinner_open.setState(True)
         self.spinner_open.show()
 
@@ -554,6 +641,11 @@ class PackWidget(QWidget, Ui_Form):
             CURRENT_SETTINGS["pack"]["outPath"] = text
             write_config()
 
+    def on_button_filename_out_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["pack"]["outName"] = text
+            write_config()
+
     def on_button_pyinstaller_settingfile_clicked(self):
         if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")):
             Message.error("错误", "配置文件不存在", self)
@@ -567,7 +659,7 @@ class PackWidget(QWidget, Ui_Form):
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "nuitka.json")}')
 
     def receive_VMresult(self, cmd, result):
-        logging.debug(f"receive_VMresult: {cmd}, {result}")
+        logging.debug(f"receive_VMresult: {cmd}, {result[1][-50:]}")
         if cmd == "init":
             pass
         elif cmd == "py_version":
@@ -638,17 +730,19 @@ class PackWidget(QWidget, Ui_Form):
 
             Message.info("成功", "卸载成功", self)
         elif cmd == "pack_pyinstaller" or cmd == "pack_nuitka":
+
             self.spinner_open.setState(False)
             self.spinner_open.setState(True)
             self.spinner_open.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", "打包失败，详情请查看日志", self)
                 return
 
             if result[-1]:
                 minutes, seconds = divmod(int(result[-1]), 60)
                 Message.info("成功", f"打包成功, 耗时：{minutes}分钟 {seconds}秒", self, duration=30000)
+                logging.debug(f"receive_VMresult: {result[2]}")
             else:
                 Message.info("成功", f"打包成功", self)
         else:
@@ -681,6 +775,9 @@ class VenvManagerThread(QThread):
     def setPyInterpreter(self, path):
         self.interpreter = path
         self.pyI.setInterpreter(path)
+
+    def setEnviron(self, **kwargs):
+        self.pyI.setEnviron(**kwargs)
 
     def run(self):
         cmd = self.cmd
