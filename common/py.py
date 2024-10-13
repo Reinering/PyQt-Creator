@@ -133,13 +133,11 @@ class PyInterpreter:
         # else:
         #     return (False, f"Error: {stderr.decode('gbk')}", f"Log: {stdout.decode('gbk')}")
 
-        env = os.environ.copy()
-
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         outs = []
         try:
             while True:
-                line = self.process.stdout.readline().decode('gbk').strip('\n')\
+                line = self.process.stdout.readline().decode('gbk').strip('\n') \
                     .strip('\r').strip(' ').replace('\\\\', '\\').replace('\\\\', '\\')
                 if line == '' and self.process.poll() != None:
                     break
@@ -151,11 +149,6 @@ class PyInterpreter:
             print(e)
             return (False, f"Error: {e}")
 
-        if "nuitka" in cmd:
-            if len(outs) > 50:
-                outs = outs[-50:]
-
-        # out = '\n'.join(outs)
         if self.process.returncode == 0:
             return [True, f"{outs}"]
         else:
