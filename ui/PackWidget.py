@@ -509,7 +509,6 @@ class PackWidget(QWidget, Ui_Form):
             Message.error("错误", str(e), self)
             return
 
-
         if NuitkaPackage.NUITKA_PARAMS["onefile"]:
             name = NuitkaPackage.NUITKA_PARAMS["output-filename"]
             suffix = ".exe"
