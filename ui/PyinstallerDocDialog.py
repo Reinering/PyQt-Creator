@@ -24,3 +24,5 @@ class PyinstallerDocDialog(QDialog, Ui_Dialog):
         """
         super().__init__(parent)
         self.setupUi(self)
+
+        self.TextEdit.setReadOnly(True)
