@@ -14,7 +14,7 @@ class PyinstallerPackage():
 
     PYINSTALLER_PARAMS = {
         'console': True,  # [True, False] -w 关闭， -c(默认) 开启 开启或关闭显示控制台 (只对Windows有效)
-        'debug': False,  # [True, False] -d [{all,imports,bootloader,noarchive} 产生debug版本的可执行文件
+        'debug': '',  # -d [{all,imports,bootloader,noarchive} 产生debug版本的可执行文件
         'specPath': '',
         # --specpath 指定spec文件的生成目录,如果没有指定,而且当前目录是PyInstaller的根目录,会自动创建一个用于输出(spec和生成的可执行文件)的目录.如果没有指定,而当前目录不是PyInstaller的根目录,则会输出到当前的目录下.
         'importPath': '',
@@ -67,7 +67,8 @@ class PyinstallerPackage():
             cmd = cmd + ' -p ' + self.PYINSTALLER_PARAMS['importPath']
 
         if self.PYINSTALLER_PARAMS['excludeModule']:
-            cmd = cmd + ' –exclude-module ' + ' '.join(self.PYINSTALLER_PARAMS['excludeModule'])
+            for tmp in self.PYINSTALLER_PARAMS['excludeModule']:
+                cmd = cmd + ' --exclude-module ' + tmp
 
         if self.PYINSTALLER_PARAMS['hiddenImport']:
             for tmp in self.PYINSTALLER_PARAMS['hiddenImport']:
