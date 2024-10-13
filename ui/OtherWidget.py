@@ -6,7 +6,7 @@ Module implementing OtherWidget.
 
 from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
 import simplejson as json
 import logging
@@ -241,7 +241,12 @@ class OtherWidget(QWidget, Ui_Form):
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
 
-        self.configure()
+        try:
+            self.configure()
+        except Exception as e:
+            logging.error(e)
+            QMessageBox.critical(self, "初始化错误", f"请检查配置文件{str(e)}")
+            raise Exception(f"请检查配置文件{str(e)}")
 
     def configure(self):
         if CURRENT_SETTINGS["other"]["mode"] in SETTINGS["other"]["python_env_modes"]:

@@ -9,7 +9,7 @@ Module implementing SettingWidget.
 
 from PySide6.QtCore import Slot, Qt, QThread, Signal
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
 from copy import copy
 import logging
@@ -523,7 +523,12 @@ class SettingWidget(QWidget, Ui_Form):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "init":
             self.initState = False
-            self.configure()
+            try:
+                self.configure()
+            except Exception as e:
+                logging.error(e)
+                QMessageBox.critical(self, "初始化错误", f"请检查配置文件{str(e)}")
+                raise Exception(f"请检查配置文件{str(e)}")
         elif cmd == "py_version":
             if not result[0]:
                 Message.error("解释器错误", result[1], self)

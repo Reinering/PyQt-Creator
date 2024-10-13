@@ -13,7 +13,8 @@ from PySide6.QtWidgets import (
     QSpacerItem, QSizePolicy, QSplitter,
     QFrame, QFileSystemModel,
     QFileDialog, QLabel,
-    QTreeView
+    QTreeView,
+    QMessageBox
 )
 from PySide6.QtGui import QIcon
 import os.path
@@ -248,7 +249,12 @@ class ProjectWidget(QWidget, Ui_Form):
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout121.addItem(self.verticalSpacer, 2, 0, 1, 1)
 
-        self.configure()
+        try:
+            self.configure()
+        except Exception as e:
+            logging.error(e)
+            QMessageBox.critical(self, "初始化错误", f"请检查配置文件{str(e)}")
+            raise Exception(f"请检查配置文件{str(e)}")
 
     def configure(self):
         if CURRENT_SETTINGS["project"]["mode"] in SETTINGS["project"]["python_env_modes"]:
@@ -257,7 +263,7 @@ class ProjectWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["project"]["custom_python_path"]:
             self.button_filepath.setText(CURRENT_SETTINGS["project"]["custom_python_path"])
 
-    def initTree(self, rootPath):
+    def initTree1(self, rootPath):
         self.treeTitle.setText(f"项目目录 ({rootPath})")
         fileModel = FilesystemModel()
         fileModel.setRootPath(rootPath)
@@ -270,7 +276,7 @@ class ProjectWidget(QWidget, Ui_Form):
         self.tree.setColumnHidden(2, True)
         self.tree.setColumnHidden(3, True)
 
-    def initTree1(self, rootPath):
+    def initTree(self, rootPath):
         self.treeTitle.setText(f"项目目录 ({rootPath})")
         fileModel = QFileSystemModel()
         fileModel.setRootPath(rootPath)
