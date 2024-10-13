@@ -16,7 +16,7 @@ import time
 import simplejson as json
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QSplashScreen
+from PySide6.QtWidgets import QSplashScreen, QMessageBox
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 
@@ -127,7 +127,11 @@ def main(argv=None):
             app.setAttribute(Qt.ApplicationAttribute.AA_DontCreateNativeWidgetSiblings)
 
             # 没有运行配置时，复制默认配置
-            readConfig()
+            try:
+                readConfig()
+            except Exception as e:
+                QMessageBox.critical(None, "Error", "Read Config Error!")
+                raise Exception("Read Config Error!", e)
 
             # log enable
             log(LOGLEVEL)
