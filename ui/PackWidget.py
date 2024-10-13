@@ -603,6 +603,9 @@ class PackWidget(QWidget, Ui_Form):
 
         return True
 
+    def setData(self, data):
+        pass
+
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["pack"]["mode"] = text
 
@@ -658,7 +661,7 @@ class PackWidget(QWidget, Ui_Form):
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "nuitka.json")}')
 
     def receive_VMresult(self, cmd, result):
-        logging.debug(f"receive_VMresult: {cmd}, {result[1][-50:]}")
+        logging.debug(f"receive_VMresult: {cmd}, {result[1]}")
         if cmd == "init":
             pass
         elif cmd == "py_version":
@@ -824,6 +827,8 @@ class VenvManagerThread(QThread):
             else:
                 self.signal_result.emit(cmd, result)
                 return
+            if len(result) > 50:
+                result = result[-50:]
             result.append(time.time() - start)
             self.signal_result.emit(cmd, result)
         else:
