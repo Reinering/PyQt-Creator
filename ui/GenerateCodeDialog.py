@@ -19,7 +19,7 @@ from qfluentwidgets import InfoBar, InfoBarPosition, FluentIcon, TreeView, Capti
 from qfluentwidgets.components.settings.expand_setting_card import GroupSeparator, SpaceWidget, ExpandBorderWidget
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard, ExpandCard
-from qfluentexpand.components.line.editor import LineEditor
+from qfluentexpand.components.line.editor import Line
 
 from .Ui_GenerateCodeDialog import Ui_Form
 from .eric import ModuleParser
@@ -118,7 +118,7 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
 
         widget_filter = QWidget(self.generate_card)
         envLabel = CaptionLabel("Filter with")
-        self.LineEditor_filter = LineEditor(self)
+        self.LineEditor_filter = Line(self)
         self.LineEditor_filter.setMinimumWidth(300)
         self.LineEditor_filter.textChanged.connect(self.on_LineEditor_filter_textChanged)
         layout = QHBoxLayout(widget_filter)
@@ -150,7 +150,7 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
 
         widget_classname_1 = QWidget(self.generate_class_card)
         envLabel = CaptionLabel("Filter with")
-        self.LineEditor_classname = LineEditor(self)
+        self.LineEditor_classname = Line(self)
         self.LineEditor_classname.setMinimumWidth(300)
         layout = QHBoxLayout(widget_classname_1)
         layout.setContentsMargins(30, 5, 30, 5)

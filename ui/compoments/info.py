@@ -6,8 +6,11 @@ email: nbxlc@hotmail.com
 """
 
 
-from PySide6.QtCore import Qt
-from qfluentwidgets import InfoBar, InfoBarPosition
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QColor
+from qfluentwidgets import InfoBar, InfoBarPosition, MessageBoxBase, SubtitleLabel, LineEdit, CaptionLabel
+
+from qfluentexpand.components.line.editor import Line
 
 
 
@@ -63,3 +66,36 @@ class Message():
             parent=parent
         )
 
+
+class CustomMessageBox(MessageBoxBase):
+
+    def __init__(self, title, placeholderText=None, parent=None):
+        super().__init__(parent)
+        titleLabel = SubtitleLabel(title, self)
+        self.text = LineEditor(self)
+
+        if placeholderText:
+            self.text.setPlaceholderText(placeholderText)
+        self.text.setClearButtonEnabled(True)
+
+        self.warning = CaptionLabel("不正确")
+        self.warning.setTextColor("#cf1010", QColor(255, 28, 32))
+
+        self.viewLayout.addWidget(titleLabel)
+        self.viewLayout.addWidget(self.text)
+        self.viewLayout.addWidget(self.warning)
+        self.warning.hide()
+
+        self.widget.setMinimumWidth(350)
+
+    def validate(self):
+        """ 重写验证表单数据的方法 """
+        isValid = QUrl(self.text.text()).isValid()
+        self.warning.setHidden(isValid)
+        return isValid
+
+
+def showMessage(window):
+    w = CustomMessageBox(window)
+    if w.exec():
+        print(w.urlLineEdit.text())
