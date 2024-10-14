@@ -29,7 +29,7 @@ from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBa
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
-from qfluentexpand.components.line.editor import LineEditor
+from qfluentexpand.components.line.editor import Line
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
 
@@ -181,7 +181,7 @@ class PackWidget(QWidget, Ui_Form):
 
         self.widget_env_out_file = QWidget(self.envCard)
         label_env = BodyLabel("输出文件名", self.envCard)
-        self.button_filename_out = LineEditor(self.envCard)
+        self.button_filename_out = Line(self.envCard)
         self.button_filename_out.setPlaceholderText("默认与程序入口文件名一致")
         # self.button_filename_out.setMaximumWidth(300)
         self.button_filename_out.setFixedWidth(300)
