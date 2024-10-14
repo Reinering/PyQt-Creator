@@ -130,6 +130,9 @@ SETTINGS = {
         "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],       # ['project', 'global', 'standalone']
         "pyinstaller": {},
         "nuitka": {},
+        "setup": {
+            "filepath": ""
+        },
 
     },
     "other": {
@@ -170,6 +173,9 @@ CURRENT_SETTINGS = {
         "outName": "",
         "pyinstaller": {},
         "nuitka": {},
+        "setup": {
+            "filepath": ""
+        },
 
     },
     "other": {
