@@ -111,6 +111,7 @@ class PackWidget(QWidget, Ui_Form):
         menu = RoundMenu(parent=self.button_open)
         menu.addAction(Action(FluentIcon.BASKETBALL, 'pyinstaller', triggered=self.open_pyinstaller))
         menu.addAction(Action(FluentIcon.ALBUM, 'nuitka', triggered=self.open_nuitka))
+        menu.addAction(Action(FluentIcon.ALBUM, 'build', triggered=self.open_setup))
         menu.addAction(Action(FluentIcon.ALBUM, '停止', triggered=self.open_stop))
         self.button_open.setMenu(menu)
 
@@ -275,8 +276,65 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_nuitka_settingfile)
         self.card_nuitka.addWidget(widget_nuitka_settingfile)
 
+        self.card_setup = SettingGroupCard(FluentIcon.SPEED_OFF, "Setup 设置", "参考文档配置参数",
+                                            self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_setup, 4, 0, 1, 1)
+
+        widget_env_setuptools = QWidget(self.card_setup)
+        label_env = BodyLabel("setuptools模块", self.card_setup)
+        self.spinner_setuptools = GifLabel(self.card_setup)
+        self.spinner_setuptools.setGif(APPGIF.LOADING.path())
+        self.spinner_setuptools.setFixedSize(30, 30)
+        self.spinner_setuptools.hide()
+        self.button_setuptools = PrimaryPushButton(self.card_setup)
+        self.button_setuptools.setText("安装/更新")
+        self.button_setuptools.clicked.connect(self.on_button_setuptools_clicked)
+        layout = QHBoxLayout(widget_env_setuptools)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_env)
+        layout.addStretch(1)
+        layout.addWidget(self.spinner_setuptools)
+        layout.addWidget(self.button_setuptools)
+        self.card_setup.addWidget(widget_env_setuptools)
+
+        widget_env_setup = QWidget(self.card_setup)
+        label_env = BodyLabel("setup.py", self.card_setup)
+        self.button_filepath_setup = FilePathSelector(self.card_setup)
+        self.button_filepath_setup.setFileTypes("setup.py")
+        # self.button_filepath_main.setMaximumWidth(300)
+        self.button_filepath_setup.setFixedWidth(300)
+        self.button_filepath_setup.textChanged.connect(self.on_button_filepath_setup_textChanged)
+        layout = QHBoxLayout(widget_env_setup)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_env)
+        layout.addStretch(1)
+        layout.addWidget(self.button_filepath_setup)
+        self.card_setup.addWidget(widget_env_setup)
+
+        widget_setup_action = QWidget(self.card_setup)
+        label_setup = BodyLabel("setup.py 操作")
+        self.spinner_setup_action = GifLabel(self.card_setup)
+        self.spinner_setup_action.setGif(APPGIF.LOADING.path())
+        self.spinner_setup_action.setFixedSize(30, 30)
+        self.spinner_setup_action.hide()
+        self.button_setup_action = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        menu = RoundMenu(parent=self.button_setup_action)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '编辑', triggered=self.setup_edit))
+        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.setup_install))
+        # menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.setup_upgrade))
+        # menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.setup_uninstall))
+        self.button_setup_action.setMenu(menu)
+
+        layout = QHBoxLayout(widget_setup_action)
+        layout.setContentsMargins(30, 5, 30, 5)
+        layout.addWidget(label_setup)
+        layout.addStretch(1)
+        layout.addWidget(self.spinner_setup_action)
+        layout.addWidget(self.button_setup_action)
+        self.card_setup.addWidget(widget_setup_action)
+
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
+        self.gridLayout1.addItem(verticalSpacer, 5, 0, 1, 1)
 
         try:
             self.configure()
@@ -301,14 +359,18 @@ class PackWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["pack"]["outName"]:
             self.button_filename_out.setText(CURRENT_SETTINGS["pack"]["outName"])
 
+        if CURRENT_SETTINGS["pack"]["setup"]["filepath"]:
+            self.button_filepath_setup.setText(CURRENT_SETTINGS["pack"]["setup"]["filepath"])
+
     def getPyPath(self):
         path = ""
-        if self.comboBox_mode.currentText() == "独立模式":
+        mode = self.comboBox_mode.currentText()
+        if mode == "独立模式":
             path = self.button_filepath.text()
             if not path:
                 Message.error("错误", "请选择Python环境", self)
                 return
-        elif self.comboBox_mode.currentText() == "跟随全局":
+        elif mode == "跟随全局":
             if CURRENT_SETTINGS["settings"]["mode"] == "现有环境":
                 path = CURRENT_SETTINGS["settings"]["custom_python_path"]
                 if not path:
@@ -321,8 +383,28 @@ class PackWidget(QWidget, Ui_Form):
                 path = os.path.join(LIBS["pyenv"], "versions", CURRENT_SETTINGS["settings"]["pyenv_current_version"], "python.exe")
             else:
                 pass
-        elif self.comboBox_mode.currentText() == "跟随项目":
-            pass
+        elif mode == "跟随项目":
+            if CURRENT_SETTINGS["project"]["mode"] == "独立模式":
+                if not CURRENT_SETTINGS["project"]["custom_python_path"]:
+                    Message.error("错误", "请设置Python环境", self)
+                    return
+
+                path = CURRENT_SETTINGS["project"]["custom_python_path"]
+            elif CURRENT_SETTINGS["project"]["mode"] == "跟随全局":
+                if CURRENT_SETTINGS["settings"]["mode"] == "现有环境":
+                    path = CURRENT_SETTINGS["settings"]["custom_python_path"]
+                    if not path:
+                        Message.error("错误", "请设置Python环境", self)
+                        return
+                elif CURRENT_SETTINGS["settings"]["mode"] == "Pyenv 环境":
+                    if not CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
+                        Message.error("错误", "请设置Pyenv环境", self)
+                        return
+                    path = os.path.join(LIBS["pyenv"], "versions",
+                                        CURRENT_SETTINGS["settings"]["pyenv_current_version"], "python.exe")
+                else:
+                    pass
+
         return path
 
     def open_stop(self):
@@ -533,7 +615,38 @@ class PackWidget(QWidget, Ui_Form):
         self.venvMangerTh.setEnviron(PYTHONPATH=(';').join(pythonPath))
         self.venvMangerTh.setCMD("pack_nuitka", cmd, cmd1)
         self.venvMangerTh.start()
-        time.sleep(2)
+
+        self.spinner_open.setState(True)
+        self.spinner_open.show()
+
+        Message.info("提示", "打包中，请稍后", self)
+
+    def open_setup(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        file = self.button_filepath_setup.text()
+        if not file or file == "选择":
+            Message.error("错误", "请选择setup.py", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        file = self.button_filepath_setup.text()
+        (filepath, filename) = os.path.split(file)
+
+        cmd = "cd /d " + filepath + '&&' + f" {path} {filename} build " + '&&' + f" {path} {filename} sdist " + '&&' + f" {path} {filename} bdist_wheel"
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("pack_setup", cmd)
+        self.venvMangerTh.start()
+
         self.spinner_open.setState(True)
         self.spinner_open.show()
 
@@ -661,6 +774,81 @@ class PackWidget(QWidget, Ui_Form):
             return
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "nuitka.json")}')
 
+    def on_button_setuptools_clicked(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("setuptools_install", "setuptools")
+        self.venvMangerTh.start()
+
+        self.button_setup_action.setEnabled(False)
+        self.spinner_setup_action.setState(True)
+        self.spinner_setup_action.show()
+
+        Message.info("提示", "打包中，请稍后", self)
+
+    def on_button_filepath_setup_textChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["pack"]["setup"]["filepath"] = text
+            write_config()
+
+    def setup_edit(self):
+        if not os.path.exists(self.button_filepath_setup.text()):
+            Message.error("错误", "文件不存在", self)
+            return
+        os.system(f'notepad {self.button_filepath_setup.text()}')
+
+    def setup_install(self):
+        file = self.button_filepath_setup.text()
+        if not os.path.exists(file):
+            Message.error("错误", "文件不存在", self)
+            return
+
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "env忙碌中，请稍后重试", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        file = self.button_filepath_setup.text()
+        (filepath, filename) = os.path.split(file)
+
+        cmd = "cd /d " + filepath + '&&' + f" {path} {filename} install "
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("setup_install", cmd)
+        self.venvMangerTh.start()
+
+        self.button_setup_action.setEnabled(False)
+        self.spinner_setup_action.setState(True)
+        self.spinner_setup_action.show()
+
+        Message.info("提示", "打包中，请稍后", self)
+
+    def setup_upgrade(self):
+        if not os.path.exists(self.button_filepath_setup.text()):
+            Message.error("错误", "文件不存在", self)
+            return
+
+    def setup_uninstall(self):
+        if not os.path.exists(self.button_filepath_setup.text()):
+            Message.error("错误", "文件不存在", self)
+            return
+
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result[1]}")
         if cmd == "init":
@@ -733,7 +921,6 @@ class PackWidget(QWidget, Ui_Form):
 
             Message.info("成功", "卸载成功", self)
         elif cmd == "pack_pyinstaller" or cmd == "pack_nuitka":
-
             self.spinner_open.setState(False)
             self.spinner_open.setState(True)
             self.spinner_open.hide()
@@ -748,6 +935,40 @@ class PackWidget(QWidget, Ui_Form):
                 logging.debug(f"receive_VMresult: {result[2]}")
             else:
                 Message.info("成功", f"打包成功", self)
+        elif cmd == "pack_setup":
+            self.spinner_open.setState(False)
+            self.spinner_open.setState(True)
+            self.spinner_open.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("成功", "build成功", self)
+        elif cmd == "setuptools_install":
+            self.button_setuptools.setEnabled(True)
+            self.spinner_setuptools.setState(False)
+            self.spinner_setuptools.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("成功", "安装/更新 成功", self)
+        elif cmd == "setup_install":
+            self.button_setup_action.setEnabled(True)
+            self.spinner_setup_action.setState(False)
+            self.spinner_setup_action.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("成功", "安装/更新 成功", self)
+        elif cmd == "setup_upgrade":
+            pass
+        elif cmd == "setup_uninstall":
+            pass
         else:
             pass
 
@@ -831,6 +1052,15 @@ class VenvManagerThread(QThread):
             if len(result) > 50:
                 result = result[-50:]
             result.append(time.time() - start)
+            self.signal_result.emit(cmd, result)
+        elif cmd == "pack_setup":
+            result = self.pyI.popen(self.args[0])
+            self.signal_result.emit(cmd, result)
+        elif cmd == "setuptools_install":
+            result = self.pyI.pip("install", "--upgrade", *self.args)
+            self.signal_result.emit(cmd, result)
+        elif cmd == "setup_install":
+            result = self.pyI.popen(self.args[0])
             self.signal_result.emit(cmd, result)
         else:
             self.signal_result.emit(cmd, ["False", "未知命令"])

@@ -279,7 +279,26 @@ class OtherWidget(QWidget, Ui_Form):
             else:
                 pass
         elif self.comboBox_mode.currentText() == "跟随项目":
-            pass
+            if CURRENT_SETTINGS["project"]["mode"] == "独立模式":
+                if not CURRENT_SETTINGS["project"]["custom_python_path"]:
+                    Message.error("错误", "请设置Python环境", self)
+                    return
+
+                path = CURRENT_SETTINGS["project"]["custom_python_path"]
+            elif CURRENT_SETTINGS["project"]["mode"] == "跟随全局":
+                if CURRENT_SETTINGS["settings"]["mode"] == "现有环境":
+                    path = CURRENT_SETTINGS["settings"]["custom_python_path"]
+                    if not path:
+                        Message.error("错误", "请设置Python环境", self)
+                        return
+                elif CURRENT_SETTINGS["settings"]["mode"] == "Pyenv 环境":
+                    if not CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
+                        Message.error("错误", "请设置Pyenv环境", self)
+                        return
+                    path = os.path.join(LIBS["pyenv"], "versions",
+                                        CURRENT_SETTINGS["settings"]["pyenv_current_version"], "python.exe")
+                else:
+                    pass
         return path
 
     def pipreqs_install(self):
@@ -388,7 +407,6 @@ class OtherWidget(QWidget, Ui_Form):
             return
 
         os.system(f'notepad {file}')
-
 
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["other"]["mode"] = text
