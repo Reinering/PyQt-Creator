@@ -74,6 +74,16 @@ BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 LIBSPATH = os.path.join("libs")
 
+PAGEWidgets = {
+    "main": '',
+    "home": '',
+    "project": '',
+    "designer": '',
+    "pack": '',
+    "other": '',
+    "settings": '',
+}
+
 LIBS = {
     "pyinstaller": os.path.join(LIBSPATH, "pyinstaller"),
     "nuitka": os.path.join(LIBSPATH, "nuitka"),

@@ -29,7 +29,7 @@ from .OtherWidget import OtherWidget
 
 from .utils.icon import AppIcon
 from .utils.stylesheets import StyleSheet
-from manage import APPNAME, UI_CONFIG, RUNTIMEENV, BUNDLE_DIR
+from manage import APPNAME, UI_CONFIG, RUNTIMEENV, BUNDLE_DIR, PAGEWidgets
 
 
 class MainWindow(FluentWindow, Ui_Form):
@@ -46,7 +46,6 @@ class MainWindow(FluentWindow, Ui_Form):
         """
         super().__init__(parent)
         self.setupUi(self)
-        self.subInterfaceList = []
 
         self.initNavi()
 
@@ -63,30 +62,33 @@ class MainWindow(FluentWindow, Ui_Form):
         # 展开宽度 宽度会影响导航栏的展开与折叠效果
         self.navigationInterface.panel.setExpandWidth(150)
 
+        PAGEWidgets["main"] = self
+        PAGEWidgets["navi"] = self.navigationInterface
+
         # create sub interface
         self.home = HomeWidget(self)
-        self.subInterfaceList.append(self.home)
+        PAGEWidgets["home"] = self.home
 
         self.project = ProjectWidget(self)
-        self.subInterfaceList.append(self.project)
+        PAGEWidgets["project"] = self.project
 
         self.designer = DesignerWidget(self)
-        self.subInterfaceList.append(self.designer)
+        PAGEWidgets["designer"] = self.designer
 
         self.pack = PackWidget(self)
-        self.subInterfaceList.append(self.pack)
-
-        self.console = ConsoleWidget(self)
-        self.subInterfaceList.append(self.console)
-
-        self.document = DocumentWidget(self)
-        self.subInterfaceList.append(self.document)
-
-        self.settings = SettingWidget(self)
-        self.subInterfaceList.append(self.settings)
+        PAGEWidgets["pack"] = self.pack
 
         self.other = OtherWidget(self)
-        self.subInterfaceList.append(self.other)
+        PAGEWidgets["other"] = self.other
+
+        self.console = ConsoleWidget(self)
+        PAGEWidgets["console"] = self.console
+
+        self.document = DocumentWidget(self)
+        PAGEWidgets["document"] = self.document
+
+        self.settings = SettingWidget(self)
+        PAGEWidgets["settings"] = self.settings
 
         self.addSubInterface(
             self.home,

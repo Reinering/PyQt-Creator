@@ -49,7 +49,7 @@ from .compoments.info import Message
 from .compoments.tree import FileSystemModel, FilesystemModel
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
-from manage import CURRENT_SETTINGS, SETTINGS, LIBS, UI_CONFIG
+from manage import CURRENT_SETTINGS, SETTINGS, LIBS, UI_CONFIG, PAGEWidgets
 
 
 class ProjectWidget(QWidget, Ui_Form):
@@ -318,10 +318,14 @@ class ProjectWidget(QWidget, Ui_Form):
                 menu.addAction(Action(FluentIcon.PASTE, '生成代码', triggered=lambda path=file_path: self.tree_generate_code(file_path)))
             elif suffix == ".qrc":
                 menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_qrc_complie(file_path)))
+            elif suffix == ".whl":
+                menu.addAction(Action(FluentIcon.PASTE, '安装', triggered=lambda path=file_path: self.tree_whl_install(file_path)))
+                menu.addAction(Action(FluentIcon.PASTE, '卸载', triggered=lambda path=file_path: self.tree_whl_uninstall(file_path)))
             else:
                 menu.addAction(Action(FluentIcon.PASTE, '编辑', triggered=lambda path=file_path: self.tree_edit(file_path)))
                 if suffix == ".py":
                     menu.addAction(Action(FluentIcon.PASTE, '运行', triggered=lambda path=file_path: self.tree_py_run(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, '打包成exe', triggered=lambda path=file_path: self.tree_py_pack(file_path)))
 
         menu.addAction(Action(FluentIcon.COPY, '通过vscode打开', triggered=lambda path=file_path: self.tree_open_vscode(file_path)))
         menu.addAction(Action(FluentIcon.CUT, '通过pycharm打开', triggered=lambda path=file_path: self.tree_open_pycharm(file_path)))
@@ -415,6 +419,10 @@ class ProjectWidget(QWidget, Ui_Form):
 
         self.spinner_project.setState(True)
         self.spinner_project.show()
+
+    def tree_py_pack(self, file_path):
+        PAGEWidgets["pack"].setData(file_path)
+        PAGEWidgets["main"].forword("Pack")
 
     def tree_ui_designer(self, file_path):
         if self.venvMangerTh.isRunning():
@@ -533,6 +541,12 @@ class ProjectWidget(QWidget, Ui_Form):
     def tree_qrc_copy_path(self, file_path):
         clipboard.copy(file_path)
         Message.info("提示", "复制成功", self)
+
+    def tree_whl_install(self, file_path):
+        pass
+
+    def tree_whl_uninstall(self, file_path):
+        pass
 
     def tree_open_path(self, file_path):
         if os.path.isfile(file_path):
