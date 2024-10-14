@@ -31,7 +31,8 @@ from qfluentwidgets import (
     CommandBar,
     Action,
     RoundMenu,
-    setFont
+    setFont,
+    MessageBox
 )
 from qfluentwidgets.common.icon import FluentIcon
 from qfluentexpand.components.card.settingcard import SettingGroupCard
@@ -45,7 +46,7 @@ from common.wintools import findProgramPath
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .compoments.menu import RecentFilesMenu
-from .compoments.info import Message
+from .compoments.info import Message, MessageBox as CustomMessageBox
 from .compoments.tree import FileSystemModel, FilesystemModel
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
@@ -291,48 +292,70 @@ class ProjectWidget(QWidget, Ui_Form):
     def show_context_menu(self, pos):
 
         index = self.tree.indexAt(pos)
-        if not index.isValid():
-            return
-
-        # 获取文件路径
-        file_path = self.tree.model().filePath(index)
 
         menu = RoundMenu(self)
-        # 批量添加动作
-        # menu.addActions([
-        #     Action(FluentIcon.PASTE, '复制'),
-        #     Action(FluentIcon.PASTE, '粘贴'),
-        # ])
-        # 添加分割线
-        menu.addSeparator()
 
-        if os.path.isfile(file_path):
-            (filename, suffix) = os.path.splitext(file_path)
-            if suffix == ".ui":
-                submenu_designer = RoundMenu("使用designer打开", self)
-                submenu_designer.setIcon(FluentIcon.PASTE)
-                menu.addMenu(submenu_designer)
-                submenu_designer.addAction(Action(FluentIcon.PASTE, '原生designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
-                submenu_designer.addAction(Action(FluentIcon.PASTE, 'designer插件', triggered=lambda path=file_path: self.tree_ui_designer_plugin(file_path)))
-                menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_ui_complie(file_path)))
-                menu.addAction(Action(FluentIcon.PASTE, '生成代码', triggered=lambda path=file_path: self.tree_generate_code(file_path)))
-            elif suffix == ".qrc":
-                menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_qrc_complie(file_path)))
-            elif suffix == ".whl":
-                menu.addAction(Action(FluentIcon.PASTE, '安装', triggered=lambda path=file_path: self.tree_whl_install(file_path)))
-                menu.addAction(Action(FluentIcon.PASTE, '卸载', triggered=lambda path=file_path: self.tree_whl_uninstall(file_path)))
+        if not index.isValid():
+            menu.addAction(
+                Action(FluentIcon.COPY, '新建文件', triggered=lambda: self.tree_open_newfile()))
+            menu.addAction(
+                Action(FluentIcon.COPY, '新建文件夹', triggered=lambda: self.tree_open_newfolder()))
+        else:
+            # 获取文件路径
+            file_path = self.tree.model().filePath(index)
+
+            # 批量添加动作
+            # menu.addActions([
+            #     Action(FluentIcon.PASTE, '复制', triggered=lambda path=file_path: self.tree_setup_pack(file_path)),
+            #     Action(FluentIcon.PASTE, '粘贴', triggered=lambda path=file_path: self.tree_setup_pack(file_path)),
+            # ])
+
+            menu.addAction(
+                Action(FluentIcon.COPY, '打开所在目录', triggered=lambda path=file_path: self.tree_open_path(file_path)))
+            menu.addAction(
+                Action(FluentIcon.CUT, '复制路径', triggered=lambda path=file_path: self.tree_qrc_copy_path(file_path)))
+
+            # 添加分割线
+            menu.addSeparator()
+
+            if os.path.isfile(file_path):
+                (filepath, filename) = os.path.split(file_path)
+                (name, suffix) = os.path.splitext(file_path)
+                if filename == "setup.py":
+                    menu.addAction(Action(FluentIcon.PASTE, '打包', triggered=lambda path=file_path: self.tree_setup_pack(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, '安装', triggered=lambda path=file_path: self.tree_setup_install(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, '卸载', triggered=lambda path=file_path: self.tree_setup_uninstall(file_path)))
+
+                if suffix == ".ui":
+                    submenu_designer = RoundMenu("使用designer打开", self)
+                    submenu_designer.setIcon(FluentIcon.PASTE)
+                    menu.addMenu(submenu_designer)
+                    submenu_designer.addAction(Action(FluentIcon.PASTE, '原生designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
+                    submenu_designer.addAction(Action(FluentIcon.PASTE, 'designer插件', triggered=lambda path=file_path: self.tree_ui_designer_plugin(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_ui_complie(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, '生成代码', triggered=lambda path=file_path: self.tree_generate_code(file_path)))
+                elif suffix == ".qrc":
+                    menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_qrc_complie(file_path)))
+                elif suffix == ".whl":
+                    menu.addAction(Action(FluentIcon.PASTE, '安装', triggered=lambda path=file_path: self.tree_whl_install(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, '卸载', triggered=lambda path=file_path: self.tree_whl_uninstall(file_path)))
+                else:
+                    menu.addAction(Action(FluentIcon.PASTE, '编辑', triggered=lambda path=file_path: self.tree_edit(file_path)))
+                    if suffix == ".py":
+                        menu.addAction(Action(FluentIcon.PASTE, '运行', triggered=lambda path=file_path: self.tree_py_run(file_path)))
+                        menu.addAction(Action(FluentIcon.PASTE, '打包成exe', triggered=lambda path=file_path: self.tree_py_pack(file_path)))
             else:
-                menu.addAction(Action(FluentIcon.PASTE, '编辑', triggered=lambda path=file_path: self.tree_edit(file_path)))
-                if suffix == ".py":
-                    menu.addAction(Action(FluentIcon.PASTE, '运行', triggered=lambda path=file_path: self.tree_py_run(file_path)))
-                    menu.addAction(Action(FluentIcon.PASTE, '打包成exe', triggered=lambda path=file_path: self.tree_py_pack(file_path)))
+                pass
 
-        menu.addAction(Action(FluentIcon.COPY, '通过vscode打开', triggered=lambda path=file_path: self.tree_open_vscode(file_path)))
-        menu.addAction(Action(FluentIcon.CUT, '通过pycharm打开', triggered=lambda path=file_path: self.tree_open_pycharm(file_path)))
-        menu.addAction(Action(FluentIcon.CUT, '复制路径', triggered=lambda path=file_path: self.tree_qrc_copy_path(file_path)))
-        menu.addSeparator()
-        menu.addAction(Action(FluentIcon.COPY, '打开所在目录', triggered=lambda path=file_path: self.tree_open_path(file_path)))
-        # menu.addAction(Action(FluentIcon.COPY, '刷新', triggered=lambda: print("复制成功")))
+            # menu.addAction(Action(FluentIcon.COPY, '通过vscode打开', triggered=lambda path=file_path: self.tree_open_vscode(file_path)))
+            # menu.addAction(Action(FluentIcon.CUT, '通过pycharm打开', triggered=lambda path=file_path: self.tree_open_pycharm(file_path)))
+            menu.addSeparator()
+
+            if os.path.isdir(file_path):
+                menu.addAction(Action(FluentIcon.COPY, '新建文件', triggered=lambda path=file_path: self.tree_open_newfile(file_path)))
+                menu.addAction(Action(FluentIcon.COPY, '新建文件夹', triggered=lambda path=file_path: self.tree_open_newfolder(file_path)))
+
+            menu.addAction(Action(FluentIcon.COPY, '删除', triggered=lambda path=file_path: self.tree_open_del(file_path)))
 
         menu.exec_(self.tree.viewport().mapToGlobal(pos))
 
@@ -422,7 +445,7 @@ class ProjectWidget(QWidget, Ui_Form):
 
     def tree_py_pack(self, file_path):
         PAGEWidgets["pack"].setData(file_path)
-        PAGEWidgets["main"].forword("Pack")
+        PAGEWidgets["main"].forward("Pack")
 
     def tree_ui_designer(self, file_path):
         if self.venvMangerTh.isRunning():
@@ -548,6 +571,15 @@ class ProjectWidget(QWidget, Ui_Form):
     def tree_whl_uninstall(self, file_path):
         pass
 
+    def tree_setup_pack(self, file_path):
+        pass
+
+    def tree_setup_install(self, file_path):
+        pass
+
+    def tree_setup_uninstall(self, file_path):
+        pass
+
     def tree_open_path(self, file_path):
         if os.path.isfile(file_path):
             (filePath, fileName) = os.path.split(file_path)
@@ -562,6 +594,54 @@ class ProjectWidget(QWidget, Ui_Form):
     def tree_open_pycharm(self, file_path):
         exe = findProgramPath("pycharm.exe")
         subprocess.run([exe, file_path])
+
+    def tree_open_newfile(self, file_path=None):
+        if not file_path:
+            filepath = self.tree.model().rootPath()
+        else:
+            (filepath, filename) = os.path.split(file_path)
+
+        dialog = CustomMessageBox("新建文件", "请输入文件名", "文件名不正确", self)
+        if dialog.exec():
+            filename = dialog.text()
+            if filename:
+                with open(os.path.join(filepath, filename), 'w', encoding='utf-8') as f:
+                    f.write("")
+                logging.info(f"新建文件 {filename}")
+                Message.info("提示", "新建成功", self)
+
+    def tree_open_newfolder(self, file_path=None):
+        if not file_path:
+            filepath = self.tree.model().rootPath()
+        else:
+            (filepath, filename) = os.path.split(file_path)
+
+        dialog = CustomMessageBox("新建文件夹", "请输入文件夹名", "文件夹名不正确", self)
+        if dialog.exec():
+            folder = dialog.text()
+            print(folder)
+            if folder:
+                os.mkdir(os.path.join(filepath, folder))
+                logging.info(f"新建文件夹 {folder}")
+                Message.info("提示", "新建成功", self)
+
+    def tree_open_del(self, file_path):
+        dialog = MessageBox("警告", f"确认删除 {file_path}？", self)
+        dialog.yesButton.setText("确认")
+        dialog.cancelButton.setText("取消")
+
+        if dialog.exec():
+            print('确认')
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+            elif os.path.isdir(file_path):
+                os.rmdir(file_path)
+            else:
+                pass
+            logging.info(f"删除 {file_path}")
+            Message.info("提示", "删除成功", self)
+        else:
+            print('取消')
 
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
