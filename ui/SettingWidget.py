@@ -20,11 +20,14 @@ from qfluentwidgets import (
     ComboBox,
     PrimaryPushButton,  PrimaryDropDownPushButton, PrimaryDropDownToolButton,
     Theme,
-    RoundMenu, Action
+    LineEdit,
+    RoundMenu, Action,
+    PushSettingCard
 )
 from qfluentwidgets.common.icon import FluentIcon
 from qfluentwidgets.common.style_sheet import FluentStyleSheet, getStyleSheetFromFile
 
+from qfluentexpand.components.widgets.card import LineSettingCardWidget, HyperlinkCardWidget
 from qfluentexpand.components.combox.combo_box import MSComboBox
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
@@ -36,7 +39,7 @@ from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
-from manage import LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS
+from manage import VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS
 
 
 class SettingWidget(QWidget, Ui_Form):
@@ -113,27 +116,29 @@ class SettingWidget(QWidget, Ui_Form):
         self.gridLayout1.addWidget(self.card_pyenv, 3, 0, 1, 1)
 
         self.widget_pyenv_path = QWidget(self.card_pyenv)
-        hBoxLayout = QHBoxLayout(self.widget_pyenv_path)
-        hBoxLayout.setContentsMargins(30, 0, 30, 0)
-        hBoxLayout.setSpacing(0)
-        hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-
-        vBoxLayout = QVBoxLayout(self.widget_pyenv_path)
-        vBoxLayout.setSpacing(0)
-        vBoxLayout.setContentsMargins(0, 0, 0, 0)
-        vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         label_pyenv_path = BodyLabel("pyenv-win 根目录")
-        hBoxLayout.addLayout(vBoxLayout)
-        vBoxLayout.addWidget(label_pyenv_path, 0, Qt.AlignmentFlag.AlignLeft)
-        # vBoxLayout.addWidget(label_content, 0, Qt.AlignmentFlag.AlignLeft)
-        hBoxLayout.addSpacing(16)
-        hBoxLayout.addStretch(1)
-
         self.button_pyenv_path = FolderPathSelector(self.envCard)
         self.button_pyenv_path.setFixedWidth(200)
         self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
-        hBoxLayout.addWidget(self.button_pyenv_path)
 
+        # hBoxLayout = QHBoxLayout(self.widget_pyenv_path)
+        # hBoxLayout.setContentsMargins(30, 0, 30, 0)
+        # hBoxLayout.setSpacing(0)
+        # hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        #
+        # vBoxLayout = QVBoxLayout(self.widget_pyenv_path)
+        # vBoxLayout.setSpacing(0)
+        # vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        # vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        # hBoxLayout.addLayout(vBoxLayout)
+        # vBoxLayout.addWidget(label_pyenv_path, 0, Qt.AlignmentFlag.AlignLeft)
+        # # vBoxLayout.addWidget(label_content, 0, Qt.AlignmentFlag.AlignLeft)
+
+        hBoxLayout = QHBoxLayout(self.widget_pyenv_path)
+        hBoxLayout.setContentsMargins(30, 5, 30, 5)
+        hBoxLayout.addWidget(label_pyenv_path)
+        hBoxLayout.addStretch(1)
+        hBoxLayout.addWidget(self.button_pyenv_path)
         self.card_pyenv.addWidget(self.widget_pyenv_path)
 
         self.widget_pyenv_existing = QWidget(self.card_pyenv)
@@ -200,6 +205,7 @@ class SettingWidget(QWidget, Ui_Form):
         layout = QHBoxLayout(self.widget_pyenv_mirror_url)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_mirror_url)
+        layout.addStretch(1)
         layout.addWidget(self.comboBox_pyenv_mirror_url)
         self.card_pyenv.addWidget(self.widget_pyenv_mirror_url)
 
@@ -218,6 +224,7 @@ class SettingWidget(QWidget, Ui_Form):
         layout = QHBoxLayout(self.widget_pip_mirror_url)
         layout.setContentsMargins(30, 5, 30, 5)
         layout.addWidget(label_mirror_url)
+        layout.addStretch(1)
         layout.addWidget(self.comboBox_pip_mirror_url)
         self.card_pip.addWidget(self.widget_pip_mirror_url)
 
@@ -250,10 +257,35 @@ class SettingWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_pip_list)
         self.card_pip.addWidget(self.widget_pip_list)
 
-        self.infoCard = SettingGroupCard(FluentIcon.SPEED_OFF, "帮助", "",
-                                         self.scrollAreaWidgetContents)
+        self.card_about = SettingGroupCard(FluentIcon.SPEED_OFF, "关于", "",
+                                          self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_about, 5, 0, 1, 1)
 
-        self.gridLayout1.addWidget(self.infoCard, 5, 0, 1, 1)
+        line_version = LineSettingCardWidget('', "版本", "", self.card_about)
+        line_version.setText(VERSION)
+        self.card_about.addWidget(line_version)
+
+        line_date = LineSettingCardWidget('', "日期", "", self.card_about)
+        line_date.setText(PackageTime)
+        self.card_about.addWidget(line_date)
+
+        line_author = LineSettingCardWidget('', "author", "", self.card_about)
+        line_author.setText("Reiner")
+        self.card_about.addWidget(line_author)
+
+        line_email = LineSettingCardWidget('', "email", "", self.card_about)
+        line_email.setText("nbxlhc@hotmail.com")
+        line_email.line.setMinimumWidth(160)
+        self.card_about.addWidget(line_email)
+
+        repo = HyperlinkCardWidget('', "仓库", "github", self.card_about)
+        repo.setButtonUrl("https://github.com/Reinering/PyQt-Creator.git")
+        repo.setButtonText("打开REPO页面")
+        self.card_about.addWidget(repo)
+
+
+
+
 
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(self.verticalSpacer)
