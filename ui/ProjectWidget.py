@@ -207,7 +207,7 @@ class ProjectWidget(QWidget, Ui_Form):
 
         self.comboBox_mode = ComboBoxSettingCardWidget('', "模式", "", self.envCard)
         self.comboBox_mode.setBoxItems(SETTINGS["project"]["python_env_modes"])
-        self.comboBox_mode.textChanged.connect(self.on_comboBox_mode_currentTextChanged)
+        self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
         self.envCard.addWidget(self.comboBox_mode)
 
         self.widget_env = SettingCardWidget('', "Python 环境", "", self.envCard)
@@ -308,11 +308,13 @@ class ProjectWidget(QWidget, Ui_Form):
                     menu.addAction(Action(FluentIcon.PASTE, '卸载', triggered=lambda path=file_path: self.tree_setup_uninstall(file_path)))
 
                 if suffix == ".ui":
-                    submenu_designer = RoundMenu("使用designer打开", self)
-                    submenu_designer.setIcon(FluentIcon.PASTE)
-                    menu.addMenu(submenu_designer)
-                    submenu_designer.addAction(Action(FluentIcon.PASTE, '原生designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
-                    submenu_designer.addAction(Action(FluentIcon.PASTE, 'designer插件', triggered=lambda path=file_path: self.tree_ui_designer_plugin(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
+
+                    # submenu_designer = RoundMenu("使用designer打开", self)
+                    # submenu_designer.setIcon(FluentIcon.PASTE)
+                    # menu.addMenu(submenu_designer)
+                    # submenu_designer.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
+
                     menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_ui_complie(file_path)))
                     menu.addAction(Action(FluentIcon.PASTE, '生成代码', triggered=lambda path=file_path: self.tree_generate_code(file_path)))
                 elif suffix == ".qrc":
@@ -425,39 +427,12 @@ class ProjectWidget(QWidget, Ui_Form):
         self.spinner_project.show()
 
     def tree_py_pack(self, file_path):
-        PAGEWidgets["pack"].setData(file_path)
+        PAGEWidgets["pack"].setMainFile(file_path)
         PAGEWidgets["main"].forward("Pack")
 
     def tree_ui_designer(self, file_path):
-        if self.venvMangerTh.isRunning():
-            Message.error("错误", "env忙碌中，请稍后重试", self)
-            return
-
-        path = self.getPyPath()
-        if not path:
-            Message.error("错误", "python解释器获取失败", self)
-            return
-
-        self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("designer", PyPath.PYSIDE6_DESIGNER.path(path), file_path)
-        self.venvMangerTh.start()
-
-    def tree_ui_designer_plugin(self, file_path):
-        if self.venvMangerTh.isRunning():
-            Message.error("错误", "env忙碌中，请稍后重试", self)
-            return
-
-        path = self.getPyPath()
-        if not path:
-            Message.error("错误", "python解释器获取失败", self)
-            return
-
-        self.venvMangerTh.setPyInterpreter(path)
-
-        self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), file_path)
-        self.venvMangerTh.start()
-
-        Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候。正常开启后若要关闭请稍等20s...", self)
+        PAGEWidgets["designer"].setUIFile(file_path)
+        PAGEWidgets["main"].forward("Designer")
 
     def tree_ui_complie(self, file_path):
         if not file_path:
