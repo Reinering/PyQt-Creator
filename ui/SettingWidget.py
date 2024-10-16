@@ -205,6 +205,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_editor_file.setMinimumWidth(200)
         self.comboBox_editor_file.currentTextChanged.connect(self.on_comboBox_editor_file_currentTextChanged)
         self.comboBox_editor_file.returnPressed.connect(self.on_comboBox_editor_file_returnPressed)
+        self.comboBox_editor_file.textItemDeleted.connect(self.on_comboBox_editor_file_textItemDeleted)
         self.widget_editor.addWidget(self.comboBox_editor_file)
         self.card_editor.addWidget(self.widget_editor)
 
@@ -513,6 +514,15 @@ class SettingWidget(QWidget, Ui_Form):
         text = self.comboBox_editor_file.text()
         if text:
             CURRENT_SETTINGS["settings"]["editors"].append(text)
+            write_config()
+
+    def on_comboBox_editor_file_textItemDeleted(self, text):
+        if text:
+            try:
+                CURRENT_SETTINGS["settings"]["editors"].remove(text)
+            except Exception as e:
+                logging.error(e)
+
             write_config()
 
     def receive_VMresult(self, cmd, result, isClose=True):
