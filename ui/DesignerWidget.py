@@ -312,6 +312,10 @@ class DesignerWidget(QWidget, Ui_Form):
 
         return True
 
+    def setUIFile(self, file):
+        self.comboBox_mode.setCurrentText(SETTINGS["pack"]["python_env_modes"][1])
+        self.file_ui.setText(file)
+
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["designer"]["mode"] = text
 
