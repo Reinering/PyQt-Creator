@@ -31,7 +31,7 @@ from qfluentexpand.components.widgets.card import (
     SettingCardWidget, PushSettingCardWidget, PrimaryPushSettingCardWidget, ComboBoxSettingCardWidget,
     FileSettingCardWidget, FolderSettingCardWidget, LineSettingCardWidget, HyperlinkCardWidget
 )
-from qfluentexpand.components.combox.combo_box import MSComboBox
+from qfluentexpand.components.combox.combo_box import MSComboBox, EditableComboBox
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
@@ -195,9 +195,23 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pip_list.addWidget(self.button_pip_list)
         self.card_pip.addWidget(self.widget_pip_list)
 
+        self.card_editor = SettingGroupCard(FluentIcon.SPEED_OFF, "编辑设置", "",
+                                           self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_editor, 5, 0, 1, 1)
+
+        self.widget_editor = SettingCardWidget('', '编辑器', '可执行文件', self.card_editor)
+        self.comboBox_editor_file = EditableComboBox(self.card_editor)
+        self.comboBox_editor_file.setClearButtonEnabled(True)
+        self.comboBox_editor_file.setMinimumWidth(200)
+        self.comboBox_editor_file.currentTextChanged.connect(self.on_comboBox_editor_file_currentTextChanged)
+        self.comboBox_editor_file.returnPressed.connect(self.on_comboBox_editor_file_returnPressed)
+        self.widget_editor.addWidget(self.comboBox_editor_file)
+        self.card_editor.addWidget(self.widget_editor)
+
+
         self.card_about = SettingGroupCard(FluentIcon.SPEED_OFF, "关于", "",
                                           self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_about, 5, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_about, 6, 0, 1, 1)
 
         line_version = LineSettingCardWidget('', "版本", "", self.card_about)
         line_version.setText(VERSION)
@@ -220,7 +234,6 @@ class SettingWidget(QWidget, Ui_Form):
         repo.setButtonUrl("https://github.com/Reinering/PyQt-Creator.git")
         repo.setButtonText("打开REPO页面")
         self.card_about.addWidget(repo)
-
 
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(self.verticalSpacer)
@@ -246,6 +259,11 @@ class SettingWidget(QWidget, Ui_Form):
 
         if CURRENT_SETTINGS["settings"]["pip_mirror_url"]:
             self.widget_pip_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pip_mirror_url"])
+
+        if CURRENT_SETTINGS["settings"]["editors"]:
+            self.comboBox_editor_file.addItems(CURRENT_SETTINGS["settings"]["editors"])
+        if CURRENT_SETTINGS["settings"]["editor"]:
+            self.comboBox_editor_file.setCurrentText(CURRENT_SETTINGS["settings"]["editor"])
 
     def getPyPath(self):
         path = ""
@@ -485,6 +503,17 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_existing.setState(True)
 
             Message.info("卸载", "卸载中，请稍后", self)
+
+    def on_comboBox_editor_file_currentTextChanged(self, text):
+        if text:
+            CURRENT_SETTINGS["settings"]["editor"] = text
+            write_config()
+
+    def on_comboBox_editor_file_returnPressed(self):
+        text = self.comboBox_editor_file.text()
+        if text:
+            CURRENT_SETTINGS["settings"]["editors"].append(text)
+            write_config()
 
     def receive_VMresult(self, cmd, result, isClose=True):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
