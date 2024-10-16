@@ -269,11 +269,11 @@ class SettingWidget(QWidget, Ui_Form):
         line_date.setText(PackageTime)
         self.card_about.addWidget(line_date)
 
-        line_author = LineSettingCardWidget('', "author", "", self.card_about)
+        line_author = LineSettingCardWidget('', "作者", "", self.card_about)
         line_author.setText("Reiner")
         self.card_about.addWidget(line_author)
 
-        line_email = LineSettingCardWidget('', "email", "", self.card_about)
+        line_email = LineSettingCardWidget('', "邮箱", "", self.card_about)
         line_email.setText("nbxlhc@hotmail.com")
         line_email.line.setMinimumWidth(160)
         self.card_about.addWidget(line_email)
@@ -282,9 +282,6 @@ class SettingWidget(QWidget, Ui_Form):
         repo.setButtonUrl("https://github.com/Reinering/PyQt-Creator.git")
         repo.setButtonText("打开REPO页面")
         self.card_about.addWidget(repo)
-
-
-
 
 
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
