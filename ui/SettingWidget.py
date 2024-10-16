@@ -27,7 +27,10 @@ from qfluentwidgets import (
 from qfluentwidgets.common.icon import FluentIcon
 from qfluentwidgets.common.style_sheet import FluentStyleSheet, getStyleSheetFromFile
 
-from qfluentexpand.components.widgets.card import LineSettingCardWidget, HyperlinkCardWidget
+from qfluentexpand.components.widgets.card import (
+    SettingCardWidget, PushSettingCardWidget, PrimaryPushSettingCardWidget, ComboBoxSettingCardWidget,
+    FileSettingCardWidget, FolderSettingCardWidget, LineSettingCardWidget, HyperlinkCardWidget
+)
 from qfluentexpand.components.combox.combo_box import MSComboBox
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
@@ -83,66 +86,33 @@ class SettingWidget(QWidget, Ui_Form):
         self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.envCard, 2, 0, 1, 1)
-        widget_mode = QWidget(self.envCard)
-        envLabel = BodyLabel("模式 (全局)")
-        self.comboBox_mode = ComboBox(self.envCard)
-        self.comboBox_mode.addItems(SETTINGS["settings"]["python_env_modes"])
-        self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
-        layout = QHBoxLayout(widget_mode)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_mode)
-        self.envCard.addWidget(widget_mode)
 
-        self.widget_env = QWidget(self.envCard)
-        label_env = BodyLabel("Python 环境", self.envCard)
-        self.label_ver = CaptionLabel("版本: ", self.envCard)
+        self.comboBox_mode = ComboBoxSettingCardWidget('', '模式', '', self.envCard)
+        self.comboBox_mode.setItems(SETTINGS["settings"]["python_env_modes"])
+        self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
+        self.envCard.addWidget(self.comboBox_mode)
+
+        self.widget_env = SettingCardWidget('', 'Python 环境', '', self.envCard)
+        label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
-        layout = QHBoxLayout(self.widget_env)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_env)
-        layout.addStretch(1)
-        layout.addWidget(self.label_ver)
-        layout.addStretch(1)
-        layout.addWidget(self.button_filepath)
+        self.widget_env.addWidget(label_ver)
+        self.widget_env.addStretch(1)
+        self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
         self.card_pyenv = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyenv 虚拟环境管理", "https://github.com/pyenv-win/pyenv-win",
                                           self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pyenv, 3, 0, 1, 1)
 
-        self.widget_pyenv_path = QWidget(self.card_pyenv)
-        label_pyenv_path = BodyLabel("pyenv-win 根目录")
-        self.button_pyenv_path = FolderPathSelector(self.envCard)
-        self.button_pyenv_path.setFixedWidth(200)
+        self.button_pyenv_path = FolderSettingCardWidget('', "Pyenv 根目录", "pyenv-win", self.card_pyenv)
+        self.button_pyenv_path.selector.setFixedWidth(200)
         self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
+        self.card_pyenv.addWidget(self.button_pyenv_path)
 
-        # hBoxLayout = QHBoxLayout(self.widget_pyenv_path)
-        # hBoxLayout.setContentsMargins(30, 0, 30, 0)
-        # hBoxLayout.setSpacing(0)
-        # hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        #
-        # vBoxLayout = QVBoxLayout(self.widget_pyenv_path)
-        # vBoxLayout.setSpacing(0)
-        # vBoxLayout.setContentsMargins(0, 0, 0, 0)
-        # vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        # hBoxLayout.addLayout(vBoxLayout)
-        # vBoxLayout.addWidget(label_pyenv_path, 0, Qt.AlignmentFlag.AlignLeft)
-        # # vBoxLayout.addWidget(label_content, 0, Qt.AlignmentFlag.AlignLeft)
-
-        hBoxLayout = QHBoxLayout(self.widget_pyenv_path)
-        hBoxLayout.setContentsMargins(30, 5, 30, 5)
-        hBoxLayout.addWidget(label_pyenv_path)
-        hBoxLayout.addStretch(1)
-        hBoxLayout.addWidget(self.button_pyenv_path)
-        self.card_pyenv.addWidget(self.widget_pyenv_path)
-
-        self.widget_pyenv_existing = QWidget(self.card_pyenv)
-        label_existing = BodyLabel("现有环境")
+        self.widget_pyenv_existing = SettingCardWidget('', '现有环境', '', self.envCard)
         self.spinner_existing = GifLabel(self.card_pyenv)
         self.spinner_existing.setGif(APPGIF.LOADING.path())
         self.spinner_existing.setFixedSize(30, 30)
@@ -156,18 +126,13 @@ class SettingWidget(QWidget, Ui_Form):
         menu.addAction(Action(FluentIcon.BASKETBALL, '更新', triggered=self.existing_update))
         menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.existing_uninstall))
         self.button_existing_uninstall.setMenu(menu)
-
-        layout = QHBoxLayout(self.widget_pyenv_existing)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_existing)
-        layout.addStretch(1)
-        layout.addWidget(self.spinner_existing)
-        layout.addWidget(self.comboBox_existing)
-        layout.addWidget(self.button_existing_uninstall)
+        self.widget_pyenv_existing.addStretch(1)
+        self.widget_pyenv_existing.addWidget(self.spinner_existing)
+        self.widget_pyenv_existing.addWidget(self.comboBox_existing)
+        self.widget_pyenv_existing.addWidget(self.button_existing_uninstall)
         self.card_pyenv.addWidget(self.widget_pyenv_existing)
 
-        self.widget_pyenv_new = QWidget(self.card_pyenv)
-        label_new = BodyLabel("安装新环境")
+        self.widget_pyenv_new = SettingCardWidget('', '安装新环境', '', self.envCard)
         self.spinner_new = GifLabel(self.card_pyenv)
         self.spinner_new.setGif(APPGIF.LOADING.path())
         self.spinner_new.setFixedSize(30, 30)
@@ -177,59 +142,37 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_new_maxbit.setFixedWidth(75)
         self.comboBox_new_ver = ComboBox(self.card_pyenv)
         self.comboBox_new_ver.setMinimumWidth(100)
-
         self.button_new_install = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(parent=self.button_new_install)
         menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.new_install))
         menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.new_update))
         self.button_new_install.setMenu(menu)
-
-        layout = QHBoxLayout(self.widget_pyenv_new)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_new)
-        layout.addStretch(1)
-        layout.addWidget(self.spinner_new)
-        layout.addWidget(self.comboBox_new_maxbit)
-        layout.addWidget(self.comboBox_new_ver)
-        layout.addWidget(self.button_new_install)
+        self.widget_pyenv_new.addStretch(1)
+        self.widget_pyenv_new.addWidget(self.spinner_new)
+        self.widget_pyenv_new.addWidget(self.comboBox_new_maxbit)
+        self.widget_pyenv_new.addWidget(self.comboBox_new_ver)
+        self.widget_pyenv_new.addWidget(self.button_new_install)
         self.card_pyenv.addWidget(self.widget_pyenv_new)
 
-        self.widget_pyenv_mirror_url = QWidget(self.card_pyenv)
-        label_mirror_url = BodyLabel("更新源")
-        self.comboBox_pyenv_mirror_url = ComboBox(self.card_pyenv)
-        self.comboBox_pyenv_mirror_url.setMinimumWidth(100)
-        self.comboBox_pyenv_mirror_url.setMaximumWidth(150)
-        self.comboBox_pyenv_mirror_url.addItems(MIRRORS["pyenv"].keys())
-        self.comboBox_pyenv_mirror_url.currentTextChanged.connect(self.on_comboBox_pyenv_mirror_url_currentTextChanged)
-
-        layout = QHBoxLayout(self.widget_pyenv_mirror_url)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_mirror_url)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_pyenv_mirror_url)
+        self.widget_pyenv_mirror_url = ComboBoxSettingCardWidget('', '更新源', '', self.envCard)
+        self.widget_pyenv_mirror_url.comboBox.setMinimumWidth(100)
+        self.widget_pyenv_mirror_url.comboBox.setMaximumWidth(150)
+        self.widget_pyenv_mirror_url.setItems(MIRRORS["pyenv"].keys())
+        self.widget_pyenv_mirror_url.currentTextChanged.connect(self.on_comboBox_pyenv_mirror_url_currentTextChanged)
         self.card_pyenv.addWidget(self.widget_pyenv_mirror_url)
 
         self.card_pip = SettingGroupCard(FluentIcon.SPEED_OFF, "Pip 设置", "",
                                            self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pip, 4, 0, 1, 1)
 
-        self.widget_pip_mirror_url = QWidget(self.card_pip)
-        label_mirror_url = BodyLabel("更新源")
-        self.comboBox_pip_mirror_url = ComboBox(self.card_pip)
-        self.comboBox_pip_mirror_url.setMinimumWidth(100)
-        self.comboBox_pip_mirror_url.setMaximumWidth(150)
-        self.comboBox_pip_mirror_url.addItems(MIRRORS["pip"].keys())
-        self.comboBox_pip_mirror_url.currentTextChanged.connect(self.on_comboBox_pip_mirror_url_currentTextChanged)
-
-        layout = QHBoxLayout(self.widget_pip_mirror_url)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_mirror_url)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_pip_mirror_url)
+        self.widget_pip_mirror_url = ComboBoxSettingCardWidget('', '更新源', '', self.card_pip)
+        self.widget_pip_mirror_url.comboBox.setMinimumWidth(100)
+        self.widget_pip_mirror_url.comboBox.setMaximumWidth(150)
+        self.widget_pip_mirror_url.setItems(MIRRORS["pip"].keys())
+        self.widget_pip_mirror_url.currentTextChanged.connect(self.on_comboBox_pip_mirror_url_currentTextChanged)
         self.card_pip.addWidget(self.widget_pip_mirror_url)
 
-        self.widget_pip_list = QWidget(self.card_pip)
-        label_pip_list = BodyLabel("模块列表")
+        self.widget_pip_list = SettingCardWidget('', '模块列表', '', self.card_pip)
         self.spinner_pip_list = GifLabel(self.card_pip)
         self.spinner_pip_list.setGif(APPGIF.LOADING.path())
         self.spinner_pip_list.setFixedSize(30, 30)
@@ -239,7 +182,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_pip_list.setReadOnly(False)
         self.comboBox_pip_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.comboBox_pip_list.currentTextChanged.connect(self.on_comboBox_existing_currentTextChanged)
-
         self.button_pip_list = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(parent=self.button_pip_list)
         menu.addAction(Action(FluentIcon.BASKETBALL, '获取/更新', triggered=self.get_pip_list))
@@ -247,14 +189,10 @@ class SettingWidget(QWidget, Ui_Form):
         menu.addAction(Action(FluentIcon.BASKETBALL, '更新模块', triggered=self.upgrade_pip_list))
         menu.addAction(Action(FluentIcon.ALBUM, '卸载模块', triggered=self.uninstall_pip_list))
         self.button_pip_list.setMenu(menu)
-
-        layout = QHBoxLayout(self.widget_pip_list)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_pip_list)
-        layout.addStretch(1)
-        layout.addWidget(self.spinner_pip_list)
-        layout.addWidget(self.comboBox_pip_list)
-        layout.addWidget(self.button_pip_list)
+        self.widget_pip_list.addStretch(1)
+        self.widget_pip_list.addWidget(self.spinner_pip_list)
+        self.widget_pip_list.addWidget(self.comboBox_pip_list)
+        self.widget_pip_list.addWidget(self.button_pip_list)
         self.card_pip.addWidget(self.widget_pip_list)
 
         self.card_about = SettingGroupCard(FluentIcon.SPEED_OFF, "关于", "",
@@ -304,10 +242,10 @@ class SettingWidget(QWidget, Ui_Form):
             self.comboBox_existing.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_current_version"])
 
         if CURRENT_SETTINGS["settings"]["pyenv_mirror_url"]:
-            self.comboBox_pyenv_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_mirror_url"])
+            self.widget_pyenv_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_mirror_url"])
 
         if CURRENT_SETTINGS["settings"]["pip_mirror_url"]:
-            self.comboBox_pip_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pip_mirror_url"])
+            self.widget_pip_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pip_mirror_url"])
 
     def getPyPath(self):
         path = ""

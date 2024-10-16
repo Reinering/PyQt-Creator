@@ -206,7 +206,7 @@ class ProjectWidget(QWidget, Ui_Form):
         self.gridLayout121.addWidget(self.envCard, 0, 0, 1, 1)
 
         self.comboBox_mode = ComboBoxSettingCardWidget('', "模式", "", self.envCard)
-        self.comboBox_mode.setBoxItems(SETTINGS["project"]["python_env_modes"])
+        self.comboBox_mode.setItems(SETTINGS["project"]["python_env_modes"])
         self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
         self.envCard.addWidget(self.comboBox_mode)
 
@@ -225,7 +225,7 @@ class ProjectWidget(QWidget, Ui_Form):
                                              self.scrollAreaWidgetContents)
         self.gridLayout121.addWidget(self.card_project, 1, 0, 1, 1)
         self.comboBox_project_type = ComboBoxSettingCardWidget('', "类型", "", self.card_project)
-        self.comboBox_project_type.setBoxItems(SETTINGS["project"]["project_types"])
+        self.comboBox_project_type.setItems(SETTINGS["project"]["project_types"])
         self.card_project.addWidget(self.comboBox_project_type)
 
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
