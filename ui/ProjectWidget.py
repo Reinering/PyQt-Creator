@@ -39,6 +39,8 @@ from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.line.selector import FilePathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
+from qfluentexpand.common.gif import APPGIF
+from qfluentexpand.components.widgets.card import SettingCardWidget, ComboBoxSettingCardWidget, FileSettingCardWidget
 
 from .Ui_ProjectWidget import Ui_Form
 from .GenerateCodeDialog import GenerateCodeDialog
@@ -150,7 +152,6 @@ class ProjectWidget(QWidget, Ui_Form):
         leftFrame.setFrameShape(QFrame.Shape.StyledPanel)
         splitter.addWidget(leftFrame)
 
-
         self.gridLayout111 = QGridLayout(leftFrame)
         self.gridLayout111.setContentsMargins(5, 1, 5, 1)
         # self.gridLayout111.setSpacing(30)
@@ -200,55 +201,35 @@ class ProjectWidget(QWidget, Ui_Form):
         self.gridLayout121.setSpacing(30)
         self.gridLayout121.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
+        self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "python",
                                         self.scrollAreaWidgetContents)
         self.gridLayout121.addWidget(self.envCard, 0, 0, 1, 1)
-        widget = QWidget(self.envCard)
-        iconWidget = IconWidget(FluentIcon.SPEED_OFF)
-        titleLabel = BodyLabel("模式", self.envCard)
-        self.comboBox_mode = ComboBox(self.envCard)
-        self.comboBox_mode.addItems(SETTINGS["project"]["python_env_modes"])
-        self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
-        layout = QHBoxLayout(widget)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(iconWidget)
-        layout.addWidget(titleLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_mode)
-        self.envCard.addWidget(widget)
 
-        self.widget_env = QWidget(self.envCard)
-        label_env = BodyLabel("Python 环境", self.envCard)
+        self.comboBox_mode = ComboBoxSettingCardWidget('', "模式", "", self.envCard)
+        self.comboBox_mode.setBoxItems(SETTINGS["project"]["python_env_modes"])
+        self.comboBox_mode.textChanged.connect(self.on_comboBox_mode_currentTextChanged)
+        self.envCard.addWidget(self.comboBox_mode)
+
+        self.widget_env = SettingCardWidget('', "Python 环境", "", self.envCard)
         self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
-        layout = QHBoxLayout(self.widget_env)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_env)
-        layout.addStretch(1)
-        layout.addWidget(self.label_ver)
-        layout.addStretch(1)
-        layout.addWidget(self.button_filepath)
+        self.widget_env.addWidget(self.label_ver)
+        self.widget_env.addStretch(1)
+        self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
         self.card_project = SettingGroupCard(FluentIcon.SPEED_OFF, "项目设置", "",
-                                        self.scrollAreaWidgetContents)
+                                             self.scrollAreaWidgetContents)
         self.gridLayout121.addWidget(self.card_project, 1, 0, 1, 1)
-        widget_project_type = QWidget(self.card_project)
-        envLabel = BodyLabel("类型")
-        self.comboBox_project_type = ComboBox(self.card_project)
-        self.comboBox_project_type.addItems(SETTINGS["project"]["project_types"])
-        layout = QHBoxLayout(widget_project_type)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_project_type)
-        self.card_project.addWidget(widget_project_type)
+        self.comboBox_project_type = ComboBoxSettingCardWidget('', "类型", "", self.card_project)
+        self.comboBox_project_type.setBoxItems(SETTINGS["project"]["project_types"])
+        self.card_project.addWidget(self.comboBox_project_type)
 
         self.verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.gridLayout121.addItem(self.verticalSpacer, 2, 0, 1, 1)
+        self.gridLayout121.addItem(self.verticalSpacer)
 
         try:
             self.configure()
