@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 author: Reiner New
@@ -121,7 +122,6 @@ SETTINGS = {
     "project": {
         "python_env_modes": ["独立模式", "跟随全局"],
         "project_types": ["PySide6", "PyQt6", "PyQt5", "PySide2"]
-
     },
     "designer": {
         "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],
@@ -133,7 +133,6 @@ SETTINGS = {
         "setup": {
             "filepath": ""
         },
-
     },
     "other": {
         "python_env_modes": ["独立模式", "跟随项目", "跟随全局"],
@@ -158,12 +157,11 @@ CURRENT_SETTINGS = {
         "project_name": "",
         "project_type": 'PySide6',
         "recently_opened": []
-
     },
     "designer": {
         "mode": 'global',
-        "custom_python_path": ""
-
+        "custom_python_path": "",
+        "fileUI": ''
     },
     "pack": {
         "mode": 'global',
@@ -176,13 +174,11 @@ CURRENT_SETTINGS = {
         "setup": {
             "filepath": ""
         },
-
     },
     "other": {
         "mode": 'global',
         "custom_python_path": "",
         "project_type": 'PySide6'
-
     },
     "settings": {
         "theme": 'Light',
@@ -194,6 +190,8 @@ CURRENT_SETTINGS = {
         "pyenv_path": LIBS["pyenv"],
         "pyenv_current_version": "",
         "pyenv_mirror_url": "origin",
-        "pip_mirror_url": "origin"
+        "pip_mirror_url": "origin",
+        "editors": ["notepad"],
+        "editor": "notepad",
     }
 }
