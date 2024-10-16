@@ -409,11 +409,17 @@ class ProjectWidget(QWidget, Ui_Form):
             write_config()
 
     def tree_edit(self, file_path):
-        subprocess.run(["notepad", file_path])
+        try:
+            if CURRENT_SETTINGS["settings"]["editor"]:
+                subprocess.run([CURRENT_SETTINGS["settings"]["editor"], file_path])
+            else:
+                subprocess.run(["notepad", file_path])
+        except Exception as e:
+            print(e)
+            logging.error(e)
+            Message.error("错误", "编辑器打开失败", self)
 
     def tree_py_run(self, file_path):
-        print(file_path)
-
         path = self.getPyPath()
         if not path:
             Message.error("错误", "python解释器获取失败", self)
