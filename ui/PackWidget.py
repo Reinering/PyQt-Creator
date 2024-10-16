@@ -276,7 +276,7 @@ class PackWidget(QWidget, Ui_Form):
         layout.addWidget(self.button_nuitka_settingfile)
         self.card_nuitka.addWidget(widget_nuitka_settingfile)
 
-        self.card_setup = SettingGroupCard(FluentIcon.SPEED_OFF, "Setup 设置", "参考文档配置参数",
+        self.card_setup = SettingGroupCard(FluentIcon.SPEED_OFF, "Setuptools 设置", "参考文档配置参数",
                                             self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_setup, 4, 0, 1, 1)
 
@@ -716,9 +716,9 @@ class PackWidget(QWidget, Ui_Form):
 
         return True
 
-    def setData(self, mainFile):
+    def setMainFile(self, file):
         self.comboBox_mode.setCurrentText(SETTINGS["pack"]["python_env_modes"][1])
-        self.button_filepath_main.setText(mainFile)
+        self.button_filepath_main.setText(file)
 
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["pack"]["mode"] = text
