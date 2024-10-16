@@ -31,6 +31,7 @@ from qfluentexpand.components.card.settingcard import SettingGroupCard, ComboBox
 from qfluentexpand.components.line.selector import FilePathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
+from qfluentexpand.components.widgets.card import SettingCardWidget, ComboBoxSettingCardWidget, FileSettingCardWidget
 
 from .Ui_DesignerWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
@@ -109,34 +110,29 @@ class DesignerWidget(QWidget, Ui_Form):
         self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.envCard, 1, 0, 1, 1)
-        widget_mode = QWidget(self.envCard)
-        envLabel = BodyLabel("模式")
-        self.comboBox_mode = ComboBox(self.envCard)
-        self.comboBox_mode.addItems(SETTINGS["designer"]["python_env_modes"])
-        self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
-        layout = QHBoxLayout(widget_mode)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_mode)
-        self.envCard.addWidget(widget_mode)
 
-        self.widget_env = QWidget(self.envCard)
-        label_env = BodyLabel("Python 环境", self.envCard)
+        self.comboBox_mode = ComboBoxSettingCardWidget('', '模式', '', self.envCard)
+        self.comboBox_mode.setBoxItems(SETTINGS["designer"]["python_env_modes"])
+        self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
+        self.envCard.addWidget(self.comboBox_mode)
+
+        self.widget_env = SettingCardWidget('', 'Python 环境', '', self.envCard)
         self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
-        layout = QHBoxLayout(self.widget_env)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(label_env)
-        layout.addStretch(1)
-        layout.addWidget(self.label_ver)
-        layout.addStretch(1)
-        layout.addWidget(self.button_filepath)
+        self.widget_env.addWidget(self.label_ver)
+        self.widget_env.addStretch(1)
+        self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
+        self.file_ui = FileSettingCardWidget('', "UI 文件", "", self.envCard)
+        self.file_ui.setFileTypes("UI 文件 (*.ui)")
+        self.file_ui.selector.setReadOnly(False)
+        self.file_ui.selector.setMinimumWidth(200)
+        self.file_ui.textChanged.connect(self.on_button_file_ui_textChanged)
+        self.envCard.addWidget(self.file_ui)
 
         self.designerSetCard = SettingGroupCard(FluentIcon.SPEED_OFF, "Desinger 设置", "",
                                                 self.scrollAreaWidgetContents)
@@ -197,6 +193,9 @@ class DesignerWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["designer"]["custom_python_path"]:
             self.button_filepath.setText(CURRENT_SETTINGS["designer"]["custom_python_path"])
 
+        if CURRENT_SETTINGS["designer"]["fileUI"]:
+            self.file_ui.setText(CURRENT_SETTINGS["designer"]["fileUI"])
+
     def getPyPath(self):
         path = ""
         if self.comboBox_mode.currentText() == "独立模式":
@@ -251,7 +250,11 @@ class DesignerWidget(QWidget, Ui_Form):
             return
 
         self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("designer", PyPath.PYSIDE6_DESIGNER.path(path))
+
+        if self.file_ui.text():
+            self.venvMangerTh.setCMD("designer", PyPath.PYSIDE6_DESIGNER.path(path), self.file_ui.text())
+        else:
+            self.venvMangerTh.setCMD("designer", PyPath.PYSIDE6_DESIGNER.path(path), )
         self.venvMangerTh.start()
 
         self.button_open.setEnabled(False)
@@ -267,13 +270,10 @@ class DesignerWidget(QWidget, Ui_Form):
             return
 
         self.venvMangerTh.setPyInterpreter(path)
-
-        # plugin_1 = os.path.abspath(PyPath.PYSIDE6_PLUGINS.path(path))
-        # plugins = os.path.join(plugin_1, "expand") + ';' + plugin_1
-        # self.venvMangerTh.setCMD("environ", PYSIDE_DESIGNER_PLUGINS=plugins)
-        # self.venvMangerTh.setCMD("designer_plugin1", '-i', path, '-p', plugins)
-
-        self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path))
+        if self.file_ui.text():
+            self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), self.file_ui.text())
+        else:
+            self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), )
         self.venvMangerTh.start()
 
         self.button_open.setEnabled(False)
@@ -333,6 +333,11 @@ class DesignerWidget(QWidget, Ui_Form):
         else:
             self.label_ver.setText("版本: ")
             CURRENT_SETTINGS["designer"]["custom_python_path"] = ""
+            write_config()
+
+    def on_button_file_ui_textChanged(self, text):
+        if text and ".ui" in text:
+            CURRENT_SETTINGS["designer"]["fileUI"] = text
             write_config()
 
     def on_button_designer_install_clicked(self):
@@ -462,11 +467,10 @@ class VenvManagerThread(QThread):
             result = self.pyI.pip("uninstall", "-y", "qfluentexpand")
             self.signal_result.emit(cmd, result)
         elif cmd == "designer":
-            result = self.pyI.cmd(self.args[0])
+            result = self.pyI.cmd(self.args)
             self.signal_result.emit(cmd, result)
         elif cmd == "designer_plugin":
-            # result = self.pyI.py_popen(self.args)
-            result = self.pyI.py(self.args[0])
+            result = self.pyI.py_popen(self.args)
             self.signal_result.emit(cmd, result)
         elif cmd == "designer_plugin1":
             result = designer.main()
