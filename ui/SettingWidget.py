@@ -88,7 +88,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.gridLayout1.addWidget(self.envCard, 2, 0, 1, 1)
 
         self.comboBox_mode = ComboBoxSettingCardWidget('', '模式', '', self.envCard)
-        self.comboBox_mode.setItems(SETTINGS["settings"]["python_env_modes"])
+        self.comboBox_mode.addItems(SETTINGS["settings"]["python_env_modes"])
         self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
         self.envCard.addWidget(self.comboBox_mode)
 
@@ -157,7 +157,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_mirror_url = ComboBoxSettingCardWidget('', '更新源', '', self.envCard)
         self.widget_pyenv_mirror_url.comboBox.setMinimumWidth(100)
         self.widget_pyenv_mirror_url.comboBox.setMaximumWidth(150)
-        self.widget_pyenv_mirror_url.setItems(MIRRORS["pyenv"].keys())
+        self.widget_pyenv_mirror_url.addItems(MIRRORS["pyenv"].keys())
         self.widget_pyenv_mirror_url.currentTextChanged.connect(self.on_comboBox_pyenv_mirror_url_currentTextChanged)
         self.card_pyenv.addWidget(self.widget_pyenv_mirror_url)
 
@@ -168,7 +168,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pip_mirror_url = ComboBoxSettingCardWidget('', '更新源', '', self.card_pip)
         self.widget_pip_mirror_url.comboBox.setMinimumWidth(100)
         self.widget_pip_mirror_url.comboBox.setMaximumWidth(150)
-        self.widget_pip_mirror_url.setItems(MIRRORS["pip"].keys())
+        self.widget_pip_mirror_url.addItems(MIRRORS["pip"].keys())
         self.widget_pip_mirror_url.currentTextChanged.connect(self.on_comboBox_pip_mirror_url_currentTextChanged)
         self.card_pip.addWidget(self.widget_pip_mirror_url)
 

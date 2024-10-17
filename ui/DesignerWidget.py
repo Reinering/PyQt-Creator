@@ -112,7 +112,7 @@ class DesignerWidget(QWidget, Ui_Form):
         self.gridLayout1.addWidget(self.envCard, 1, 0, 1, 1)
 
         self.comboBox_mode = ComboBoxSettingCardWidget('', '模式', '', self.envCard)
-        self.comboBox_mode.setItems(SETTINGS["designer"]["python_env_modes"])
+        self.comboBox_mode.addItems(SETTINGS["designer"]["python_env_modes"])
         self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
         self.envCard.addWidget(self.comboBox_mode)
 
