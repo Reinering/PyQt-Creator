@@ -317,8 +317,7 @@ class ProjectWidget(QWidget, Ui_Form):
                 elif suffix == ".qrc":
                     menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_qrc_complie(file_path)))
                 elif suffix == ".whl":
-                    menu.addAction(Action(FluentIcon.PASTE, '安装', triggered=lambda path=file_path: self.tree_whl_install(file_path)))
-                    menu.addAction(Action(FluentIcon.PASTE, '卸载', triggered=lambda path=file_path: self.tree_whl_uninstall(file_path)))
+                    menu.addAction(Action(FluentIcon.PASTE, '操作', triggered=lambda path=file_path: self.tree_whl_action(file_path)))
                 else:
                     menu.addAction(Action(FluentIcon.PASTE, '编辑', triggered=lambda path=file_path: self.tree_edit(file_path)))
                     if suffix == ".py":
@@ -523,11 +522,9 @@ class ProjectWidget(QWidget, Ui_Form):
         clipboard.copy(file_path)
         Message.info("提示", "复制成功", self)
 
-    def tree_whl_install(self, file_path):
-        pass
-
-    def tree_whl_uninstall(self, file_path):
-        pass
+    def tree_whl_action(self, file_path):
+        PAGEWidgets["other"].setWHLFile(file_path)
+        PAGEWidgets["main"].forward("Other")
 
     def tree_setup_action(self, file_path):
         PAGEWidgets["pack"].setSetupFile(file_path)
