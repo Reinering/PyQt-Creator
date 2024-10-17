@@ -22,7 +22,12 @@ from qfluentwidgets import (
 )
 from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBase as FIF, FluentIcon
 
-from qfluentexpand.components.card.settingcard import SettingGroupCard
+from qfluentexpand.components.widgets.card import (
+    SettingCardWidget, PushSettingCardWidget, PrimaryPushSettingCardWidget, ComboBoxSettingCardWidget,
+    FileSettingCardWidget, FolderSettingCardWidget, LineSettingCardWidget, HyperlinkCardWidget,
+    MenuPSettingCardWidget
+)
+from qfluentexpand.components.card.settingcard import SettingGroupCard, ComboBoxSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
@@ -99,123 +104,86 @@ class OtherWidget(QWidget, Ui_Form):
         self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.envCard, 1, 0, 1, 1)
-        widget_mode = QWidget(self.envCard)
-        envLabel = BodyLabel("模式")
-        self.comboBox_mode = ComboBox(self.envCard)
+        self.comboBox_mode = ComboBoxSettingCardWidget('', "模式", "", self.envCard)
         self.comboBox_mode.addItems(SETTINGS["other"]["python_env_modes"])
         self.comboBox_mode.currentTextChanged.connect(self.on_comboBox_mode_currentTextChanged)
-        layout = QHBoxLayout(widget_mode)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_mode)
-        self.envCard.addWidget(widget_mode)
+        self.envCard.addWidget(self.comboBox_mode)
 
-        self.widget_env = QWidget(self.envCard)
-        self.label_env = BodyLabel("Python 环境", self.envCard)
+        self.widget_env = SettingCardWidget('', "Python 环境", "", self.envCard)
         self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
-        self.button_filepath.setText("选择")
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
-        layout = QHBoxLayout(self.widget_env)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(self.label_env)
-        layout.addStretch(1)
-        layout.addWidget(self.label_ver)
-        layout.addStretch(1)
-        layout.addWidget(self.button_filepath)
+        self.widget_env.addWidget(self.label_ver)
+        self.widget_env.addStretch(1)
+        self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
-        self.widget_env_project = QWidget(self.envCard)
-        envLabel = BodyLabel("项目目录")
-        self.button_env_folder = FolderPathSelector(self.envCard)
-        self.button_env_folder.setMaximumWidth(300)
-        self.button_env_folder.setFixedWidth(200)
-        layout = QHBoxLayout(self.widget_env_project)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.button_env_folder)
-        self.envCard.addWidget(self.widget_env_project)
+        # self.widget_env_project = QWidget(self.envCard)
+        # envLabel = BodyLabel("项目目录")
+        # self.button_env_folder = FolderPathSelector(self.envCard)
+        # self.button_env_folder.setMaximumWidth(300)
+        # self.button_env_folder.setFixedWidth(200)
+        # layout = QHBoxLayout(self.widget_env_project)
+        # layout.setContentsMargins(30, 5, 30, 5)
+        # layout.addWidget(envLabel)
+        # layout.addStretch(1)
+        # layout.addWidget(self.button_env_folder)
+        # self.envCard.addWidget(self.widget_env_project)
 
-        self.card_requirements = SettingGroupCard(FluentIcon.SPEED_OFF, "pipreqs 设置", "",
+        self.card_requirements = SettingGroupCard(FluentIcon.SPEED_OFF, "pipreqs", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_requirements, 2, 0, 1, 1)
 
-        widget_pipreqs = QWidget(self.card_requirements)
-        envLabel = BodyLabel("pipreqs")
+        widget_pipreqs = SettingCardWidget('', "pipreqs 模块", "", self.card_requirements)
         self.spinner_pipreqs = GifLabel(self.card_requirements)
         self.spinner_pipreqs.setGif(APPGIF.LOADING.path())
         self.spinner_pipreqs.setFixedSize(30, 30)
         self.spinner_pipreqs.hide()
         self.button_pipreqs = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
-        menu = RoundMenu(parent=self.button_pipreqs)
+        menu = RoundMenu(widget_pipreqs)
         menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.pipreqs_install))
         menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.pipreqs_upgrade))
         menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.pipreqs_uninstall))
         self.button_pipreqs.setMenu(menu)
-
-        layout = QHBoxLayout(widget_pipreqs)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.spinner_pipreqs)
-        layout.addWidget(self.button_pipreqs)
+        widget_pipreqs.addStretch(1)
+        widget_pipreqs.addWidget(self.spinner_pipreqs)
+        widget_pipreqs.addWidget(self.button_pipreqs)
         self.card_requirements.addWidget(widget_pipreqs)
 
-        widget_pipreqs_edit = QWidget(self.card_requirements)
-        envLabel = BodyLabel("pipreqs 配置文件")
-        self.button_pipreqs_edit = PrimaryPushButton(self.card_requirements)
-        self.button_pipreqs_edit.setText("编辑")
-        self.button_pipreqs_edit.clicked.connect(self.on_button_pipreqs_edit_clicked)
-        layout = QHBoxLayout(widget_pipreqs_edit)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.button_pipreqs_edit)
-        self.card_requirements.addWidget(widget_pipreqs_edit)
+        self.button_pipreqs_project = FolderSettingCardWidget('', "项目目录", "", self.card_requirements)
+        self.button_pipreqs_project.selector.setFixedWidth(200)
+        # self.button_pipreqs_project.textChanged.connect(self.on_button_pipreqs_project_textChanged)
+        self.card_requirements.addWidget(self.button_pipreqs_project)
 
-        widget_requirements = QWidget(self.card_requirements)
-        envLabel = BodyLabel("requirements")
+        widget_requirements = SettingCardWidget('', "requirements", "", self.card_requirements)
         self.spinner_requirements = GifLabel(self.card_requirements)
         self.spinner_requirements.setGif(APPGIF.LOADING.path())
         self.spinner_requirements.setFixedSize(30, 30)
         self.spinner_requirements.hide()
-
         self.button_requirements = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
-        menu = RoundMenu(parent=self.button_requirements)
+        menu = RoundMenu(parent=widget_requirements)
         menu.addAction(Action(FluentIcon.BASKETBALL, '生成', triggered=self.generate_requirements))
         menu.addAction(Action(FluentIcon.ALBUM, '安装', triggered=self.install_requirements))
         menu.addAction(Action(FluentIcon.ALBUM, '编辑', triggered=self.edit_requirements))
         self.button_requirements.setMenu(menu)
-        layout = QHBoxLayout(widget_requirements)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.spinner_requirements)
-        layout.addWidget(self.button_requirements)
+        widget_requirements.addStretch(1)
+        widget_requirements.addWidget(self.spinner_requirements)
+        widget_requirements.addWidget(self.button_requirements)
         self.card_requirements.addWidget(widget_requirements)
+
 
         self.card_generate_code = SettingGroupCard(FluentIcon.SPEED_OFF, "Generate Code", "",
                                                   self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_generate_code, 3, 0, 1, 1)
 
-        widget_generate_code_type = QWidget(self.card_generate_code)
-        envLabel = BodyLabel("类型")
-        self.comboBox_generate_code_type = ComboBox(self.card_generate_code)
+        self.comboBox_generate_code_type = ComboBoxSettingCardWidget('', "类型", "", self.card_generate_code)
         self.comboBox_generate_code_type.addItems(SETTINGS["other"]["project_types"])
-        layout = QHBoxLayout(widget_generate_code_type)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.comboBox_generate_code_type)
-        self.card_generate_code.addWidget(widget_generate_code_type)
+        self.card_generate_code.addWidget(self.comboBox_generate_code_type)
 
-        widget_generate_code = QWidget(self.card_generate_code)
-        envLabel = BodyLabel("UI 文件")
-        self.spinner_generate_code = GifLabel(self.card_requirements)
+        widget_generate_code = SettingCardWidget('', "UI 文件", "", self.card_generate_code)
+        self.spinner_generate_code = GifLabel(self.card_generate_code)
         self.spinner_generate_code.setGif(APPGIF.LOADING.path())
         self.spinner_generate_code.setFixedSize(30, 30)
         self.spinner_generate_code.hide()
@@ -223,23 +191,42 @@ class OtherWidget(QWidget, Ui_Form):
         self.button_filepath_ui.setFileTypes("*.ui")
         self.button_filepath_ui.setFixedWidth(200)
         self.button_generate_code = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
-        menu = RoundMenu(parent=self.button_generate_code)
+        menu = RoundMenu(widget_generate_code)
         menu.addAction(Action(FluentIcon.BASKETBALL, '编译', triggered=self.generate_code_compile))
         menu.addAction(Action(FluentIcon.ALBUM, '生成', triggered=self.generate_code_generate))
         self.button_generate_code.setMenu(menu)
-
-        layout = QHBoxLayout(widget_generate_code)
-        layout.setContentsMargins(30, 5, 30, 5)
-        layout.addWidget(envLabel)
-        layout.addStretch(1)
-        layout.addWidget(self.spinner_generate_code)
-        layout.addWidget(self.button_filepath_ui)
-        layout.addWidget(self.button_generate_code)
+        widget_generate_code.addStretch(1)
+        widget_generate_code.addWidget(self.spinner_generate_code)
+        widget_generate_code.addWidget(self.button_filepath_ui)
         self.card_generate_code.addWidget(widget_generate_code)
 
+        self.card_whl = SettingGroupCard(FluentIcon.SPEED_OFF, "Wheel", "",
+                                                   self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_whl, 4, 0, 1, 1)
+
+        self.button_whl_file = FileSettingCardWidget('', "文件路径", "", self.card_whl)
+        self.button_whl_file.selector.setFixedWidth(200)
+        self.button_whl_file.selector.setFileTypes("*.whl")
+        self.button_whl_file.setReadOnly(False)
+        self.card_whl.addWidget(self.button_whl_file)
+
+        widget_whl = SettingCardWidget('', "whl", "", self.card_whl)
+        self.spinner_whl = GifLabel(self.card_whl)
+        self.spinner_whl.setGif(APPGIF.LOADING.path())
+        self.spinner_whl.setFixedSize(30, 30)
+        self.spinner_whl.hide()
+        self.button_whl = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        menu = RoundMenu(parent=widget_whl)
+        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.whl_install))
+        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.whl_uninstall))
+        self.button_whl.setMenu(menu)
+        widget_whl.addStretch(1)
+        widget_whl.addWidget(self.spinner_whl)
+        widget_whl.addWidget(self.button_whl)
+        self.card_whl.addWidget(widget_whl)
 
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
+        self.gridLayout1.addItem(verticalSpacer)
 
         try:
             self.configure()
@@ -408,18 +395,18 @@ class OtherWidget(QWidget, Ui_Form):
 
         os.system(f'notepad {file}')
 
+    def setWHLFile(self, file):
+        self.button_whl_file.setText(file)
+
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["other"]["mode"] = text
 
         if text == "跟随项目":
             self.widget_env.hide()
-            self.widget_env_project.hide()
         elif text == "跟随全局":
             self.widget_env.hide()
-            self.widget_env_project.show()
         elif text == "独立模式":
             self.widget_env.show()
-            self.widget_env_project.show()
         else:
             pass
 
@@ -496,6 +483,54 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_generate_code.setState(False)
         self.spinner_generate_code.hide()
 
+    def whl_install(self):
+        file = self.button_whl_file.text()
+        if not file:
+            Message.error("错误", "WHL文件不能为空", self)
+            return
+        elif ".whl" not in file:
+            Message.error("错误", "文件类型不正确", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("install_whl", file)
+        self.venvMangerTh.start()
+
+        self.button_whl.setEnabled(False)
+        self.spinner_whl.setState(True)
+        self.spinner_whl.show()
+
+        Message.info("提示", "正在安装，请稍后", self)
+
+    def whl_uninstall(self):
+        file = self.button_whl_file.text()
+        if not file:
+            Message.error("错误", "WHL文件不能为空", self)
+            return
+        elif ".whl" not in file:
+            Message.error("错误", "文件类型不正确", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("uninstall_whl", file)
+        self.venvMangerTh.start()
+
+        self.button_whl.setEnabled(False)
+        self.spinner_whl.setState(True)
+        self.spinner_whl.show()
+
+        Message.info("提示", "正在卸载，请稍后", self)
+
     def receive_VMresult(self,  cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
         if cmd == "init":
@@ -544,6 +579,27 @@ class OtherWidget(QWidget, Ui_Form):
                 return
 
             Message.info("提示", "生成成功", self)
+        elif "install_whl" in cmd:
+            self.button_whl.setEnabled(True)
+            self.spinner_whl.setState(False)
+            self.spinner_whl.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("提示", "安装成功", self)
+        elif "uninstall_whl" in cmd:
+            self.button_whl.setEnabled(True)
+            self.spinner_whl.setState(False)
+            self.spinner_whl.hide()
+
+            if not result[0]:
+                Message.error("错误", result[1], self)
+                return
+
+            Message.info("提示", "卸载成功", self)
+
         else:
             pass
 
@@ -598,6 +654,12 @@ class VenvManagerThread(QThread):
             result = self.pyI.cmd(self.args[0])
             self.signal_result.emit(cmd, result)
         elif "install_requirements" in cmd:
+            result = self.pyI.pip("install", *self.args)
+            self.signal_result.emit(cmd, result)
+        elif "uninstall_whl" in cmd:
+            result = self.pyI.pip("uninstall", '-y', *self.args)
+            self.signal_result.emit(cmd, result)
+        elif "install_whl" in cmd:
             result = self.pyI.pip("install", *self.args)
             self.signal_result.emit(cmd, result)
         else:
