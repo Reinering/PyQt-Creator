@@ -29,6 +29,7 @@ from ui.MainWindow import MainWindow
 from common.pyinstaller import PyinstallerPackage
 from common.nuitka import NuitkaPackage
 from common.pipreqs import Pipreqs
+from common.config import diff_config
 
 
 # from pycrunch_trace.client.api import trace
@@ -97,9 +98,7 @@ def readConfig():
     else:
         with open(os.path.join(ROOT_PATH, SettingPath, SettingFile), "r") as f:
             data = json.load(f)
-            CURRENT_SETTINGS.clear()
-            for key in data.keys():
-                CURRENT_SETTINGS[key] = data[key]
+            diff_config(data, CURRENT_SETTINGS)
 
     if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")):
         with open(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json"), "w") as f:
