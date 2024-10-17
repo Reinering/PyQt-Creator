@@ -151,7 +151,7 @@ SETTINGS = {
 
 CURRENT_SETTINGS = {
     "project": {
-        "mode": 'global',
+        "mode": "独立模式",
         "custom_python_path": "",
         "project_path": "",
         "project_name": "",
@@ -159,12 +159,12 @@ CURRENT_SETTINGS = {
         "recently_opened": []
     },
     "designer": {
-        "mode": 'global',
+        "mode": "独立模式",
         "custom_python_path": "",
         "fileUI": ''
     },
     "pack": {
-        "mode": 'global',
+        "mode": "独立模式",
         "custom_python_path": "",
         "main": "",
         "outPath": "",
@@ -176,7 +176,7 @@ CURRENT_SETTINGS = {
         },
     },
     "other": {
-        "mode": 'global',
+        "mode": "独立模式",
         "custom_python_path": "",
         "project_type": 'PySide6'
     },
@@ -185,7 +185,7 @@ CURRENT_SETTINGS = {
         "language": 'Auto',
         "dpi": 'Auto',
         "update": 'CheckUpdateAtStartUp',
-        "mode": "system",
+        "mode": "Pyenv 环境",
         "custom_python_path": "",
         "pyenv_path": LIBS["pyenv"],
         "pyenv_current_version": "",
