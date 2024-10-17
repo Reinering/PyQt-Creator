@@ -720,6 +720,11 @@ class PackWidget(QWidget, Ui_Form):
         self.comboBox_mode.setCurrentText(SETTINGS["pack"]["python_env_modes"][1])
         self.button_filepath_main.setText(file)
 
+    def setSetupFile(self, file):
+        if file == "setup.py":
+            self.comboBox_mode.setCurrentText(SETTINGS["pack"]["python_env_modes"][1])
+            self.button_filepath_setup.setText(file)
+
     def on_comboBox_mode_currentTextChanged(self, text):
         CURRENT_SETTINGS["pack"]["mode"] = text
 

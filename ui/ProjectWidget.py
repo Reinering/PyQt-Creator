@@ -294,7 +294,7 @@ class ProjectWidget(QWidget, Ui_Form):
             menu.addAction(
                 Action(FluentIcon.COPY, '打开所在目录', triggered=lambda path=file_path: self.tree_open_path(file_path)))
             menu.addAction(
-                Action(FluentIcon.CUT, '复制路径', triggered=lambda path=file_path: self.tree_qrc_copy_path(file_path)))
+                Action(FluentIcon.CUT, '复制路径', triggered=lambda path=file_path: self.tree_copy_path(file_path)))
 
             # 添加分割线
             menu.addSeparator()
@@ -303,10 +303,7 @@ class ProjectWidget(QWidget, Ui_Form):
                 (filepath, filename) = os.path.split(file_path)
                 (name, suffix) = os.path.splitext(file_path)
                 if filename == "setup.py":
-                    menu.addAction(Action(FluentIcon.PASTE, '打包', triggered=lambda path=file_path: self.tree_setup_pack(file_path)))
-                    menu.addAction(Action(FluentIcon.PASTE, '安装', triggered=lambda path=file_path: self.tree_setup_install(file_path)))
-                    menu.addAction(Action(FluentIcon.PASTE, '卸载', triggered=lambda path=file_path: self.tree_setup_uninstall(file_path)))
-
+                    menu.addAction(Action(FluentIcon.PASTE, '操作', triggered=lambda path=file_path: self.tree_setup_action(file_path)))
                 if suffix == ".ui":
                     menu.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
 
@@ -492,7 +489,6 @@ class ProjectWidget(QWidget, Ui_Form):
         self.spinner_project.hide()
 
     def tree_qrc_complie(self, file_path):
-        print(file_path)
         if not file_path:
             Message.error("错误", "UI文件不能为空", self)
             return
@@ -523,7 +519,7 @@ class ProjectWidget(QWidget, Ui_Form):
         self.spinner_project.setState(True)
         self.spinner_project.show()
 
-    def tree_qrc_copy_path(self, file_path):
+    def tree_copy_path(self, file_path):
         clipboard.copy(file_path)
         Message.info("提示", "复制成功", self)
 
@@ -533,14 +529,9 @@ class ProjectWidget(QWidget, Ui_Form):
     def tree_whl_uninstall(self, file_path):
         pass
 
-    def tree_setup_pack(self, file_path):
-        pass
-
-    def tree_setup_install(self, file_path):
-        pass
-
-    def tree_setup_uninstall(self, file_path):
-        pass
+    def tree_setup_action(self, file_path):
+        PAGEWidgets["pack"].setSetupFile(file_path)
+        PAGEWidgets["main"].forward("Pack")
 
     def tree_open_path(self, file_path):
         if os.path.isfile(file_path):
