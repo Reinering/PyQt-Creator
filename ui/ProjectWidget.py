@@ -160,7 +160,7 @@ class ProjectWidget(QWidget, Ui_Form):
         hBoxLayout = QHBoxLayout(leftFrame)
         self.gridLayout111.addLayout(hBoxLayout, 0, 0, 1, 1)
 
-        self.treeTitle = QLabel(leftFrame)
+        self.treeTitle = BodyLabel(leftFrame)
         self.treeTitle.setText("项目目录")
         self.treeTitle.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Ignored)
         self.treeTitle.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
