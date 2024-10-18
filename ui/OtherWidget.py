@@ -395,6 +395,10 @@ class OtherWidget(QWidget, Ui_Form):
 
         os.system(f'notepad {file}')
 
+    def setRequirementsFile(self, file):
+        (filePath, fileName) = os.path.split(file)
+        self.button_pipreqs_project.setText(filePath)
+
     def setWHLFile(self, file):
         self.button_whl_file.setText(file)
 

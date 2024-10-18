@@ -264,6 +264,7 @@ class ProjectWidget(QWidget, Ui_Form):
         fileModel.setRootPath(rootPath)
         self.tree.setModel(fileModel)
         self.tree.setRootIndex(fileModel.index(rootPath))
+        self.tree.setEditTriggers(QTreeView.EditTrigger.NoEditTriggers)
 
         # 隐藏列
         self.tree.setColumnHidden(1, True)
@@ -304,6 +305,8 @@ class ProjectWidget(QWidget, Ui_Form):
                 (name, suffix) = os.path.splitext(file_path)
                 if filename == "setup.py":
                     menu.addAction(Action(FluentIcon.PASTE, '操作', triggered=lambda path=file_path: self.tree_setup_action(file_path)))
+                elif filename == "requirements.txt":
+                    menu.addAction(Action(FluentIcon.PASTE, '操作', triggered=lambda path=file_path: self.tree_requirements_action(file_path)))
                 if suffix == ".ui":
                     menu.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
 
@@ -323,6 +326,8 @@ class ProjectWidget(QWidget, Ui_Form):
                     if suffix == ".py":
                         menu.addAction(Action(FluentIcon.PASTE, '运行', triggered=lambda path=file_path: self.tree_py_run(file_path)))
                         menu.addAction(Action(FluentIcon.PASTE, '打包成exe', triggered=lambda path=file_path: self.tree_py_pack(file_path)))
+
+
             else:
                 pass
 
@@ -334,6 +339,7 @@ class ProjectWidget(QWidget, Ui_Form):
                 menu.addAction(Action(FluentIcon.COPY, '新建文件', triggered=lambda path=file_path: self.tree_open_newfile(file_path)))
                 menu.addAction(Action(FluentIcon.COPY, '新建文件夹', triggered=lambda path=file_path: self.tree_open_newfolder(file_path)))
 
+            menu.addAction(Action(FluentIcon.PASTE, '重命名', triggered=lambda path=file_path: self.tree_rename(file_path)))
             menu.addAction(Action(FluentIcon.COPY, '删除', triggered=lambda path=file_path: self.tree_open_del(file_path)))
 
         menu.exec_(self.tree.viewport().mapToGlobal(pos))
@@ -592,6 +598,22 @@ class ProjectWidget(QWidget, Ui_Form):
             Message.info("提示", "删除成功", self)
         else:
             print('取消')
+
+    def tree_requirements_action(self, file_path):
+        PAGEWidgets["other"].setRequirementsFile(file_path)
+        PAGEWidgets["main"].forward("Other")
+
+    def tree_rename(self, file_path):
+        (filePath, fileName) = os.path.split(file_path)
+        dialog = CustomMessageBox("重命名", "请输入新文件名", "文件名不正确", self)
+        dialog.setText(fileName)
+        if dialog.exec():
+            newFileName = dialog.text()
+            if newFileName:
+                newFilePath = os.path.join(filePath, newFileName)
+                os.rename(file_path, newFilePath)
+                logging.info(f"重命名 {fileName} -> {newFileName}")
+                Message.info("提示", "重命名成功", self)
 
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")

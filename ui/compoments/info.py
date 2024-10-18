@@ -95,6 +95,9 @@ class MessageBox(MessageBoxBase):
         self.warning.setHidden(isValid)
         return isValid
 
+    def setText(self, text):
+        self.line.setText(text)
+
     def text(self):
         return self.line.text()
 
