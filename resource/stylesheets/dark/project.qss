@@ -1,6 +1,11 @@
 
 QScrollArea {
     border: none;
+    background-color: transparent;
+}
+
+#scrollAreaWidgetContents {
+    background-color: transparent;
 }
 
 QSplitter {
@@ -24,3 +29,5 @@ QFrame > #rightFrame {
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
 }
+
+

@@ -1,3 +1,9 @@
+
 QScrollArea {
     border: none;
+    background-color: transparent;
+}
+
+#scrollAreaWidgetContents {
+    background-color: transparent;
 }

@@ -19,7 +19,7 @@ from qfluentwidgets import (
     BodyLabel, CaptionLabel,
     ComboBox,
     PrimaryPushButton,  PrimaryDropDownPushButton, PrimaryDropDownToolButton,
-    Theme,
+    Theme, toggleTheme,
     LineEdit,
     RoundMenu, Action,
     PushSettingCard
@@ -29,7 +29,7 @@ from qfluentwidgets.common.style_sheet import FluentStyleSheet, getStyleSheetFro
 
 from qfluentexpand.components.widgets.card import (
     SettingCardWidget, PushSettingCardWidget, PrimaryPushSettingCardWidget, ComboBoxSettingCardWidget,
-    FileSettingCardWidget, FolderSettingCardWidget, LineSettingCardWidget, HyperlinkCardWidget
+    FileSettingCardWidget, FolderSettingCardWidget, LineSettingCardWidget, HyperlinkCardWidget, SwitchSettingCardWidget
 )
 from qfluentexpand.components.combox.combo_box import MSComboBox, EditableComboBox
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
@@ -59,9 +59,9 @@ class SettingWidget(QWidget, Ui_Form):
         """
         super().__init__(parent)
         self.setupUi(self)
-
-        self.setObjectName("setting")
         StyleSheet.SETTING.apply(self)
+        self.setObjectName("setting")
+
         self.initState = True
 
         self.gridLayout1 = QGridLayout(self.scrollAreaWidgetContents)
@@ -80,8 +80,13 @@ class SettingWidget(QWidget, Ui_Form):
     def initWidget(self):
         self.basicCard = SettingGroupCard(FluentIcon.SPEED_OFF, "基本设置", "",
                                           self.scrollAreaWidgetContents)
-
         self.gridLayout1.addWidget(self.basicCard, 1, 0, 1, 1)
+        self.theme = SwitchSettingCardWidget(FluentIcon.SPEED_OFF, "主题", "theme", self.basicCard)
+        self.theme.setOffText("Light")
+        self.theme.setOnText("Dark")
+        self.theme.switch.checkedChanged.connect(self.on_theme_switch_checkedChanged)
+        self.basicCard.addWidget(self.theme)
+
 
         self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
                                         self.scrollAreaWidgetContents)
@@ -240,6 +245,8 @@ class SettingWidget(QWidget, Ui_Form):
         self.gridLayout1.addItem(self.verticalSpacer)
 
     def configure(self):
+        if CURRENT_SETTINGS["settings"]["theme"] == "Dark":
+            self.theme.setChecked(True)
 
         if CURRENT_SETTINGS["settings"]["mode"] in SETTINGS["settings"]["python_env_modes"]:
             self.comboBox_mode.setCurrentText(CURRENT_SETTINGS["settings"]["mode"])
@@ -524,6 +531,16 @@ class SettingWidget(QWidget, Ui_Form):
                 logging.error(e)
 
             write_config()
+
+    def on_theme_switch_checkedChanged(self, state):
+        if state:
+            toggleTheme(True)
+            CURRENT_SETTINGS["settings"]["theme"] = "Dark"
+        else:
+            toggleTheme(False)
+            CURRENT_SETTINGS["settings"]["theme"] = "Light"
+
+        write_config()
 
     def receive_VMresult(self, cmd, result, isClose=True):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
