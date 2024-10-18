@@ -190,6 +190,7 @@ class OtherWidget(QWidget, Ui_Form):
         self.button_filepath_ui = FilePathSelector(self.card_generate_code)
         self.button_filepath_ui.setFileTypes("*.ui")
         self.button_filepath_ui.setFixedWidth(200)
+        self.button_filepath_ui.setReadOnly(False)
         self.button_generate_code = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(widget_generate_code)
         menu.addAction(Action(FluentIcon.BASKETBALL, '编译', triggered=self.generate_code_compile))
@@ -434,8 +435,12 @@ class OtherWidget(QWidget, Ui_Form):
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")}')
 
     def generate_code_compile(self):
-        if not self.button_filepath_ui.text():
+        file = self.button_filepath_ui.text()
+        if not file:
             Message.error("错误", "UI文件不能为空", self)
+            return
+        elif ".ui" not in file:
+            Message.error("错误", "文件类型不正确", self)
             return
 
         path = self.getPyPath()
@@ -451,11 +456,11 @@ class OtherWidget(QWidget, Ui_Form):
             cmd = PyPath.PYQT5_UIC.path(path)
         elif self.comboBox_generate_code_type.currentText() == "PyQt6":
             cmd = PyPath.PYQT6_UIC.path(path)
-        (filePath, fileName) = os.path.split(self.button_filepath_ui.text())
+        (filePath, fileName) = os.path.split(file)
         outFile = os.path.join(filePath, 'Ui_' + fileName.replace('ui', 'py'))
 
         self.venvMangerTh.setPyInterpreter(path)
-        self.venvMangerTh.setCMD("generate_code", cmd, self.button_filepath_ui.text(), '-o', outFile)
+        self.venvMangerTh.setCMD("generate_code", cmd, file, '-o', outFile)
         self.venvMangerTh.start()
 
         self.button_generate_code.setEnabled(False)
@@ -465,8 +470,12 @@ class OtherWidget(QWidget, Ui_Form):
         Message.info("提示", "生成中，请稍后", self)
 
     def generate_code_generate(self):
-        if not self.button_filepath_ui.text():
+        file = self.button_filepath_ui.text()
+        if not file:
             Message.error("错误", "UI文件不能为空", self)
+            return
+        elif ".ui" not in file:
+            Message.error("错误", "文件类型不正确", self)
             return
 
         path = self.getPyPath()
@@ -481,7 +490,7 @@ class OtherWidget(QWidget, Ui_Form):
 
         self.spinner_generate_code.setState(True)
         self.spinner_generate_code.show()
-        dialog = GenerateCodeDialog(self.button_filepath_ui.text(), project)
+        dialog = GenerateCodeDialog(file, project)
         dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
         dialog.show()
         self.spinner_generate_code.setState(False)
