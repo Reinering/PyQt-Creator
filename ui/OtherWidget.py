@@ -138,7 +138,7 @@ class OtherWidget(QWidget, Ui_Form):
 
         widget_pipreqs = SettingCardWidget('', "pipreqs 模块", "", self.card_requirements)
         self.spinner_pipreqs = GifLabel(self.card_requirements)
-        self.spinner_pipreqs.setGif(APPGIF.LOADING.path())
+        self.spinner_pipreqs.setGif(APPGIF.LOADING)
         self.spinner_pipreqs.setFixedSize(30, 30)
         self.spinner_pipreqs.hide()
         self.button_pipreqs = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
@@ -159,7 +159,7 @@ class OtherWidget(QWidget, Ui_Form):
 
         widget_requirements = SettingCardWidget('', "requirements", "", self.card_requirements)
         self.spinner_requirements = GifLabel(self.card_requirements)
-        self.spinner_requirements.setGif(APPGIF.LOADING.path())
+        self.spinner_requirements.setGif(APPGIF.LOADING)
         self.spinner_requirements.setFixedSize(30, 30)
         self.spinner_requirements.hide()
         self.button_requirements = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
@@ -184,7 +184,7 @@ class OtherWidget(QWidget, Ui_Form):
 
         widget_generate_code = SettingCardWidget('', "UI 文件", "", self.card_generate_code)
         self.spinner_generate_code = GifLabel(self.card_generate_code)
-        self.spinner_generate_code.setGif(APPGIF.LOADING.path())
+        self.spinner_generate_code.setGif(APPGIF.LOADING)
         self.spinner_generate_code.setFixedSize(30, 30)
         self.spinner_generate_code.hide()
         self.button_filepath_ui = FilePathSelector(self.card_generate_code)
@@ -199,6 +199,7 @@ class OtherWidget(QWidget, Ui_Form):
         widget_generate_code.addStretch(1)
         widget_generate_code.addWidget(self.spinner_generate_code)
         widget_generate_code.addWidget(self.button_filepath_ui)
+        widget_generate_code.addWidget(self.button_generate_code)
         self.card_generate_code.addWidget(widget_generate_code)
 
         self.card_whl = SettingGroupCard(FluentIcon.SPEED_OFF, "Wheel", "",
@@ -213,7 +214,7 @@ class OtherWidget(QWidget, Ui_Form):
 
         widget_whl = SettingCardWidget('', "whl", "", self.card_whl)
         self.spinner_whl = GifLabel(self.card_whl)
-        self.spinner_whl.setGif(APPGIF.LOADING.path())
+        self.spinner_whl.setGif(APPGIF.LOADING)
         self.spinner_whl.setFixedSize(30, 30)
         self.spinner_whl.hide()
         self.button_whl = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')

@@ -125,7 +125,7 @@ class ProjectWidget(QWidget, Ui_Form):
 
         self.button_project = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作', self)
         self.spinner_project = GifLabel(self.titleCard)
-        self.spinner_project.setGif(APPGIF.LOADING.path())
+        self.spinner_project.setGif(APPGIF.LOADING)
         self.spinner_project.setFixedSize(30, 30)
         self.spinner_project.hide()
         hBoxLayout.addItem(horizontalSpacer)
