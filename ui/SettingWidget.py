@@ -119,7 +119,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.widget_pyenv_existing = SettingCardWidget('', '现有环境', '', self.envCard)
         self.spinner_existing = GifLabel(self.card_pyenv)
-        self.spinner_existing.setGif(APPGIF.LOADING.path())
+        self.spinner_existing.setGif(APPGIF.LOADING)
         self.spinner_existing.setFixedSize(30, 30)
         self.spinner_existing.hide()
         self.comboBox_existing = ComboBox(self.card_pyenv)
@@ -139,7 +139,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.widget_pyenv_new = SettingCardWidget('', '安装新环境', '', self.envCard)
         self.spinner_new = GifLabel(self.card_pyenv)
-        self.spinner_new.setGif(APPGIF.LOADING.path())
+        self.spinner_new.setGif(APPGIF.LOADING)
         self.spinner_new.setFixedSize(30, 30)
         self.spinner_new.hide()
         self.comboBox_new_maxbit = ComboBox(self.card_pyenv)
@@ -179,7 +179,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.widget_pip_list = SettingCardWidget('', '模块列表', '', self.card_pip)
         self.spinner_pip_list = GifLabel(self.card_pip)
-        self.spinner_pip_list.setGif(APPGIF.LOADING.path())
+        self.spinner_pip_list.setGif(APPGIF.LOADING)
         self.spinner_pip_list.setFixedSize(30, 30)
         self.spinner_pip_list.hide()
         self.comboBox_pip_list = MSComboBox(self.card_pip)
