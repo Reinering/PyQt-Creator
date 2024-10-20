@@ -29,6 +29,7 @@ from qfluentexpand.common.icon import APPICON
 from .Ui_DocumentWidget import Ui_Form
 from .PyinstallerDocDialog import PyinstallerDocDialog
 from .NuitkaDocDialog import NuitkaDocDialog
+from .SetupToolsDocDialog import SetupToolsDocDialog
 from .utils.stylesheets import StyleSheet
 from .utils.icon import AppIcon
 
@@ -113,12 +114,22 @@ class DocumentWidget(QWidget, Ui_Form):
         self.card_pipreqs = SettingGroupCard(APPICON.SOURCE, "pipreqs", "",
                                             self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pipreqs, 3, 0, 1, 1)
+        self.card_nuitka.clicked.connect(self.open_nuitka)
+
+        self.card_setuptools = PrimaryPushSettingCard(
+            text="打开",
+            icon=APPICON.SOURCE,
+            title="setuptools",
+            content="文档"
+        )
+        self.card_setuptools.clicked.connect(self.open_setuptools)
+        self.gridLayout1.addWidget(self.card_setuptools, 4, 0, 1, 1)
 
 
 
 
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.gridLayout1.addItem(verticalSpacer, 4, 0, 1, 1)
+        self.gridLayout1.addItem(verticalSpacer)
 
     def open_pyinstaller(self):
         self.pyinstallerDialog = PyinstallerDocDialog()
@@ -131,3 +142,9 @@ class DocumentWidget(QWidget, Ui_Form):
         self.nuitkaDialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.nuitkaDialog.setModal(False)
         self.nuitkaDialog.show()
+
+    def open_setuptools(self):
+        self.setuptoolsaDialog = SetupToolsDocDialog()
+        self.setuptoolsaDialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self.setuptoolsaDialog.setModal(False)
+        self.setuptoolsaDialog.show()
