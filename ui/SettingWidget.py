@@ -74,6 +74,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.venvMangerTh.signal_result.connect(self.receive_VMresult)
 
         self.initWidget()
+        self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
         self.venvMangerTh.setCMD("init")
         self.venvMangerTh.start()
 
@@ -300,6 +301,7 @@ class SettingWidget(QWidget, Ui_Form):
             Message.error("错误", "pyenv忙碌中，请稍后重试", self)
             return
 
+        self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
         self.venvMangerTh.setCMD("install", version)
         self.venvMangerTh.start()
         self.button_new_install.setEnabled(False)
@@ -312,6 +314,7 @@ class SettingWidget(QWidget, Ui_Form):
             Message.error("错误", "pyenv忙碌中，请稍后重试", self)
             return
 
+        self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
         self.venvMangerTh.setCMD("update")
         self.venvMangerTh.start()
         self.button_new_install.setEnabled(False)
@@ -324,6 +327,7 @@ class SettingWidget(QWidget, Ui_Form):
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
                 return
 
+            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("uninstall", self.comboBox_existing.currentText())
             self.venvMangerTh.start()
             self.button_existing_uninstall.setEnabled(False)
@@ -332,11 +336,12 @@ class SettingWidget(QWidget, Ui_Form):
             Message.info("卸载", "卸载中，请稍后", self)
 
     def existing_update(self):
-        if os.path.exists(os.path.join(LIBS["pyenv"], "versions")):
+        if os.path.exists(os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "versions")):
             if self.venvMangerTh.isRunning():
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
                 return
 
+            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("versions")
             self.venvMangerTh.start()
             self.button_existing_uninstall.setEnabled(False)
@@ -504,6 +509,7 @@ class SettingWidget(QWidget, Ui_Form):
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
                 return
 
+            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("uninstall", self.comboBox_existing.currentText())
             self.venvMangerTh.start()
             self.button_existing_uninstall.setEnabled(False)
@@ -582,6 +588,7 @@ class SettingWidget(QWidget, Ui_Form):
                 return
 
             self.venvMangerTh.stop()
+            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("list")
             self.venvMangerTh.start()
             return
@@ -714,6 +721,9 @@ class VenvManagerThread(QThread):
         self.cmd = cmd
         self.args = args
         self.kwargs = kwargs
+
+    def setVenvPath(self, path):
+        self.venvManger.setVenvPath(path)
 
     def setPyInterpreter(self, path):
         self.pyI.setInterpreter(path)
