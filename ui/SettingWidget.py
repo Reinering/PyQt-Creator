@@ -99,12 +99,12 @@ class SettingWidget(QWidget, Ui_Form):
         self.envCard.addWidget(self.comboBox_mode)
 
         self.widget_env = SettingCardWidget('', 'Python 环境', '', self.envCard)
-        label_ver = CaptionLabel("版本: ", self.envCard)
+        self.label_ver = CaptionLabel("版本: ", self.envCard)
         self.button_filepath = FilePathSelector(self.envCard)
         self.button_filepath.setFileTypes("python.exe")
         self.button_filepath.setFixedWidth(200)
         self.button_filepath.textChanged.connect(self.on_button_filepath_textChanged)
-        self.widget_env.addWidget(label_ver)
+        self.widget_env.addWidget(self.label_ver)
         self.widget_env.addStretch(1)
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
@@ -115,6 +115,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.button_pyenv_path = FolderSettingCardWidget('', "Pyenv 根目录", "pyenv-win", self.card_pyenv)
         self.button_pyenv_path.selector.setFixedWidth(200)
+        self.button_pyenv_path.setReadOnly(False)
         self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
         self.card_pyenv.addWidget(self.button_pyenv_path)
 
@@ -478,12 +479,12 @@ class SettingWidget(QWidget, Ui_Form):
 
     def on_button_pyenv_path_textChanged(self, text):
         if text:
-            CURRENT_SETTINGS["settings"]["pyenv_path"] = text
+            CURRENT_SETTINGS["settings"]["pyenv_path"] = text.replace("/", "\\")
             write_config()
 
     def on_comboBox_existing_currentTextChanged(self, text):
         if not self.initState:
-            CURRENT_SETTINGS["settings"]["pyenv_current_version"] = text
+            CURRENT_SETTINGS["settings"]["pyenv_current_version"] = text.replace("/", "\\")
             write_config()
 
     def on_comboBox_pyenv_mirror_url_currentTextChanged(self, text):
