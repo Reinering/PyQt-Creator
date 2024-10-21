@@ -22,6 +22,8 @@
     <file>stylesheets/dark/document.qss</file>
     <file>stylesheets/light/setting.qss</file>
     <file>stylesheets/dark/setting.qss</file>
+    <file>stylesheets/light/generate.qss</file>
+    <file>stylesheets/dark/generate.qss</file>
   </qresource>
   <qresource prefix="images">
 
