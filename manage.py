@@ -91,6 +91,7 @@ LIBS = {
     "pyenv": os.path.join("libs", "pyenv-win"),
 }
 
+IMAGE_TYPES = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.ico', '.svg']
 
 MIRRORS = {
     "pyenv": {
