@@ -210,6 +210,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_editor_file = EditableComboBox(self.card_editor)
         self.comboBox_editor_file.setClearButtonEnabled(True)
         self.comboBox_editor_file.setMinimumWidth(200)
+        self.comboBox_editor_file.addItems(CURRENT_SETTINGS["settings"]["editors"])
         self.comboBox_editor_file.currentTextChanged.connect(self.on_comboBox_editor_file_currentTextChanged)
         self.comboBox_editor_file.returnPressed.connect(self.on_comboBox_editor_file_returnPressed)
         self.comboBox_editor_file.textItemDeleted.connect(self.on_comboBox_editor_file_textItemDeleted)
@@ -270,8 +271,6 @@ class SettingWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["settings"]["pip_mirror_url"]:
             self.widget_pip_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pip_mirror_url"])
 
-        if CURRENT_SETTINGS["settings"]["editors"]:
-            self.comboBox_editor_file.addItems(CURRENT_SETTINGS["settings"]["editors"])
         if CURRENT_SETTINGS["settings"]["editor"]:
             self.comboBox_editor_file.setCurrentText(CURRENT_SETTINGS["settings"]["editor"])
 
@@ -337,6 +336,7 @@ class SettingWidget(QWidget, Ui_Form):
             Message.info("卸载", "卸载中，请稍后", self)
 
     def existing_update(self):
+        print("existing_update")
         if os.path.exists(os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "versions")):
             if self.venvMangerTh.isRunning():
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
@@ -348,6 +348,8 @@ class SettingWidget(QWidget, Ui_Form):
             self.button_existing_uninstall.setEnabled(False)
             self.spinner_existing.setState(True)
             self.spinner_existing.show()
+        else:
+            Message.error("错误", "Pyenv路径错误", self)
 
     def get_pip_list(self):
         if self.venvMangerTh.isRunning():
@@ -551,6 +553,11 @@ class SettingWidget(QWidget, Ui_Form):
 
     def receive_VMresult(self, cmd, result, isClose=True):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
+        if isinstance(result[1], list) and len(result[1]) > 5:
+            output = result[1][-5:]
+        else:
+            output = result[1]
+
         if cmd == "init":
             self.initState = False
             try:
@@ -561,14 +568,14 @@ class SettingWidget(QWidget, Ui_Form):
                 raise Exception(f"请检查配置文件{str(e)}")
         elif cmd == "py_version":
             if not result[0]:
-                Message.error("解释器错误", result[1], self)
+                Message.error("解释器错误", output, self)
                 return
             self.label_ver.setText("版本: " + result[1].strip('\n'))
             CURRENT_SETTINGS["settings"]["custom_python_path"] = self.button_filepath.text()
             write_config()
         elif cmd == "list":
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
             result = list(filter(None, result[1].split("\n")[1:]))
             result.reverse()
@@ -585,7 +592,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_new.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             self.venvMangerTh.stop()
@@ -599,7 +606,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_new.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "安装成功", self)
@@ -613,7 +620,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_existing.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "卸载成功", self)
@@ -627,7 +634,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_existing.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             result = list(filter(None, result[1].split("\n")))
@@ -643,7 +650,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_pip_list.setState(False)
             self.spinner_pip_list.hide()
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             result = list(filter(None, result[1].split("\n")))
@@ -669,7 +676,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_pip_list.setState(False)
             self.spinner_pip_list.hide()
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "安装成功", self)
@@ -678,7 +685,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_pip_list.setState(False)
             self.spinner_pip_list.hide()
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             self.comboBox_pip_list.clearSelected()
@@ -688,7 +695,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.spinner_pip_list.setState(False)
             self.spinner_pip_list.hide()
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             self.comboBox_pip_list.clearSelected()

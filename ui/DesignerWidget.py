@@ -365,11 +365,16 @@ class DesignerWidget(QWidget, Ui_Form):
 
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
+        if isinstance(result[1], list) and len(result[1]) > 5:
+            output = result[1][-5:]
+        else:
+            output = result[1]
+
         if cmd == "init":
             pass
         elif "py_version" in cmd:
             if not result[0]:
-                Message.error("解释器错误", result[1], self)
+                Message.error("解释器错误", output, self)
                 return
             self.label_ver.setText("版本: " + result[1].strip('\n'))
             CURRENT_SETTINGS["designer"]["custom_python_path"] = self.button_filepath.text()
@@ -380,19 +385,19 @@ class DesignerWidget(QWidget, Ui_Form):
             self.spinner_designer_install.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "安装成功", self)
         elif cmd == "designer":
             self.button_open.setEnabled(True)
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
         elif "designer_plugin" in cmd:
             self.button_open.setEnabled(True)
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
         elif "thirdplugin" in cmd:
             self.button_designer_thirdplugin.setEnabled(True)
@@ -400,7 +405,7 @@ class DesignerWidget(QWidget, Ui_Form):
             self.spinner_designer_plugin_install.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             if "uninstall" in cmd:
