@@ -547,11 +547,15 @@ class OtherWidget(QWidget, Ui_Form):
 
     def receive_VMresult(self,  cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result}")
+        if isinstance(result[1], list) and len(result[1]) > 5:
+            output = result[1][-5:]
+        else:
+            output = result[1]
         if cmd == "init":
             pass
         elif "py_version" in cmd:
             if not result[0]:
-                Message.error("解释器错误", result[1], self)
+                Message.error("解释器错误", output, self)
                 return
             self.label_ver.setText("版本: " + result[1].strip('\n'))
             CURRENT_SETTINGS["other"]["custom_python_path"] = self.button_filepath.text()
@@ -562,7 +566,7 @@ class OtherWidget(QWidget, Ui_Form):
             self.spinner_pipreqs.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
             if "install" in cmd:
                 Message.info("提示", "安装成功", self)
@@ -576,7 +580,7 @@ class OtherWidget(QWidget, Ui_Form):
             self.spinner_requirements.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             if "install" in cmd:
@@ -589,7 +593,7 @@ class OtherWidget(QWidget, Ui_Form):
             self.spinner_generate_code.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("提示", "生成成功", self)
@@ -599,7 +603,7 @@ class OtherWidget(QWidget, Ui_Form):
             self.spinner_whl.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("提示", "安装成功", self)
@@ -609,7 +613,7 @@ class OtherWidget(QWidget, Ui_Form):
             self.spinner_whl.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("提示", "卸载成功", self)

@@ -255,64 +255,6 @@ class PackWidget(QWidget, Ui_Form):
         widget_env_setup.addWidget(self.button_setup_action)
         self.card_setup.addWidget(widget_env_setup)
 
-
-        # widget_env_setuptools = QWidget(self.card_setup)
-        # label_env = BodyLabel("setuptools模块", self.card_setup)
-        # self.spinner_setuptools = GifLabel(self.card_setup)
-        # self.spinner_setuptools.setGif(APPGIF.LOADING)
-        # self.spinner_setuptools.setFixedSize(30, 30)
-        # self.spinner_setuptools.hide()
-        # self.button_setuptools = PrimaryPushButton(self.card_setup)
-        # self.button_setuptools.setText("安装/更新")
-        # self.button_setuptools.clicked.connect(self.on_button_setuptools_clicked)
-        # layout = QHBoxLayout(widget_env_setuptools)
-        # layout.setContentsMargins(30, 5, 30, 5)
-        # layout.addWidget(label_env)
-        # layout.addStretch(1)
-        # layout.addWidget(self.spinner_setuptools)
-        # layout.addWidget(self.button_setuptools)
-        # self.card_setup.addWidget(widget_env_setuptools)
-
-        # widget_env_setup = QWidget(self.card_setup)
-        # label_env = BodyLabel("setup.py", self.card_setup)
-        # self.spinner_setup_action = GifLabel(self.card_setup)
-        # self.spinner_setup_action.setGif(APPGIF.LOADING)
-        # self.spinner_setup_action.setFixedSize(30, 30)
-        # self.spinner_setup_action.hide()
-        # self.button_filepath_setup = FilePathSelector(self.card_setup)
-        # self.button_filepath_setup.setFileTypes("setup.py")
-        # # self.button_filepath_main.setMaximumWidth(300)
-        # self.button_filepath_setup.setFixedWidth(300)
-        # self.button_filepath_setup.textChanged.connect(self.on_button_filepath_setup_textChanged)
-        # self.button_setup_action = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
-        # menu = RoundMenu(parent=self.button_setup_action)
-        # menu.addAction(Action(FluentIcon.BASKETBALL, '编辑', triggered=self.setup_edit))
-        # menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.setup_install))
-        # # menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.setup_upgrade))
-        # # menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.setup_uninstall))
-        # self.button_setup_action.setMenu(menu)
-        # layout = QHBoxLayout(widget_env_setup)
-        # layout.setContentsMargins(30, 5, 30, 5)
-        # layout.addWidget(label_env)
-        # layout.addStretch(1)
-        # layout.addWidget(self.spinner_setup_action)
-        # layout.addWidget(self.button_filepath_setup)
-        # layout.addWidget(self.button_setup_action)
-        # self.card_setup.addWidget(widget_env_setup)
-
-        # widget_setup_action = QWidget(self.card_setup)
-        # label_setup = BodyLabel("setup.py 操作")
-        #
-        #
-        #
-        # layout = QHBoxLayout(widget_setup_action)
-        # layout.setContentsMargins(30, 5, 30, 5)
-        # layout.addWidget(label_setup)
-        # layout.addStretch(1)
-        # layout.addWidget(self.spinner_setup_action)
-        # layout.addWidget(self.button_setup_action)
-        # self.card_setup.addWidget(widget_setup_action)
-
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(verticalSpacer, 5, 0, 1, 1)
 
@@ -836,11 +778,16 @@ class PackWidget(QWidget, Ui_Form):
 
     def receive_VMresult(self, cmd, result):
         logging.debug(f"receive_VMresult: {cmd}, {result[1]}")
+        if isinstance(result[1], list) and len(result[1]) > 5:
+            output = result[1][-5:]
+        else:
+            output = result[1]
+
         if cmd == "init":
             pass
         elif cmd == "py_version":
             if not result[0]:
-                Message.error("解释器错误", result[1], self)
+                Message.error("解释器错误", output, self)
                 return
             self.label_ver.setText("版本: " + result[1].strip('\n'))
             CURRENT_SETTINGS["pack"]["custom_python_path"] = self.button_filepath.text()
@@ -851,7 +798,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_pyinstaller.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "安装成功", self)
@@ -861,7 +808,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_pyinstaller.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "更新成功", self)
@@ -871,7 +818,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_pyinstaller.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "卸载成功", self)
@@ -881,7 +828,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_nuitka.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "安装成功", self)
@@ -891,7 +838,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_nuitka.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "更新成功", self)
@@ -901,7 +848,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_nuitka.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "卸载成功", self)
@@ -926,7 +873,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_open.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "build成功", self)
@@ -936,7 +883,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_setuptools.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "安装/更新 成功", self)
@@ -946,7 +893,7 @@ class PackWidget(QWidget, Ui_Form):
             self.spinner_setup_action.hide()
 
             if not result[0]:
-                Message.error("错误", result[1], self)
+                Message.error("错误", output, self)
                 return
 
             Message.info("成功", "安装/更新 成功", self)
