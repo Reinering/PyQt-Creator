@@ -15,7 +15,7 @@ import contextlib
 import simplejson as json
 
 from qframelesswindow import FramelessWindow, StandardTitleBar
-from qfluentwidgets import InfoBar, InfoBarPosition, FluentIcon, TreeView, CaptionLabel, ComboBox, PrimaryPushButton, LineEdit
+from qfluentwidgets import InfoBar, InfoBarPosition, FluentIcon, TreeView, CaptionLabel, ComboBox, PrimaryPushButton, LineEdit, qconfig, isDarkTheme
 from qfluentwidgets.components.settings.expand_setting_card import GroupSeparator, SpaceWidget, ExpandBorderWidget
 
 from qfluentexpand.components.card.settingcard import SettingGroupCard, ExpandCard
@@ -24,6 +24,7 @@ from qfluentexpand.components.line.editor import Line
 from .Ui_GenerateCodeDialog import Ui_Form
 from .eric import ModuleParser
 from .eric.config import getConfig
+from .utils.stylesheets import StyleSheet
 
 pyqtSignatureRole = Qt.ItemDataRole.UserRole + 1
 pythonSignatureRole = Qt.ItemDataRole.UserRole + 2
@@ -62,18 +63,20 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
         """
         super().__init__(parent)
         self.setupUi(self)
+        self.resize(500, 500)
+        StyleSheet.GENERATE.apply(self)
 
         self.formFile = formFile
-        self.project = {
-            "type": 'PySide6',
-            "interpreter": '',
-            "path": ''
-        }
+        # self.project = {
+        #     "type": 'PySide6',
+        #     "interpreter": '',
+        #     "path": ''
+        # }
         self.project = project
 
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(50, 50, 50, -1)
+        self.gridLayout.setContentsMargins(20, 50, 20, -1)
         self.gridLayout.setSpacing(20)
         self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -88,7 +91,6 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
         self.titleBar.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
 
     def initWidget(self):
-
         self.generate_card = ExpandCard(self)
         self.gridLayout.addWidget(self.generate_card, 0, 0, 1, 1)
 
@@ -119,6 +121,7 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
         widget_filter = QWidget(self.generate_card)
         envLabel = CaptionLabel("Filter with")
         self.LineEditor_filter = Line(self)
+        self.LineEditor_filter.setReadOnly(False)
         self.LineEditor_filter.setMinimumWidth(300)
         self.LineEditor_filter.textChanged.connect(self.on_LineEditor_filter_textChanged)
         layout = QHBoxLayout(widget_filter)
@@ -149,8 +152,9 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
         self.gridLayout.addWidget(self.generate_class_card, 1, 0, 1, 1)
 
         widget_classname_1 = QWidget(self.generate_class_card)
-        envLabel = CaptionLabel("Filter with")
+        envLabel = CaptionLabel("Classname")
         self.LineEditor_classname = Line(self)
+        self.LineEditor_classname.setReadOnly(False)
         self.LineEditor_classname.setMinimumWidth(300)
         layout = QHBoxLayout(widget_classname_1)
         layout.setContentsMargins(30, 5, 30, 5)
@@ -200,7 +204,7 @@ class GenerateCodeDialog(FramelessWindow, Ui_Form):
         self.slotsView = TreeView(self)
         self.slotsView.setObjectName(u"slotsView")
         self.slotsView.setSortingEnabled(True)
-        self.slotsView.setMinimumHeight(400)
+        self.slotsView.setMinimumHeight(300)
         self.slotsView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.slotsView.header().hide()
 

@@ -23,6 +23,7 @@ class StyleSheet(StyleSheetBase, Enum):
     CONSOLE = "CONSOLE"
     DOCUMENT = "DOCUMENT"
     SETTING = "SETTING"
+    GENERATE = "generate"
 
     def path(self, theme=Theme.AUTO):
         theme = qconfig.theme if theme == Theme.AUTO else theme
