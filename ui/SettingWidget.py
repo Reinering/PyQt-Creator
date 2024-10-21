@@ -79,17 +79,17 @@ class SettingWidget(QWidget, Ui_Form):
         self.venvMangerTh.start()
 
     def initWidget(self):
-        self.basicCard = SettingGroupCard(FluentIcon.SPEED_OFF, "基本设置", "",
+        self.basicCard = SettingGroupCard(FluentIcon.SETTING, "基本设置", "",
                                           self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.basicCard, 1, 0, 1, 1)
-        self.theme = SwitchSettingCardWidget(FluentIcon.SPEED_OFF, "主题", "theme", self.basicCard)
+        self.theme = SwitchSettingCardWidget(FluentIcon.FLAG, "主题", "theme", self.basicCard)
         self.theme.setOffText("Light")
         self.theme.setOnText("Dark")
         self.theme.switch.checkedChanged.connect(self.on_theme_switch_checkedChanged)
         self.basicCard.addWidget(self.theme)
 
 
-        self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
+        self.envCard = SettingGroupCard(FluentIcon.SETTING, "环境设置", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.envCard, 2, 0, 1, 1)
 
@@ -109,7 +109,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
-        self.card_pyenv = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyenv 虚拟环境管理", "https://github.com/pyenv-win/pyenv-win",
+        self.card_pyenv = SettingGroupCard(FluentIcon.SETTING, "Pyenv 虚拟环境管理", "https://github.com/pyenv-win/pyenv-win",
                                           self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pyenv, 3, 0, 1, 1)
 
@@ -128,10 +128,10 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_existing.setMinimumWidth(100)
         self.comboBox_existing.currentTextChanged.connect(self.on_comboBox_existing_currentTextChanged)
 
-        self.button_existing_uninstall = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_existing_uninstall = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=self.button_existing_uninstall)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '更新', triggered=self.existing_update))
-        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.existing_uninstall))
+        menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.existing_update))
+        menu.addAction(Action(FluentIcon.LINK, '卸载', triggered=self.existing_uninstall))
         self.button_existing_uninstall.setMenu(menu)
         self.widget_pyenv_existing.addStretch(1)
         self.widget_pyenv_existing.addWidget(self.spinner_existing)
@@ -149,10 +149,10 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_new_maxbit.setFixedWidth(75)
         self.comboBox_new_ver = ComboBox(self.card_pyenv)
         self.comboBox_new_ver.setMinimumWidth(100)
-        self.button_new_install = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_new_install = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=self.button_new_install)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.new_install))
-        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.new_update))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.new_install))
+        menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.new_update))
         self.button_new_install.setMenu(menu)
         self.widget_pyenv_new.addStretch(1)
         self.widget_pyenv_new.addWidget(self.spinner_new)
@@ -168,7 +168,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_mirror_url.currentTextChanged.connect(self.on_comboBox_pyenv_mirror_url_currentTextChanged)
         self.card_pyenv.addWidget(self.widget_pyenv_mirror_url)
 
-        self.card_pip = SettingGroupCard(FluentIcon.SPEED_OFF, "Pip 设置", "",
+        self.card_pip = SettingGroupCard(FluentIcon.SETTING, "Pip 设置", "",
                                            self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pip, 4, 0, 1, 1)
 
@@ -189,12 +189,12 @@ class SettingWidget(QWidget, Ui_Form):
         self.comboBox_pip_list.setReadOnly(False)
         self.comboBox_pip_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.comboBox_pip_list.currentTextChanged.connect(self.on_comboBox_existing_currentTextChanged)
-        self.button_pip_list = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_pip_list = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=self.button_pip_list)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '获取/更新', triggered=self.get_pip_list))
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装模块', triggered=self.install_pip_list))
-        menu.addAction(Action(FluentIcon.BASKETBALL, '更新模块', triggered=self.upgrade_pip_list))
-        menu.addAction(Action(FluentIcon.ALBUM, '卸载模块', triggered=self.uninstall_pip_list))
+        menu.addAction(Action(FluentIcon.UPDATE, '获取/更新', triggered=self.get_pip_list))
+        menu.addAction(Action(FluentIcon.PRINT, '安装模块', triggered=self.install_pip_list))
+        menu.addAction(Action(FluentIcon.UPDATE, '更新模块', triggered=self.upgrade_pip_list))
+        menu.addAction(Action(FluentIcon.ROBOT, '卸载模块', triggered=self.uninstall_pip_list))
         self.button_pip_list.setMenu(menu)
         self.widget_pip_list.addStretch(1)
         self.widget_pip_list.addWidget(self.spinner_pip_list)
@@ -202,7 +202,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pip_list.addWidget(self.button_pip_list)
         self.card_pip.addWidget(self.widget_pip_list)
 
-        self.card_editor = SettingGroupCard(FluentIcon.SPEED_OFF, "编辑设置", "",
+        self.card_editor = SettingGroupCard(FluentIcon.SETTING, "编辑设置", "",
                                            self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_editor, 5, 0, 1, 1)
 
@@ -218,7 +218,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.card_editor.addWidget(self.widget_editor)
 
 
-        self.card_about = SettingGroupCard(FluentIcon.SPEED_OFF, "关于", "",
+        self.card_about = SettingGroupCard(FluentIcon.SETTING, "关于", "",
                                           self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_about, 6, 0, 1, 1)
 

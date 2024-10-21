@@ -107,7 +107,7 @@ class DesignerWidget(QWidget, Ui_Form):
         hBoxLayout.addWidget(self.button_open, 0, Qt.AlignmentFlag.AlignRight)
 
     def initWidget(self):
-        self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
+        self.envCard = SettingGroupCard(FluentIcon.SETTING, "环境设置", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.envCard, 1, 0, 1, 1)
 
@@ -134,7 +134,7 @@ class DesignerWidget(QWidget, Ui_Form):
         self.file_ui.textChanged.connect(self.on_button_file_ui_textChanged)
         self.envCard.addWidget(self.file_ui)
 
-        self.designerSetCard = SettingGroupCard(FluentIcon.SPEED_OFF, "Desinger 设置", "",
+        self.designerSetCard = SettingGroupCard(FluentIcon.SETTING, "Desinger 设置", "",
                                                 self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.designerSetCard, 2, 0, 1, 1)
         widget = QWidget(self.designerSetCard)
@@ -162,9 +162,9 @@ class DesignerWidget(QWidget, Ui_Form):
         self.spinner_designer_plugin_install.hide()
         self.button_designer_thirdplugin = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(parent=self.button_designer_thirdplugin)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.thirdplugin_install))
-        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.thirdplugin_upgrade))
-        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.thirdplugin_uninstall))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.thirdplugin_install))
+        menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.thirdplugin_upgrade))
+        menu.addAction(Action(FluentIcon.ROBOT, '卸载', triggered=self.thirdplugin_uninstall))
         self.button_designer_thirdplugin.setMenu(menu)
 
         layout = QHBoxLayout(widget_plugin)
