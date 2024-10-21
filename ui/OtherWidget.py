@@ -101,7 +101,7 @@ class OtherWidget(QWidget, Ui_Form):
         hBoxLayout.addLayout(vBoxLayout)
 
     def initWidget(self):
-        self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
+        self.envCard = SettingGroupCard(FluentIcon.SETTING, "环境设置", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.envCard, 1, 0, 1, 1)
         self.comboBox_mode = ComboBoxSettingCardWidget('', "模式", "", self.envCard)
@@ -132,7 +132,7 @@ class OtherWidget(QWidget, Ui_Form):
         # layout.addWidget(self.button_env_folder)
         # self.envCard.addWidget(self.widget_env_project)
 
-        self.card_requirements = SettingGroupCard(FluentIcon.SPEED_OFF, "pipreqs", "",
+        self.card_requirements = SettingGroupCard(FluentIcon.SETTING, "pipreqs", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_requirements, 2, 0, 1, 1)
 
@@ -143,9 +143,9 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_pipreqs.hide()
         self.button_pipreqs = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(widget_pipreqs)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.pipreqs_install))
-        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.pipreqs_upgrade))
-        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.pipreqs_uninstall))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.pipreqs_install))
+        menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.pipreqs_upgrade))
+        menu.addAction(Action(FluentIcon.ROBOT, '卸载', triggered=self.pipreqs_uninstall))
         self.button_pipreqs.setMenu(menu)
         widget_pipreqs.addStretch(1)
         widget_pipreqs.addWidget(self.spinner_pipreqs)
@@ -164,9 +164,9 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_requirements.hide()
         self.button_requirements = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(parent=widget_requirements)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '生成', triggered=self.generate_requirements))
-        menu.addAction(Action(FluentIcon.ALBUM, '安装', triggered=self.install_requirements))
-        menu.addAction(Action(FluentIcon.ALBUM, '编辑', triggered=self.edit_requirements))
+        menu.addAction(Action(FluentIcon.CODE, '生成', triggered=self.generate_requirements))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.install_requirements))
+        menu.addAction(Action(FluentIcon.EDIT, '编辑', triggered=self.edit_requirements))
         self.button_requirements.setMenu(menu)
         widget_requirements.addStretch(1)
         widget_requirements.addWidget(self.spinner_requirements)
@@ -174,7 +174,7 @@ class OtherWidget(QWidget, Ui_Form):
         self.card_requirements.addWidget(widget_requirements)
 
 
-        self.card_generate_code = SettingGroupCard(FluentIcon.SPEED_OFF, "Generate Code", "",
+        self.card_generate_code = SettingGroupCard(FluentIcon.SETTING, "Generate Code", "",
                                                   self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_generate_code, 3, 0, 1, 1)
 
@@ -191,10 +191,10 @@ class OtherWidget(QWidget, Ui_Form):
         self.button_filepath_ui.setFileTypes("*.ui")
         self.button_filepath_ui.setFixedWidth(200)
         self.button_filepath_ui.setReadOnly(False)
-        self.button_generate_code = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_generate_code = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(widget_generate_code)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '编译', triggered=self.generate_code_compile))
-        menu.addAction(Action(FluentIcon.ALBUM, '生成', triggered=self.generate_code_generate))
+        menu.addAction(Action(FluentIcon.CODE, '编译', triggered=self.generate_code_compile))
+        menu.addAction(Action(FluentIcon.FLAG, '生成', triggered=self.generate_code_generate))
         self.button_generate_code.setMenu(menu)
         widget_generate_code.addStretch(1)
         widget_generate_code.addWidget(self.spinner_generate_code)
@@ -202,7 +202,7 @@ class OtherWidget(QWidget, Ui_Form):
         widget_generate_code.addWidget(self.button_generate_code)
         self.card_generate_code.addWidget(widget_generate_code)
 
-        self.card_whl = SettingGroupCard(FluentIcon.SPEED_OFF, "Wheel", "",
+        self.card_whl = SettingGroupCard(FluentIcon.SETTING, "Wheel", "",
                                                    self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_whl, 4, 0, 1, 1)
 
@@ -219,8 +219,8 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_whl.hide()
         self.button_whl = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
         menu = RoundMenu(parent=widget_whl)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.whl_install))
-        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.whl_uninstall))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.whl_install))
+        menu.addAction(Action(FluentIcon.ROBOT, '卸载', triggered=self.whl_uninstall))
         self.button_whl.setMenu(menu)
         widget_whl.addStretch(1)
         widget_whl.addWidget(self.spinner_whl)

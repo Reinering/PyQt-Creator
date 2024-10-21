@@ -125,7 +125,7 @@ class PackWidget(QWidget, Ui_Form):
         hBoxLayout.addLayout(layout, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
     def initWidget(self):
-        self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "",
+        self.envCard = SettingGroupCard(FluentIcon.SETTING, "环境设置", "",
                                         self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.envCard, 1, 0, 1, 1)
 
@@ -165,7 +165,7 @@ class PackWidget(QWidget, Ui_Form):
         self.button_filename_out.textChanged.connect(self.on_button_filename_out_textChanged)
         self.envCard.addWidget(self.button_filename_out)
 
-        self.card_pyinstaller = SettingGroupCard(FluentIcon.SPEED_OFF, "Pyinstaller 设置", "参考文档配置参数",
+        self.card_pyinstaller = SettingGroupCard(FluentIcon.SETTING, "Pyinstaller 设置", "参考文档配置参数",
                                                  self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pyinstaller, 2, 0, 1, 1)
 
@@ -174,11 +174,11 @@ class PackWidget(QWidget, Ui_Form):
         self.spinner_pyinstaller.setGif(APPGIF.LOADING)
         self.spinner_pyinstaller.setFixedSize(30, 30)
         self.spinner_pyinstaller.hide()
-        self.button_pyinstaller = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_pyinstaller = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=self.button_pyinstaller)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.pyinstaller_install))
-        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.pyinstaller_upgrade))
-        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.pyinstaller_uninstall))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.pyinstaller_install))
+        menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.pyinstaller_upgrade))
+        menu.addAction(Action(FluentIcon.ROBOT, '卸载', triggered=self.pyinstaller_uninstall))
         self.button_pyinstaller.setMenu(menu)
         widget_pyinstaller.addStretch(1)
         widget_pyinstaller.addWidget(self.spinner_pyinstaller)
@@ -190,7 +190,7 @@ class PackWidget(QWidget, Ui_Form):
         self.button_pyinstaller_settingfile.clicked.connect(self.on_button_pyinstaller_settingfile_clicked)
         self.card_pyinstaller.addWidget(self.button_pyinstaller_settingfile)
 
-        self.card_nuitka = SettingGroupCard(FluentIcon.SPEED_OFF, "Nuitka 设置", "参考文档配置参数",
+        self.card_nuitka = SettingGroupCard(FluentIcon.SETTING, "Nuitka 设置", "参考文档配置参数",
                                                 self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_nuitka, 3, 0, 1, 1)
 
@@ -199,11 +199,11 @@ class PackWidget(QWidget, Ui_Form):
         self.spinner_nuitka.setGif(APPGIF.LOADING)
         self.spinner_nuitka.setFixedSize(30, 30)
         self.spinner_nuitka.hide()
-        self.button_nuitka = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_nuitka = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=self.button_nuitka)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.nuitka_install))
-        menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.nuitka_upgrade))
-        menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.nuitka_uninstall))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.nuitka_install))
+        menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.nuitka_upgrade))
+        menu.addAction(Action(FluentIcon.ROBOT, '卸载', triggered=self.nuitka_uninstall))
         self.button_nuitka.setMenu(menu)
         widget_nuitka.addStretch(1)
         widget_nuitka.addWidget(self.spinner_nuitka)
@@ -216,7 +216,7 @@ class PackWidget(QWidget, Ui_Form):
         self.button_nuitka_settingfile.clicked.connect(self.on_button_nuitka_settingfile_clicked)
         self.card_nuitka.addWidget(self.button_nuitka_settingfile)
 
-        self.card_setup = SettingGroupCard(FluentIcon.SPEED_OFF, "Setuptools 设置", "参考文档配置参数",
+        self.card_setup = SettingGroupCard(FluentIcon.SETTING, "Setuptools 设置", "参考文档配置参数",
                                             self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_setup, 4, 0, 1, 1)
 
@@ -242,10 +242,10 @@ class PackWidget(QWidget, Ui_Form):
         self.button_filepath_setup.setFileTypes("setup.py")
         self.button_filepath_setup.setFixedWidth(300)
         self.button_filepath_setup.textChanged.connect(self.on_button_filepath_setup_textChanged)
-        self.button_setup_action = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_setup_action = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=self.button_setup_action)
-        menu.addAction(Action(FluentIcon.BASKETBALL, '编辑', triggered=self.setup_edit))
-        menu.addAction(Action(FluentIcon.BASKETBALL, '安装', triggered=self.setup_install))
+        menu.addAction(Action(FluentIcon.EDIT, '编辑', triggered=self.setup_edit))
+        menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.setup_install))
         # menu.addAction(Action(FluentIcon.ALBUM, '更新', triggered=self.setup_upgrade))
         # menu.addAction(Action(FluentIcon.ALBUM, '卸载', triggered=self.setup_uninstall))
         self.button_setup_action.setMenu(menu)
