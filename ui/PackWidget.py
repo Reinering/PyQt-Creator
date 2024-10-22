@@ -471,13 +471,14 @@ class PackWidget(QWidget, Ui_Form):
         now = datetime.datetime.now().strftime("%Y%m%d%H%M")
         file = self.button_filepath_main.text()
         (filepath, filename) = os.path.split(file)
+        (name1, suffix) = os.path.splitext(filename)
         if self.button_filename_out.text():
             name = self.button_filename_out.text()
             # NuitkaPackage.NUITKA_PARAMS["output-filename"] = self.button_filename_out.text()
         elif NuitkaPackage.NUITKA_PARAMS["output-filename"]:
             name = NuitkaPackage.NUITKA_PARAMS["output-filename"]
         else:
-            (name, suffix) = os.path.splitext(filename)
+            name = name1
 
         # if not NuitkaPackage.NUITKA_PARAMS["main"]:
         #     NuitkaPackage.NUITKA_PARAMS["main"] = file
@@ -516,19 +517,24 @@ class PackWidget(QWidget, Ui_Form):
         if NuitkaPackage.NUITKA_PARAMS["onefile"]:
             name = NuitkaPackage.NUITKA_PARAMS["output-filename"]
             suffix = ".exe"
+            if NuitkaPackage.NUITKA_PARAMS["windows-console-mode"] != "disable":
+                cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
+                                              name + suffix) + " " + os.path.join(
+                    NuitkaPackage.NUITKA_PARAMS["output-dir"], name + "_Beta_" + now + suffix)
+            else:
+                cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
+                                              name + suffix) + " " + os.path.join(
+                    NuitkaPackage.NUITKA_PARAMS["output-dir"], name+ "_" + now + suffix)
         else:
-            name = NuitkaPackage.NUITKA_PARAMS["output-filename"] + ".onefile-build"
-            suffix = ""
-
-        if NuitkaPackage.NUITKA_PARAMS["windows-console-mode"] != "disable":
-            cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
-                                      name + suffix) + " " + os.path.join(
-            NuitkaPackage.NUITKA_PARAMS["output-dir"],  NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_Beta_" + now + suffix)
-        else:
-            cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
-                                      name + suffix) + " " + os.path.join(
-            NuitkaPackage.NUITKA_PARAMS["output-dir"],
-            NuitkaPackage.NUITKA_PARAMS["output-filename"] + "_" + now + suffix)
+            name = NuitkaPackage.NUITKA_PARAMS["output-filename"]
+            if NuitkaPackage.NUITKA_PARAMS["windows-console-mode"] != "disable":
+                cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
+                                          name1 + ".dist") + " " + os.path.join(
+                NuitkaPackage.NUITKA_PARAMS["output-dir"],  name + "_Beta_" + now)
+            else:
+                cmd1 = "move " + os.path.join(NuitkaPackage.NUITKA_PARAMS["output-dir"],
+                                          name1 + ".dist") + " " + os.path.join(
+                NuitkaPackage.NUITKA_PARAMS["output-dir"], name + "_" + now)
 
         if tmp:
             NuitkaPackage.NUITKA_PARAMS["output-filename"] = ''
