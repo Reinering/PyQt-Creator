@@ -6,17 +6,17 @@ email: nbxlc@hotmail.com
 Module implementing ProjectWidget.
 """
 
-from PySide6.QtCore import Slot, Signal, Qt, QPoint, QThread
+from PySide6.QtCore import Slot, Signal, Qt, QPoint, QThread, QProcess, QTimer
 from PySide6.QtWidgets import (
     QWidget, QTreeWidgetItem,
     QGridLayout, QHBoxLayout, QVBoxLayout,
     QSpacerItem, QSizePolicy, QSplitter,
     QFrame, QFileSystemModel,
     QFileDialog, QLabel,
-    QTreeView,
+    QTreeView, QMenu,
     QMessageBox
 )
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QAction
 import os.path
 import logging
 import clipboard
@@ -41,6 +41,7 @@ from qfluentexpand.components.line.selector import FilePathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
 from qfluentexpand.components.widgets.card import SettingCardWidget, ComboBoxSettingCardWidget, FileSettingCardWidget
+# from qfluentexpand.components.widgets.menu import RoundMenu
 
 from .Ui_ProjectWidget import Ui_Form
 from .GenerateCodeDialog import GenerateCodeDialog
@@ -132,15 +133,15 @@ class ProjectWidget(QWidget, Ui_Form):
         hBoxLayout.addWidget(self.spinner_project)
         hBoxLayout.addWidget(self.button_project)
 
-        self.menu = RoundMenu(parent=self.button_project)
-        self.menu.addAction(Action(FluentIcon.BASKETBALL, '打开项目', triggered=self.button_project_open))
+        self.menu_project = RoundMenu(parent=self.button_project)
+        self.menu_project.addAction(Action(FluentIcon.CONNECT, '打开项目', triggered=self.button_project_open))
 
-        self.recentFilesMenu = RecentFilesMenu(FluentIcon.BASKETBALL, CURRENT_SETTINGS["project"]["recently_opened"], parent=self)
-        self.menu.addMenu(self.recentFilesMenu)
+        self.recentFilesMenu = RecentFilesMenu(FluentIcon.MORE, CURRENT_SETTINGS["project"]["recently_opened"], parent=self)
+        self.menu_project.addMenu(self.recentFilesMenu)
         self.recentFilesMenu.fileSelected.connect(self.button_project_recently_open)
 
-        self.menu.addAction(Action(FluentIcon.ALBUM, '关闭项目', triggered=self.button_project_close))
-        self.button_project.setMenu(self.menu)
+        self.menu_project.addAction(Action(FluentIcon.CLOSE, '关闭项目', triggered=self.button_project_close))
+        self.button_project.setMenu(self.menu_project)
 
     def initWidget(self):
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -201,7 +202,7 @@ class ProjectWidget(QWidget, Ui_Form):
         self.gridLayout121.setSpacing(30)
         self.gridLayout121.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.envCard = SettingGroupCard(FluentIcon.SPEED_OFF, "环境设置", "python",
+        self.envCard = SettingGroupCard(FluentIcon.SETTING, "环境设置", "python",
                                         self.scrollAreaWidgetContents)
         self.gridLayout121.addWidget(self.envCard, 0, 0, 1, 1)
 
@@ -221,7 +222,7 @@ class ProjectWidget(QWidget, Ui_Form):
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
-        self.card_project = SettingGroupCard(FluentIcon.SPEED_OFF, "项目设置", "",
+        self.card_project = SettingGroupCard(FluentIcon.SETTING, "项目设置", "",
                                              self.scrollAreaWidgetContents)
         self.gridLayout121.addWidget(self.card_project, 1, 0, 1, 1)
         self.comboBox_project_type = ComboBoxSettingCardWidget('', "类型", "", self.card_project)
@@ -271,21 +272,129 @@ class ProjectWidget(QWidget, Ui_Form):
         self.tree.setColumnHidden(2, True)
         self.tree.setColumnHidden(3, True)
 
-    def show_context_menu(self, pos):
+        self.menu = RoundMenu(self)
+        self.menu_opened = False
 
+    def on_menu_aboutToHide(self):
+        print("on_menu_aboutToHide")
+        self.menu_opened = True
+
+    def show_context_menu(self, pos):
+        if self.tree.model() is None:
+            return
+
+        if hasattr(self, 'right_click_timer') and self.right_click_timer.isActive():
+            # 如果计时器还在运行，说明右键点击太快，直接返回
+            return
+
+        # 启动一个短暂的计时器防止过快点击
+        self.right_click_timer = QTimer(self)
+        self.right_click_timer.setSingleShot(True)
+        self.right_click_timer.start(300)  # 300ms 防抖时间
+
+        self.menu = RoundMenu(self)
+        self.menu.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         try:
             index = self.tree.indexAt(pos)
 
-            menu = RoundMenu(self)
-
             if not index.isValid():
-                menu.addAction(
+                self.menu.addAction(
                     Action(FluentIcon.COPY, '新建文件', triggered=lambda: self.tree_open_newfile()))
-                menu.addAction(
+                self.menu.addAction(
                     Action(FluentIcon.COPY, '新建文件夹', triggered=lambda: self.tree_open_newfolder()))
             else:
                 # 获取文件路径
-                file_path = self.tree.model().filePath(index)
+                try:
+                    file_path = self.tree.model().filePath(index)
+                except Exception as e:
+                    logging.error(e)
+                    return
+
+                # 批量添加动作
+                # menu.addActions([
+                #     Action(FluentIcon.COPY, '复制', triggered=lambda path=file_path: self.tree_setup_pack(file_path)),
+                #     Action(FluentIcon.PASTE, '粘贴', triggered=lambda path=file_path: self.tree_setup_pack(file_path)),
+                # ])
+
+                self.menu.addAction(
+                    Action(FluentIcon.COPY, '打开所在目录', triggered=lambda path=file_path: self.tree_open_path(file_path)))
+                self.menu.addAction(
+                    Action(FluentIcon.COPY, '复制路径', triggered=lambda path=file_path: self.tree_copy_path(file_path)))
+
+                if os.path.isfile(file_path):
+                    # 添加分割线
+                    self.menu.addSeparator()
+                    (filepath, filename) = os.path.split(file_path)
+                    (name, suffix) = os.path.splitext(file_path)
+                    if filename == "setup.py":
+                        self.menu.addAction(Action(FluentIcon.ADD, '操作', triggered=lambda path=file_path: self.tree_setup_action(file_path)))
+                    elif filename == "requirements.txt":
+                        self.menu.addAction(Action(FluentIcon.ADD, '操作', triggered=lambda path=file_path: self.tree_requirements_action(file_path)))
+
+                    if suffix == ".ui":
+                        self.menu.addAction(Action(FluentIcon.ADD_TO, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
+
+                        # submenu_designer = RoundMenu("使用designer打开", self)
+                        # submenu_designer.setIcon(FluentIcon.PASTE)
+                        # menu.addMenu(submenu_designer)
+                        # submenu_designer.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
+
+                        self.menu.addAction(Action(FluentIcon.CODE, '编译', triggered=lambda path=file_path: self.tree_ui_complie(file_path)))
+                        self.menu.addAction(Action(FluentIcon.CODE, '生成代码', triggered=lambda path=file_path: self.tree_generate_code(file_path)))
+                    elif suffix == ".qrc":
+                        self.menu.addAction(Action(FluentIcon.CODE, '编译', triggered=lambda path=file_path: self.tree_qrc_complie(file_path)))
+                    elif suffix == ".whl":
+                        self.menu.addAction(Action(FluentIcon.ADD, '操作', triggered=lambda path=file_path: self.tree_whl_action(file_path)))
+                    elif suffix in IMAGE_TYPES:
+                        self.menu.addAction(Action(FluentIcon.EDIT, '查看', triggered=lambda path=file_path: self.tree_image_action(file_path)))
+                    else:
+                        self.menu.addAction(Action(FluentIcon.EDIT, '编辑', triggered=lambda path=file_path: self.tree_edit(file_path)))
+                        if suffix == ".py":
+                            self.menu.addAction(Action(FluentIcon.PRINT, '运行', triggered=lambda path=file_path: self.tree_py_run(file_path)))
+                            self.menu.addAction(Action(FluentIcon.ROBOT, '打包成exe', triggered=lambda path=file_path: self.tree_py_pack(file_path)))
+                else:
+                    # menu.addSeparator()
+                    pass
+
+                # menu.addAction(Action(FluentIcon.COPY, '通过vscode打开', triggered=lambda path=file_path: self.tree_open_vscode(file_path)))
+                # menu.addAction(Action(FluentIcon.CUT, '通过pycharm打开', triggered=lambda path=file_path: self.tree_open_pycharm(file_path)))
+                self.menu.addSeparator()
+
+                if os.path.isdir(file_path):
+                    self.menu.addAction(Action(FluentIcon.FILTER, '新建文件', triggered=lambda path=file_path: self.tree_open_newfile(file_path)))
+                    self.menu.addAction(Action(FluentIcon.FOLDER, '新建文件夹', triggered=lambda path=file_path: self.tree_open_newfolder(file_path)))
+
+                self.menu.addAction(Action(FluentIcon.PASTE, '重命名', triggered=lambda path=file_path: self.tree_rename(file_path)))
+                self.menu.addAction(Action(FluentIcon.DELETE, '删除', triggered=lambda path=file_path: self.tree_open_del(file_path)))
+            self.menu.exec(self.tree.viewport().mapToGlobal(pos))       # 同步
+            # menu.popup(self.tree.viewport().mapToGlobal(pos))         # 异步
+        except Exception as e:
+            logging.error(e)
+            print(e)
+        except BaseException as e:
+            logging.error("未捕获的严重异常: %s", e)
+            # raise  # 重新抛出严重异常，避免程序静默失败
+
+    def show_context_menu1(self, pos):
+        if self.tree.model() is None:
+            return
+
+        try:
+            index = self.tree.indexAt(pos)
+            menu = QMenu(self)
+
+            if not index.isValid():
+                menu.addAction(
+                    QAction('新建文件', self))
+                menu.addAction(
+                    QAction('新建文件夹', self))
+            else:
+                # 获取文件路径
+                try:
+                    file_path = self.tree.model().filePath(index)
+                except Exception as e:
+                    logging.error(e)
+                    return
 
                 # 批量添加动作
                 # menu.addActions([
@@ -294,10 +403,9 @@ class ProjectWidget(QWidget, Ui_Form):
                 # ])
 
                 menu.addAction(
-                    Action(FluentIcon.COPY, '打开所在目录', triggered=lambda path=file_path: self.tree_open_path(file_path)))
+                    QAction('打开所在目录', self))
                 menu.addAction(
-                    Action(FluentIcon.CUT, '复制路径', triggered=lambda path=file_path: self.tree_copy_path(file_path)))
-
+                    QAction('复制路径', self))
 
                 if os.path.isfile(file_path):
                     # 添加分割线
@@ -305,49 +413,48 @@ class ProjectWidget(QWidget, Ui_Form):
                     (filepath, filename) = os.path.split(file_path)
                     (name, suffix) = os.path.splitext(file_path)
                     if filename == "setup.py":
-                        menu.addAction(Action(FluentIcon.PASTE, '操作', triggered=lambda path=file_path: self.tree_setup_action(file_path)))
+                        menu.addAction(QAction('操作', self))
                     elif filename == "requirements.txt":
-                        menu.addAction(Action(FluentIcon.PASTE, '操作', triggered=lambda path=file_path: self.tree_requirements_action(file_path)))
+                        menu.addAction(QAction('操作', self))
                     if suffix == ".ui":
-                        menu.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
-
-                        # submenu_designer = RoundMenu("使用designer打开", self)
-                        # submenu_designer.setIcon(FluentIcon.PASTE)
-                        # menu.addMenu(submenu_designer)
-                        # submenu_designer.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
-
-                        menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_ui_complie(file_path)))
-                        menu.addAction(Action(FluentIcon.PASTE, '生成代码', triggered=lambda path=file_path: self.tree_generate_code(file_path)))
+                        menu.addAction(QAction('designer', self))
+                        menu.addAction(QAction('编译', self))
+                        menu.addAction(QAction('生成代码', self))
                     elif suffix == ".qrc":
-                        menu.addAction(Action(FluentIcon.PASTE, '编译', triggered=lambda path=file_path: self.tree_qrc_complie(file_path)))
+                        menu.addAction(QAction('编译', self))
                     elif suffix == ".whl":
-                        menu.addAction(Action(FluentIcon.PASTE, '操作', triggered=lambda path=file_path: self.tree_whl_action(file_path)))
+                        menu.addAction(QAction('操作', self))
                     elif suffix in IMAGE_TYPES:
-                        menu.addAction(Action(FluentIcon.PASTE, '查看', triggered=lambda path=file_path: self.tree_image_action(file_path)))
+                        menu.addAction(QAction('查看', self))
                     else:
-                        menu.addAction(Action(FluentIcon.PASTE, '编辑', triggered=lambda path=file_path: self.tree_edit(file_path)))
+                        menu.addAction(QAction('编辑', self))
                         if suffix == ".py":
-                            menu.addAction(Action(FluentIcon.PASTE, '运行', triggered=lambda path=file_path: self.tree_py_run(file_path)))
-                            menu.addAction(Action(FluentIcon.PASTE, '打包成exe', triggered=lambda path=file_path: self.tree_py_pack(file_path)))
+                            menu.addAction(QAction('运行', self))
+                            menu.addAction(QAction('打包成exe', self))
                 else:
                     # menu.addSeparator()
                     pass
 
-                # menu.addAction(Action(FluentIcon.COPY, '通过vscode打开', triggered=lambda path=file_path: self.tree_open_vscode(file_path)))
-                # menu.addAction(Action(FluentIcon.CUT, '通过pycharm打开', triggered=lambda path=file_path: self.tree_open_pycharm(file_path)))
                 menu.addSeparator()
 
                 if os.path.isdir(file_path):
-                    menu.addAction(Action(FluentIcon.COPY, '新建文件', triggered=lambda path=file_path: self.tree_open_newfile(file_path)))
-                    menu.addAction(Action(FluentIcon.COPY, '新建文件夹', triggered=lambda path=file_path: self.tree_open_newfolder(file_path)))
+                    menu.addAction(QAction('新建文件', self))
+                    menu.addAction(QAction('新建文件夹', self))
 
-                menu.addAction(Action(FluentIcon.PASTE, '重命名', triggered=lambda path=file_path: self.tree_rename(file_path)))
-                menu.addAction(Action(FluentIcon.COPY, '删除', triggered=lambda path=file_path: self.tree_open_del(file_path)))
-
-            menu.exec_(self.tree.viewport().mapToGlobal(pos))
+                menu.addAction(QAction('重命名', self))
+                menu.addAction(QAction('删除', self))
+            menu.exec(self.tree.viewport().mapToGlobal(pos))
+            # menu.popup(self.tree.viewport().mapToGlobal(pos))
         except Exception as e:
             logging.error(e)
             print(e)
+        except BaseException as e:
+            logging.error("未捕获的严重异常: %s", e)
+            raise  # 重新抛出严重异常，避免程序静默失败
+        finally:
+            # 确保菜单被正确清理
+            if menu:
+                menu.deleteLater()
 
     def getPyPath(self):
         path = ""
