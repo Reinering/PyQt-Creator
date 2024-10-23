@@ -25,7 +25,7 @@ from qfluentwidgets import (
     PushSettingCard
 )
 from qfluentwidgets.common.icon import FluentIcon
-from qfluentwidgets.common.style_sheet import FluentStyleSheet, getStyleSheetFromFile
+from qfluentwidgets.common.style_sheet import FluentStyleSheet
 
 from qfluentexpand.components.widgets.card import (
     SettingCardWidget, PushSettingCardWidget, PrimaryPushSettingCardWidget, ComboBoxSettingCardWidget,
@@ -543,10 +543,10 @@ class SettingWidget(QWidget, Ui_Form):
 
     def on_theme_switch_checkedChanged(self, state):
         if state:
-            toggleTheme(True)
+            toggleTheme()
             CURRENT_SETTINGS["settings"]["theme"] = "Dark"
         else:
-            toggleTheme(False)
+            toggleTheme()
             CURRENT_SETTINGS["settings"]["theme"] = "Light"
 
         write_config()
