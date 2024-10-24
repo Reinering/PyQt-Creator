@@ -40,6 +40,7 @@ from .compoments.info import Message
 from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
+from .utils.tool import startCMD
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
 from manage import VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS
@@ -108,6 +109,13 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_env.addStretch(1)
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
+
+        self.widget_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.envCard)
+        self.button_teminal = PrimaryPushButton(FluentIcon.UP, "打开")
+        self.button_teminal.clicked.connect(self.on_button_teminal_clicked)
+        self.widget_teminal.addStretch(1)
+        self.widget_teminal.addWidget(self.button_teminal)
+        self.envCard.addWidget(self.widget_teminal)
 
         self.card_pyenv = SettingGroupCard(FluentIcon.SETTING, "Pyenv 虚拟环境管理", "https://github.com/pyenv-win/pyenv-win",
                                           self.scrollAreaWidgetContents)
@@ -478,6 +486,16 @@ class SettingWidget(QWidget, Ui_Form):
             self.label_ver.setText("版本: ")
             CURRENT_SETTINGS["settings"]["custom_python_path"] = ""
             write_config()
+
+    def on_button_teminal_clicked(self):
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        startCMD(path)
 
     def on_button_pyenv_path_textChanged(self, text):
         if text:

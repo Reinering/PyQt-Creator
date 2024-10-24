@@ -6,6 +6,7 @@ email: nbxlc@hotmail.com
 Module implementing ProjectWidget.
 """
 
+
 from PySide6.QtCore import Slot, Signal, Qt, QPoint, QThread, QProcess, QTimer
 from PySide6.QtWidgets import (
     QWidget, QTreeWidgetItem,
@@ -22,6 +23,7 @@ import logging
 import clipboard
 import subprocess
 from PIL import Image
+from pathlib import Path
 
 from qfluentwidgets import (
     CardWidget,
@@ -48,6 +50,7 @@ from .GenerateCodeDialog import GenerateCodeDialog
 from common.wintools import findProgramPath
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
+from .utils.tool import startCMD
 from .compoments.menu import RecentFilesMenu
 from .compoments.info import Message, MessageBox as CustomMessageBox
 from .compoments.tree import FileSystemModel, FilesystemModel
@@ -124,7 +127,7 @@ class ProjectWidget(QWidget, Ui_Form):
 
         horizontalSpacer = QSpacerItem(1000, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.button_project = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作', self)
+        self.button_project = PrimaryDropDownPushButton(FluentIcon.BRUSH, '操作', self)
         self.spinner_project = GifLabel(self.titleCard)
         self.spinner_project.setGif(APPGIF.LOADING)
         self.spinner_project.setFixedSize(30, 30)
@@ -221,6 +224,13 @@ class ProjectWidget(QWidget, Ui_Form):
         self.widget_env.addStretch(1)
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
+
+        self.widget_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.envCard)
+        self.button_teminal = PrimaryPushButton(FluentIcon.UP, "打开")
+        self.button_teminal.clicked.connect(self.on_button_teminal_clicked)
+        self.widget_teminal.addStretch(1)
+        self.widget_teminal.addWidget(self.button_teminal)
+        self.envCard.addWidget(self.widget_teminal)
 
         self.card_project = SettingGroupCard(FluentIcon.SETTING, "项目设置", "",
                                              self.scrollAreaWidgetContents)
@@ -525,6 +535,16 @@ class ProjectWidget(QWidget, Ui_Form):
             self.label_ver.setText("版本: ")
             CURRENT_SETTINGS["project"]["custom_python_path"] = ""
             write_config()
+
+    def on_button_teminal_clicked(self):
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        startCMD(path)
 
     def tree_edit(self, file_path):
         try:
