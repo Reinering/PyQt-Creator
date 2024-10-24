@@ -4,12 +4,14 @@
 Module implementing OtherWidget.
 """
 
+
 from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
 import simplejson as json
 import logging
+from pathlib import Path
 
 from qfluentwidgets import (
     ExpandGroupSettingCard,
@@ -37,6 +39,7 @@ from .GenerateCodeDialog import GenerateCodeDialog
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .utils.icon import AppIcon
+from .utils.tool import startCMD
 from .compoments.info import Message
 from common.py import PyInterpreter, PyPath
 from common.pyinstaller import PyinstallerPackage
@@ -119,6 +122,13 @@ class OtherWidget(QWidget, Ui_Form):
         self.widget_env.addStretch(1)
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
+
+        self.widget_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.envCard)
+        self.button_teminal = PrimaryPushButton(FluentIcon.UP, "打开")
+        self.button_teminal.clicked.connect(self.on_button_teminal_clicked)
+        self.widget_teminal.addStretch(1)
+        self.widget_teminal.addWidget(self.button_teminal)
+        self.envCard.addWidget(self.widget_teminal)
 
         # self.widget_env_project = QWidget(self.envCard)
         # envLabel = BodyLabel("项目目录")
@@ -427,6 +437,16 @@ class OtherWidget(QWidget, Ui_Form):
             self.label_ver.setText("版本: ")
             CURRENT_SETTINGS["other"]["custom_python_path"] = ""
             write_config()
+
+    def on_button_teminal_clicked(self):
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        startCMD(path)
 
     def on_button_pipreqs_edit_clicked(self):
         if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")):

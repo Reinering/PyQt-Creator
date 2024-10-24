@@ -40,6 +40,7 @@ from qfluentexpand.components.widgets.card import (
 from .Ui_PackWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
+from .utils.tool import startCMD
 from .compoments.info import Message
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
@@ -111,12 +112,12 @@ class PackWidget(QWidget, Ui_Form):
         self.spinner_open.setGif(APPGIF.LOADING)
         self.spinner_open.setFixedSize(30, 30)
         self.spinner_open.hide()
-        self.button_open = PrimaryDropDownPushButton(FluentIcon.MAIL, '打包')
+        self.button_open = PrimaryDropDownPushButton(FluentIcon.BRUSH, '打包')
         menu = RoundMenu(parent=self.button_open)
-        menu.addAction(Action(FluentIcon.BASKETBALL, 'pyinstaller', triggered=self.open_pyinstaller))
-        menu.addAction(Action(FluentIcon.ALBUM, 'nuitka', triggered=self.open_nuitka))
-        menu.addAction(Action(FluentIcon.ALBUM, 'build', triggered=self.open_setup))
-        menu.addAction(Action(FluentIcon.ALBUM, '停止', triggered=self.open_stop))
+        menu.addAction(Action(FluentIcon.CERTIFICATE, 'pyinstaller', triggered=self.open_pyinstaller))
+        menu.addAction(Action(FluentIcon.FLAG, 'nuitka', triggered=self.open_nuitka))
+        menu.addAction(Action(FluentIcon.ROTATE, 'build', triggered=self.open_setup))
+        menu.addAction(Action(FluentIcon.CLOSE, '停止', triggered=self.open_stop))
         self.button_open.setMenu(menu)
 
         layout.addItem(horizontalSpacer)
@@ -144,6 +145,13 @@ class PackWidget(QWidget, Ui_Form):
         self.widget_env.addStretch(1)
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
+
+        self.widget_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.envCard)
+        self.button_teminal = PrimaryPushButton(FluentIcon.UP, "打开")
+        self.button_teminal.clicked.connect(self.on_button_teminal_clicked)
+        self.widget_teminal.addStretch(1)
+        self.widget_teminal.addWidget(self.button_teminal)
+        self.envCard.addWidget(self.widget_teminal)
 
         self.button_filepath_main = FileSettingCardWidget('', "程序入口", "", self.envCard)
         self.button_filepath_main.setFileTypes("python(*.py)")
@@ -679,6 +687,16 @@ class PackWidget(QWidget, Ui_Form):
             self.label_ver.setText("版本: ")
             CURRENT_SETTINGS["pack"]["custom_python_path"] = ""
             write_config()
+
+    def on_button_teminal_clicked(self):
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        startCMD(path)
 
     def on_button_filepath_main_textChanged(self, text):
         if text:
