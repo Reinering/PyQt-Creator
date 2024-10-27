@@ -1,0 +1,99 @@
+# Resource object code (Python 3)
+# Created by: object code
+# Created by: The Resource Compiler for Qt version 6.7.2
+# WARNING! All changes made in this file will be lost!
+
+from PySide6 import QtCore
+
+qt_resource_data = b"\
+\x00\x00\x01#\
+<\
+svg xmlns=\x22http:\
+//www.w3.org/200\
+0/svg\x22 width=\x221e\
+m\x22 height=\x221em\x22 \
+viewBox=\x220 0 24 \
+24\x22><path fill=\x22\
+white\x22 d=\x22M4 20q\
+-.825 0-1.412-.5\
+87T2 18V6q0-.825\
+.588-1.412T4 4h1\
+6q.825 0 1.413.5\
+88T22 6v12q0 .82\
+5-.587 1.413T20 \
+20zm0-2h16V8H4zm\
+3.5-1l-1.4-1.4L8\
+.675 13l-2.6-2.6\
+L7.5 9l4 4zm4.5 \
+0v-2h6v2z\x22/></sv\
+g>\
+\x00\x00\x01#\
+<\
+svg xmlns=\x22http:\
+//www.w3.org/200\
+0/svg\x22 width=\x221e\
+m\x22 height=\x221em\x22 \
+viewBox=\x220 0 24 \
+24\x22><path fill=\x22\
+black\x22 d=\x22M4 20q\
+-.825 0-1.412-.5\
+87T2 18V6q0-.825\
+.588-1.412T4 4h1\
+6q.825 0 1.413.5\
+88T22 6v12q0 .82\
+5-.587 1.413T20 \
+20zm0-2h16V8H4zm\
+3.5-1l-1.4-1.4L8\
+.675 13l-2.6-2.6\
+L7.5 9l4 4zm4.5 \
+0v-2h6v2z\x22/></sv\
+g>\
+"
+
+qt_resource_name = b"\
+\x00\x03\
+\x00\x00hp\
+\x00a\
+\x00p\x00p\
+\x00\x06\
+\x06\xe6^%\
+\x00g\
+\x00o\x00o\x00g\x00l\x00e\
+\x00\x05\
+\x00o\xa6S\
+\x00i\
+\x00c\x00o\x00n\x00s\
+\x00\x15\
+\x0a\xeb\x99g\
+\x00t\
+\x00e\x00r\x00m\x00i\x00n\x00a\x00l\x00_\x00w\x00h\x00i\x00t\x00e\x00_\x002\x004\
+\x00.\x00s\x00v\x00g\
+\x00\x15\
+\x0cqp'\
+\x00t\
+\x00e\x00r\x00m\x00i\x00n\x00a\x00l\x00_\x00b\x00l\x00a\x00c\x00k\x00_\x002\x004\
+\x00.\x00s\x00v\x00g\
+"
+
+qt_resource_struct = b"\
+\x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x01\
+\x00\x00\x00\x00\x00\x00\x00\x00\
+\x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x02\
+\x00\x00\x00\x00\x00\x00\x00\x00\
+\x00\x00\x00\x0c\x00\x02\x00\x00\x00\x01\x00\x00\x00\x03\
+\x00\x00\x00\x00\x00\x00\x00\x00\
+\x00\x00\x00\x1e\x00\x02\x00\x00\x00\x02\x00\x00\x00\x04\
+\x00\x00\x00\x00\x00\x00\x00\x00\
+\x00\x00\x00.\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
+\x00\x00\x01\x92\xc9h\x12\xae\
+\x00\x00\x00^\x00\x00\x00\x00\x00\x01\x00\x00\x01'\
+\x00\x00\x01\x92\xc9;SO\
+"
+
+def qInitResources():
+    QtCore.qRegisterResourceData(0x03, qt_resource_struct, qt_resource_name, qt_resource_data)
+
+def qCleanupResources():
+    QtCore.qUnregisterResourceData(0x03, qt_resource_struct, qt_resource_name, qt_resource_data)
+
+qInitResources()

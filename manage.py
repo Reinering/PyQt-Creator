@@ -9,6 +9,10 @@ import os
 import sys
 import platform
 
+from qfluentexpand.icongenie.manager import QFluentManager
+
+
+
 # 软件版本信息
 APPNAME = "PyQt Creator"
 VERSION = "v0.1.00"
@@ -72,6 +76,10 @@ UI_CONFIG = {
 # else:
 
 BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+if getattr(sys, 'frozen', False) or '__compiled__' in globals():
+    print("可能是打包的 EXE 文件")
+
 
 LIBSPATH = os.path.join("libs")
 
@@ -196,3 +204,9 @@ CURRENT_SETTINGS = {
         "editor": "notepad",
     }
 }
+
+
+material = QFluentManager.google
+material.setRootPath(BUNDLE_DIR)
+# material.setResourcePath(os.path.join(ROOT_PATH, "resource_qfe_rc.py"))
+material.init()

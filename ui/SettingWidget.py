@@ -36,6 +36,8 @@ from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSele
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
+from qfluentexpand.icongenie.icon import QFluentIcon
+
 from .compoments.info import Message
 from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
@@ -111,7 +113,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.envCard.addWidget(self.widget_env)
 
         self.widget_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.envCard)
-        self.button_teminal = PrimaryPushButton(FluentIcon.UP, "打开")
+        self.button_teminal = PrimaryPushButton(QFluentIcon.googleIcon("Terminal"), "打开")
         self.button_teminal.clicked.connect(self.on_button_teminal_clicked)
         self.widget_teminal.addStretch(1)
         self.widget_teminal.addWidget(self.button_teminal)

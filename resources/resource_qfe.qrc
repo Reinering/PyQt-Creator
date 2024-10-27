@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/app">
+    <file>google\icons\terminal_black_24.svg</file>
+
+<file>google\icons\terminal_white_24.svg</file>
+</qresource>
+</RCC>

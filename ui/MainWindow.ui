@@ -15,7 +15,7 @@
   </property>
  </widget>
  <resources>
-  <include location="../resource/resource.qrc"/>
+  <include location="../resources/resource.qrc"/>
  </resources>
  <connections/>
 </ui>
