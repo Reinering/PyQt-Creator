@@ -9,6 +9,8 @@ from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
+import threading
+import subprocess
 import simplejson as json
 import logging
 from pathlib import Path
@@ -37,6 +39,7 @@ from qfluentexpand.icongenie.icon import QFluentIcon
 
 from .Ui_OtherWidget import Ui_Form
 from .GenerateCodeDialog import GenerateCodeDialog
+from .SVGEditorDialog import SVGEditorDialog
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .utils.icon import AppIcon
@@ -152,7 +155,7 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_pipreqs.setGif(APPGIF.LOADING)
         self.spinner_pipreqs.setFixedSize(30, 30)
         self.spinner_pipreqs.hide()
-        self.button_pipreqs = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_pipreqs = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(widget_pipreqs)
         menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.pipreqs_install))
         menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.pipreqs_upgrade))
@@ -173,7 +176,7 @@ class OtherWidget(QWidget, Ui_Form):
         self.spinner_requirements.setGif(APPGIF.LOADING)
         self.spinner_requirements.setFixedSize(30, 30)
         self.spinner_requirements.hide()
-        self.button_requirements = PrimaryDropDownPushButton(FluentIcon.MAIL, '操作')
+        self.button_requirements = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=widget_requirements)
         menu.addAction(Action(FluentIcon.CODE, '生成', triggered=self.generate_requirements))
         menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.install_requirements))
@@ -238,8 +241,20 @@ class OtherWidget(QWidget, Ui_Form):
         widget_whl.addWidget(self.button_whl)
         self.card_whl.addWidget(widget_whl)
 
+        self.card_svg = SettingGroupCard(FluentIcon.SETTING, "SVG", "",
+                                                   self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_svg, 5, 0, 1, 1)
+        self.button_svg_editor = PrimaryPushSettingCardWidget('', "编辑器", "", self.scrollAreaWidgetContents)
+        self.button_svg_editor.setButtonText("打开")
+        self.button_svg_editor.clicked.connect(self.on_button_button_svg_editor_clicked)
+        self.card_svg.addWidget(self.button_svg_editor)
+
+
+
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(verticalSpacer)
+
+
 
         try:
             self.configure()
@@ -406,7 +421,9 @@ class OtherWidget(QWidget, Ui_Form):
             Message.error("错误", "requirements配置文件不存在", self)
             return
 
-        os.system(f'notepad {file}')
+        threading.Thread(
+            target=lambda: subprocess.Popen(f'notepad {file}',
+                                            shell=True, creationflags=subprocess.CREATE_NO_WINDOW)).start()
 
     def setRequirementsFile(self, file):
         (filePath, fileName) = os.path.split(file)
@@ -455,6 +472,11 @@ class OtherWidget(QWidget, Ui_Form):
             return
 
         os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")}')
+
+    def on_button_button_svg_editor_clicked(self):
+        dialog = SVGEditorDialog()
+        dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
+        dialog.show()
 
     def generate_code_compile(self):
         file = self.button_filepath_ui.text()

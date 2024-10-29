@@ -11,6 +11,8 @@ from PySide6.QtCore import Slot, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
+import threading
+import subprocess
 import datetime, time
 import simplejson as json
 from pathlib import Path
@@ -718,13 +720,16 @@ class PackWidget(QWidget, Ui_Form):
         if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")):
             Message.error("错误", "配置文件不存在", self)
             return
-        os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")}')
+
+        threading.Thread(target=lambda: subprocess.Popen(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pyinstaller.json")}', shell=True, creationflags=subprocess.CREATE_NO_WINDOW)).start()
 
     def on_button_nuitka_settingfile_clicked(self):
         if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "nuitka.json")):
             Message.error("错误", "配置文件不存在", self)
             return
-        os.system(f'notepad {os.path.join(ROOT_PATH, SettingPath, "nuitka.json")}')
+        threading.Thread(
+            target=lambda: subprocess.Popen(f'notepad {os.path.join(ROOT_PATH, SettingPath, "nuitka.json")}',
+                                            shell=True, creationflags=subprocess.CREATE_NO_WINDOW)).start()
 
     def on_button_setuptools_clicked(self):
         if self.venvMangerTh.isRunning():
@@ -757,7 +762,9 @@ class PackWidget(QWidget, Ui_Form):
         if not os.path.exists(self.button_filepath_setup.text()):
             Message.error("错误", "文件不存在", self)
             return
-        os.system(f'notepad {self.button_filepath_setup.text()}')
+        threading.Thread(
+            target=lambda: subprocess.Popen(f'notepad {self.button_filepath_setup.text()}',
+                                            shell=True, creationflags=subprocess.CREATE_NO_WINDOW)).start()
 
     def setup_install(self):
         file = self.button_filepath_setup.text()
