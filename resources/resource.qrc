@@ -24,6 +24,10 @@
     <file>stylesheets/dark/setting.qss</file>
     <file>stylesheets/light/generate.qss</file>
     <file>stylesheets/dark/generate.qss</file>
+    <file>stylesheets/light/svgviewer.qss</file>
+    <file>stylesheets/dark/svgviewer.qss</file>
+    <file>stylesheets/light/svgeditor.qss</file>
+    <file>stylesheets/dark/svgeditor.qss</file>
   </qresource>
   <qresource prefix="images">
 

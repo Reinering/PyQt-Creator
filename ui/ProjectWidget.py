@@ -48,6 +48,8 @@ from qfluentexpand.icongenie.icon import QFluentIcon
 
 from .Ui_ProjectWidget import Ui_Form
 from .GenerateCodeDialog import GenerateCodeDialog
+from .SVGViewerDialog import SVGViewerDialog
+from .SVGEditorDialog import SVGEditorDialog
 from common.wintools import findProgramPath
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
@@ -357,6 +359,9 @@ class ProjectWidget(QWidget, Ui_Form):
                         self.menu.addAction(Action(FluentIcon.CODE, '编译', triggered=lambda path=file_path: self.tree_qrc_complie(file_path)))
                     elif suffix == ".whl":
                         self.menu.addAction(Action(FluentIcon.ADD, '操作', triggered=lambda path=file_path: self.tree_whl_action(file_path)))
+                    elif suffix in ".svg":
+                        self.menu.addAction(Action(FluentIcon.EDIT, '查看', triggered=lambda path=file_path: self.tree_svg_view(file_path)))
+                        self.menu.addAction(Action(FluentIcon.EDIT, '编辑', triggered=lambda path=file_path: self.tree_svg_edit(file_path)))
                     elif suffix in IMAGE_TYPES:
                         self.menu.addAction(Action(FluentIcon.EDIT, '查看', triggered=lambda path=file_path: self.tree_image_action(file_path)))
                     else:
@@ -778,6 +783,17 @@ class ProjectWidget(QWidget, Ui_Form):
                 os.rename(file_path, newFilePath)
                 logging.info(f"重命名 {fileName} -> {newFileName}")
                 Message.info("提示", "重命名成功", self)
+
+    def tree_svg_view(self, file_path):
+        dialog = SVGViewerDialog()
+        dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
+        dialog.setFile(file_path)
+        dialog.show()
+
+    def tree_svg_edit(self, file_path):
+        dialog = SVGEditorDialog()
+        dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
+        dialog.show()
 
     def tree_image_action(self, file_path):
         img = Image.open(file_path)

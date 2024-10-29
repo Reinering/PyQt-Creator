@@ -24,6 +24,8 @@ class StyleSheet(StyleSheetBase, Enum):
     DOCUMENT = "DOCUMENT"
     SETTING = "SETTING"
     GENERATE = "generate"
+    SVGVIEWER = "svgviewer"
+    SVGEDITOR = "svgeditor"
 
     def path(self, theme=Theme.AUTO):
         theme = qconfig.theme if theme == Theme.AUTO else theme

@@ -1,0 +1,19 @@
+
+SVGViewerDialog {
+    background-color: rgb(43, 43, 43);
+}
+
+
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+#scrollAreaWidgetContents {
+    background-color: transparent;
+}
+
+QGraphicsView {
+    border: none;
+    background-color: transparent;
+}
