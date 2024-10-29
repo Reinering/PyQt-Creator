@@ -20,6 +20,8 @@ from PySide6.QtWidgets import QSplashScreen, QMessageBox
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 
+import qfluentwidgets
+
 from manage import (
     UI_CONFIG, LOGLEVEL, LOGFILE, ROOT_PATH,
     SettingPath, SettingFile, CURRENT_SETTINGS,
@@ -112,6 +114,15 @@ def readConfig():
         with open(os.path.join(ROOT_PATH, SettingPath, "pipreqs.json"), "w") as f:
             json.dump(Pipreqs.PIPREQS_PARAMS, f, indent=4)
 
+
+def setTheme():
+    if CURRENT_SETTINGS["settings"]["theme"] == "Dark":
+        theme = qfluentwidgets.Theme.DARK
+    elif CURRENT_SETTINGS["settings"]["theme"] == "Light":
+        theme = qfluentwidgets.Theme.LIGHT
+    qfluentwidgets.setTheme(theme)
+
+
 # @trace()
 def main(argv=None):
     os_platform = platform.system()
@@ -131,6 +142,9 @@ def main(argv=None):
             except Exception as e:
                 QMessageBox.critical(None, "Error", "Read Config Error!")
                 raise Exception("Read Config Error!", e)
+
+            # 设置theme
+            setTheme()
 
             # log enable
             log(LOGLEVEL)

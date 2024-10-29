@@ -88,7 +88,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.theme = SwitchSettingCardWidget(FluentIcon.FLAG, "主题", "theme", self.basicCard)
         self.theme.setOffText("Light")
         self.theme.setOnText("Dark")
-        self.theme.switch.checkedChanged.connect(self.on_theme_switch_checkedChanged)
+        # self.theme.switch.checkedChanged.connect(self.on_theme_switch_checkedChanged)
         self.basicCard.addWidget(self.theme)
 
 
@@ -260,6 +260,8 @@ class SettingWidget(QWidget, Ui_Form):
     def configure(self):
         if CURRENT_SETTINGS["settings"]["theme"] == "Dark":
             self.theme.setChecked(True)
+
+        self.theme.switch.checkedChanged.connect(self.on_theme_switch_checkedChanged)
 
         if CURRENT_SETTINGS["settings"]["mode"] in SETTINGS["settings"]["python_env_modes"]:
             self.comboBox_mode.setCurrentText(CURRENT_SETTINGS["settings"]["mode"])
