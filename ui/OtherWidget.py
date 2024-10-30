@@ -40,6 +40,7 @@ from qfluentexpand.icongenie.icon import QFluentIcon
 from .Ui_OtherWidget import Ui_Form
 from .GenerateCodeDialog import GenerateCodeDialog
 from .SVGEditorDialog import SVGEditorDialog
+from .SVGViewerDialog import SVGViewerDialog
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .utils.icon import AppIcon
@@ -244,10 +245,15 @@ class OtherWidget(QWidget, Ui_Form):
         self.card_svg = SettingGroupCard(FluentIcon.SETTING, "SVG", "",
                                                    self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_svg, 5, 0, 1, 1)
-        self.button_svg_editor = PrimaryPushSettingCardWidget('', "编辑器", "", self.scrollAreaWidgetContents)
+        self.button_svg_editor = PrimaryPushSettingCardWidget('', "修改器", "", self.scrollAreaWidgetContents)
         self.button_svg_editor.setButtonText("打开")
         self.button_svg_editor.clicked.connect(self.on_button_button_svg_editor_clicked)
         self.card_svg.addWidget(self.button_svg_editor)
+
+        self.button_svg_viewer = PrimaryPushSettingCardWidget('', "查看器", "", self.scrollAreaWidgetContents)
+        self.button_svg_viewer.setButtonText("打开")
+        self.button_svg_viewer.clicked.connect(self.on_button_button_svg_viewer_clicked)
+        self.card_svg.addWidget(self.button_svg_viewer)
 
 
 
@@ -475,6 +481,11 @@ class OtherWidget(QWidget, Ui_Form):
 
     def on_button_button_svg_editor_clicked(self):
         dialog = SVGEditorDialog()
+        dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
+        dialog.show()
+
+    def on_button_button_svg_viewer_clicked(self):
+        dialog = SVGViewerDialog()
         dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
         dialog.show()
 

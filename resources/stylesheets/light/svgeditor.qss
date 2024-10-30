@@ -1,3 +1,7 @@
+SVGEditorDialog {
+    background-color: white;
+}
+
 QScrollArea {
     border: none;
     background-color: transparent;
