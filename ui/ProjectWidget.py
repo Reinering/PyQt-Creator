@@ -793,6 +793,7 @@ class ProjectWidget(QWidget, Ui_Form):
     def tree_svg_edit(self, file_path):
         dialog = SVGEditorDialog()
         dialog.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
+        dialog.load_svg(file_path)
         dialog.show()
 
     def tree_image_action(self, file_path):
