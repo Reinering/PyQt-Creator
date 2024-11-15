@@ -8,11 +8,12 @@ Module implementing MainWindow.
 
 
 from PySide6.QtCore import Slot, QThread
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout
+from PySide6.QtGui import QIcon, QCursor
+from PySide6.QtWidgets import QWidget, QGridLayout, QSystemTrayIcon
 import os
+import win32gui, win32con
 
-from qfluentwidgets import NavigationItemPosition, PipsPager
+from qfluentwidgets import NavigationItemPosition, PipsPager, RoundMenu, Action, FluentIcon
 from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIcon as FIF
 
 from qfluentexpand.window.fluent_window import FluentWindow
@@ -46,10 +47,13 @@ class MainWindow(FluentWindow, Ui_Form):
         """
         super().__init__(parent)
         self.setupUi(self)
+        self.windowsState = "show"
 
         self.initNavi()
 
         self.initWidget()
+
+        self.addSystemTray()
 
     def initNavi(self):
         # navigator setting
@@ -149,6 +153,49 @@ class MainWindow(FluentWindow, Ui_Form):
         # self.setWindowIcon(QIcon(f':/logo/images/logo.png'))
 
         StyleSheet.MAIN.apply(self)
+
+    # 添加托盘
+    def addSystemTray(self):
+        self.trayIconMenu = RoundMenu(self)
+        self.trayIconMenu.addSeparator()
+        self.quitAction = Action(FluentIcon.ADD, "&退出", triggered=lambda: super().close())
+        self.trayIconMenu.addAction(self.quitAction)
+        self.settingAction = Action(FluentIcon.ADD, "&设置", triggered=lambda: self.showSetting())
+        self.trayIconMenu.addAction(self.settingAction)
+        self.minAction = Action(FluentIcon.ADD, "&隐藏", triggered=lambda: self.switchWindowState())
+        self.trayIconMenu.addAction(self.minAction)
+        self.trayIcon = QSystemTrayIcon(self)
+        self.trayIcon.setIcon(QIcon(UI_CONFIG["logoPath"]))
+        self.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
+        self.trayIcon.setContextMenu(self.trayIconMenu)
+        self.trayIcon.activated.connect(lambda reason: self.show_custom_menu() if reason == QSystemTrayIcon.Context else None)
+        self.trayIcon.show()
+
+    # 显示或最小化
+    def switchWindowState(self):
+        if self.windowsState == "show":
+            self.windowsState = "min"
+            self.minAction.setText("显示")
+            self.hide()
+        elif self.windowsState == "min":
+            self.windowsState = "show"
+            self.minAction.setText("隐藏")
+            self.show()
+        else:
+            pass
+
+    # 覆盖托盘图标的上下文菜单显示位置
+    def show_custom_menu(self):
+        # 获取鼠标的当前位置
+        cursor_position = QCursor.pos()
+        # 在鼠标位置显示菜单
+        self.trayIconMenu.exec_(cursor_position)
+
+    def close(self):
+        self.windowsState = "min"
+        self.minAction.setText("显示")
+        self.hide()
+
 
 
 class PyThread(QThread):
