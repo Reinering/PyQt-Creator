@@ -7,7 +7,7 @@ Module implementing MainWindow.
 """
 
 
-from PySide6.QtCore import Slot, QThread
+from PySide6.QtCore import Slot, QThread, QCoreApplication
 from PySide6.QtGui import QIcon, QCursor
 from PySide6.QtWidgets import QWidget, QGridLayout, QSystemTrayIcon
 import os
@@ -157,32 +157,39 @@ class MainWindow(FluentWindow, Ui_Form):
     # 添加托盘
     def addSystemTray(self):
         self.trayIconMenu = RoundMenu(self)
-        self.trayIconMenu.addSeparator()
-        self.quitAction = Action(FluentIcon.ADD, "&退出", triggered=lambda: super().close())
-        self.trayIconMenu.addAction(self.quitAction)
         self.settingAction = Action(FluentIcon.ADD, "&设置", triggered=lambda: self.showSetting())
         self.trayIconMenu.addAction(self.settingAction)
-        self.minAction = Action(FluentIcon.ADD, "&隐藏", triggered=lambda: self.switchWindowState())
-        self.trayIconMenu.addAction(self.minAction)
+        self.trayIconMenu.addSeparator()
+        self.quitAction = Action(FluentIcon.ADD, "&退出", triggered=lambda: self.closeApp())
+        self.trayIconMenu.addAction(self.quitAction)
         self.trayIcon = QSystemTrayIcon(self)
         self.trayIcon.setIcon(QIcon(UI_CONFIG["logoPath"]))
         self.setWindowIcon(QIcon(UI_CONFIG["logoPath"]))
         self.trayIcon.setContextMenu(self.trayIconMenu)
-        self.trayIcon.activated.connect(lambda reason: self.show_custom_menu() if reason == QSystemTrayIcon.Context else None)
+        self.trayIcon.activated.connect(self.handle_click)
         self.trayIcon.show()
 
     # 显示或最小化
     def switchWindowState(self):
         if self.windowsState == "show":
             self.windowsState = "min"
-            self.minAction.setText("显示")
             self.hide()
         elif self.windowsState == "min":
             self.windowsState = "show"
-            self.minAction.setText("隐藏")
             self.show()
         else:
             pass
+
+    # 定义单击处理函数
+    def handle_click(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:  # 单击
+            pass
+        elif reason == QSystemTrayIcon.ActivationReason.DoubleClick:  # 双击
+            self.windowsState = "show"
+            self.show()
+        elif reason == QSystemTrayIcon.ActivationReason.Context:  # 右键
+            # 默认右键菜单会自动显示，无需额外处理
+            self.show_custom_menu()
 
     # 覆盖托盘图标的上下文菜单显示位置
     def show_custom_menu(self):
@@ -193,9 +200,10 @@ class MainWindow(FluentWindow, Ui_Form):
 
     def close(self):
         self.windowsState = "min"
-        self.minAction.setText("显示")
         self.hide()
 
+    def closeApp(self):
+        QCoreApplication.quit()
 
 
 class PyThread(QThread):
