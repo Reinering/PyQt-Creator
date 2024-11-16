@@ -157,10 +157,10 @@ class MainWindow(FluentWindow, Ui_Form):
     # 添加托盘
     def addSystemTray(self):
         self.trayIconMenu = RoundMenu(self)
-        self.settingAction = Action(FluentIcon.ADD, "&设置", triggered=lambda: self.showSetting())
+        self.settingAction = Action(FluentIcon.SETTING, "&设置", triggered=lambda: self.showSetting())
         self.trayIconMenu.addAction(self.settingAction)
         self.trayIconMenu.addSeparator()
-        self.quitAction = Action(FluentIcon.ADD, "&退出", triggered=lambda: self.closeApp())
+        self.quitAction = Action(FluentIcon.CLOSE, "&退出", triggered=lambda: self.closeApp())
         self.trayIconMenu.addAction(self.quitAction)
         self.trayIcon = QSystemTrayIcon(self)
         self.trayIcon.setIcon(QIcon(UI_CONFIG["logoPath"]))
@@ -196,7 +196,7 @@ class MainWindow(FluentWindow, Ui_Form):
         # 获取鼠标的当前位置
         cursor_position = QCursor.pos()
         # 在鼠标位置显示菜单
-        self.trayIconMenu.exec_(cursor_position)
+        self.trayIconMenu.exec(cursor_position)
 
     def close(self):
         self.windowsState = "min"
