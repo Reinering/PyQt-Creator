@@ -41,7 +41,7 @@ SettingFile = "setting.json"
 UI_CONFIG = {
     "theme": "Light",
 
-    "startLogo": "resource/images/logo.png",
+    "startLogo": "resources/images/logo.png",
     "logoPath": f':/logo/images/logo.png',
     "iconPath": f":/images/icons",
     "gifPath": f":/images/gifs",
@@ -79,7 +79,6 @@ BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 if getattr(sys, 'frozen', False) or '__compiled__' in globals():
     print("可能是打包的 EXE 文件")
-
 
 LIBSPATH = os.path.join("libs")
 
@@ -207,6 +206,15 @@ CURRENT_SETTINGS = {
 
 
 material = QFluentManager.google
+# material.setLibrary("material-symbols")
 material.setRootPath(BUNDLE_DIR)
 # material.setResourcePath(os.path.join(ROOT_PATH, "resource_qfe_rc.py"))
-material.init()
+material.initialize()
+
+iconify = QFluentManager.iconify
+iconify.setRootPath(BUNDLE_DIR)
+iconify.initialize()
+
+simpleicons = QFluentManager.simpleicons
+simpleicons.setRootPath(BUNDLE_DIR)
+simpleicons.initialize()
