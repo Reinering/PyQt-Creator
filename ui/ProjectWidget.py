@@ -706,11 +706,16 @@ class ProjectWidget(QWidget, Ui_Form):
         PAGEWidgets["main"].forward("Pack")
 
     def tree_open_path(self, file_path):
-        if os.path.isfile(file_path):
-            (filePath, fileName) = os.path.split(file_path)
-            os.startfile(filePath)
-        else:
-            os.startfile(file_path)
+        try:
+            if os.path.isfile(file_path):
+                (filePath, fileName) = os.path.split(file_path)
+                # os.startfile(filePath)
+                # os.system(f"explorer {filePath.replace('/', '\\')}")
+                subprocess.Popen(["explorer", filePath.replace('/', '\\')], shell=True)
+            else:
+                subprocess.Popen(["explorer", file_path.replace('/', '\\')], shell=True)
+        except Exception as e:
+            print(e)
 
     def tree_open_vscode(self, file_path):
         exe = findProgramPath("vscode.exe")
