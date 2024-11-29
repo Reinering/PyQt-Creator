@@ -28,6 +28,8 @@
     <file>stylesheets/dark/svgviewer.qss</file>
     <file>stylesheets/light/svgeditor.qss</file>
     <file>stylesheets/dark/svgeditor.qss</file>
+    <file>stylesheets/light/svg.qss</file>
+    <file>stylesheets/dark/svg.qss</file>
   </qresource>
   <qresource prefix="images">
 

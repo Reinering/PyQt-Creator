@@ -24,6 +24,7 @@ class StyleSheet(StyleSheetBase, Enum):
     DOCUMENT = "DOCUMENT"
     SETTING = "SETTING"
     GENERATE = "generate"
+    SVG = "svg"
     SVGVIEWER = "svgviewer"
     SVGEDITOR = "svgeditor"
 

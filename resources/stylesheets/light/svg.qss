@@ -1,0 +1,8 @@
+MainWindow {
+    background-color: white;
+}
+
+
+# QToolBar, ToolBar {
+#     background: rgba(255, 255, 255, 0.767);
+}#
