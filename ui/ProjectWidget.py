@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QIcon, QAction
 import os.path
+import threading
 import logging
 import clipboard
 import subprocess
@@ -556,9 +557,12 @@ class ProjectWidget(QWidget, Ui_Form):
     def tree_edit(self, file_path):
         try:
             if CURRENT_SETTINGS["settings"]["editor"]:
-                subprocess.run([CURRENT_SETTINGS["settings"]["editor"], file_path])
+                cmd = ([CURRENT_SETTINGS["settings"]["editor"], file_path])
             else:
-                subprocess.run(["notepad", file_path])
+                cmd = (["notepad", file_path])
+
+            threading.Thread(
+                target=lambda: subprocess.Popen(cmd, shell=True, creationflags=subprocess.CREATE_NO_WINDOW)).start()
         except Exception as e:
             print(e)
             logging.error(e)
