@@ -20,6 +20,9 @@ class PyVenvManager():
         self.venvPath = os.path.join(pyenv_root_path, 'bin\\pyenv.bat')
         self.process = None
 
+    def setVenvPath(self, path):
+        self.venvPath = os.path.join(path, 'bin\\pyenv.bat')
+
     def setEnviron(self, **kwargs):
         for key, value in kwargs.items():
             os.environ[key] = value
@@ -49,7 +52,7 @@ class PyVenvManager():
         self.process.wait()
         if self.process.returncode == 0:
             print(f"{self.process.stdout}")
-            return [True, f"{self.process.stdout}"]
+            return [True, self.process.stdout]
         else:
             print(f"Error: {self.process.stderr}")
             return (False, f"Error: {self.process.stderr}")

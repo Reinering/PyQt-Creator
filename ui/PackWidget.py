@@ -809,11 +809,12 @@ class PackWidget(QWidget, Ui_Form):
             return
 
     def receive_VMresult(self, cmd, result):
-        logging.debug(f"receive_VMresult: {cmd}, {result[1]}")
-        if isinstance(result[1], list) and len(result[1]) > 5:
-            output = result[1][-5:]
+        if isinstance(result[1], list) or isinstance(result[1], tuple) and len(result[1]) > 50:
+            output = result[1][-50:]
         else:
             output = result[1]
+
+        logging.debug(f"receive_VMresult: {cmd}, {output}")
 
         if cmd == "init":
             pass
@@ -896,7 +897,7 @@ class PackWidget(QWidget, Ui_Form):
             if result[-1]:
                 minutes, seconds = divmod(int(result[-1]), 60)
                 Message.info("成功", f"打包成功, 耗时：{minutes}分钟 {seconds}秒", self, duration=30000)
-                logging.debug(f"receive_VMresult: {result[2]}")
+                logging.debug(f"pack time: {result[2]}")
             else:
                 Message.info("成功", f"打包成功", self)
         elif cmd == "pack_setup":

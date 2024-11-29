@@ -117,10 +117,10 @@ class PyInterpreter:
         self.process = subprocess.run(cmd, capture_output=True, text=True, shell=True)
         if self.process.returncode == 0:
             print(f"{self.process.stdout}")
-            return [True, f"{self.process.stdout}"]
+            return [True, self.process.stdout]
         else:
             print(f"Error: {self.process.stderr}")
-            return (False, f"Error: {self.process.stderr}")
+            return (False, self.process.stderr)
 
     def popen(self, cmd):
         print(f"cmd: {cmd}")
@@ -150,9 +150,41 @@ class PyInterpreter:
             return (False, f"Error: {e}")
 
         if self.process.returncode == 0:
-            return [True, f"{outs}"]
+            return [True, outs]
         else:
-            return (False, f"Error: {outs}")
+            return (False, outs)
+
+    def popen_shell(self, cmd):
+        print(f"cmd: {cmd}")
+
+        # self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        # stdout, stderr = self.process.communicate()
+        # print(f"{stdout.decode('gbk'), stderr.decode('gbk')}")
+        # if self.process.returncode == 0:
+        #     return [True, f"{stdout.decode('gbk')}"]
+        # else:
+        #     return (False, f"Error: {stderr.decode('gbk')}", f"Log: {stdout.decode('gbk')}")
+
+        self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        outs = []
+        try:
+            while True:
+                line = self.process.stdout.readline().decode('gbk').strip('\n') \
+                    .strip('\r').strip(' ').replace('\\\\', '\\').replace('\\\\', '\\')
+                if line == '' and self.process.poll() != None:
+                    break
+                elif line == '\n' or line == '\r' or line == '\r\n' or line == ' ' or line == '':
+                    continue
+                print(line)
+                outs.append(line)
+        except Exception as e:
+            print(e)
+            return (False, f"Error: {e}")
+
+        if self.process.returncode == 0:
+            return [True, outs]
+        else:
+            return (False, outs)
 
     def pip(self, *args):
         command = [self.interpreterPath, '-m', 'pip']
