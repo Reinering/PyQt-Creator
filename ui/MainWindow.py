@@ -11,7 +11,6 @@ from PySide6.QtCore import Slot, QThread, QCoreApplication
 from PySide6.QtGui import QIcon, QCursor
 from PySide6.QtWidgets import QWidget, QGridLayout, QSystemTrayIcon
 import os
-import win32gui, win32con
 
 from qfluentwidgets import NavigationItemPosition, PipsPager, RoundMenu, Action, FluentIcon
 from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIcon as FIF

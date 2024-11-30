@@ -25,6 +25,7 @@ from qfluentexpand.components.card.settingcard import SettingGroupCard
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
 from qfluentexpand.common.icon import APPICON
+from qfluentexpand.icongenie.icon import QFluentIcon
 
 from .Ui_DocumentWidget import Ui_Form
 from .PyinstallerDocDialog import PyinstallerDocDialog
@@ -124,9 +125,6 @@ class DocumentWidget(QWidget, Ui_Form):
         )
         self.card_setuptools.clicked.connect(self.open_setuptools)
         self.gridLayout1.addWidget(self.card_setuptools, 4, 0, 1, 1)
-
-
-
 
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(verticalSpacer)
