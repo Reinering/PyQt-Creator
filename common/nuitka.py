@@ -39,7 +39,7 @@ class NuitkaPackage:
         'onefile-no-compression': False,  # [True, False] --onefile-no-compression: 创建单文件时，禁用有效负载的压缩
         'onefile-as-archive': False,  # [True, False] --onefile-as-archive: 创建单文件时，使用可以用"nuitka-onefile-unpack"解包的归档格式
 
-        # 数据文件
+        # 数据文件 (非py文件)
         'include-package-data': [],  # --include-package-data=PACKAGE: 包含给定包名称的数据文件
         'include-data-files': [],  # --include-data-files=DESC: 通过文件名在分发中包含数据文件
         'include-data-dir': [],  # --include-data-dir=DIRECTORY=DIRECTORY: 在分发中包含完整目录的数据文件
@@ -276,9 +276,9 @@ class NuitkaPackage:
             for tmp in self.NUITKA_PARAMS['noinclude-dlls']:
                 cmd += ' --noinclude-dlls=' + tmp
 
-        if self.NUITKA_PARAMS['list-package-dlls=LIST_PACKAGE_DLLS']:
-            for tmp in self.NUITKA_PARAMS['list-package-dlls=LIST_PACKAGE_DLLS']:
-                cmd += ' --list-package-dlls=LIST_PACKAGE_DLLS=' + tmp
+        if self.NUITKA_PARAMS['list-package-dlls']:
+            for tmp in self.NUITKA_PARAMS['list-package-dlls']:
+                cmd += ' --list-package-dlls=' + tmp
 
         # 警告控制
         if self.NUITKA_PARAMS['warn-implicit-exceptions']:
@@ -354,6 +354,9 @@ class NuitkaPackage:
 
         if self.NUITKA_PARAMS['mingw64']:
             cmd += ' --mingw64'
+
+        if self.NUITKA_PARAMS['jobs']:
+            cmd += ' --jobs=' + str(self.NUITKA_PARAMS['jobs'])
 
         if self.NUITKA_PARAMS['lto'] == "yes":
             cmd += ' --lto=yes'
