@@ -5,7 +5,7 @@ Module implementing SVGEditorDialog.
 """
 
 from PySide6.QtCore import Slot, Qt, QSizeF, QRectF, QByteArray
-from PySide6.QtWidgets import QWidget, QColorDialog, QFileDialog, QGraphicsScene
+from PySide6.QtWidgets import QWidget, QColorDialog, QFileDialog, QGraphicsScene, QDialog
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
 from PySide6.QtSvg import QSvgGenerator, QSvgRenderer
@@ -16,12 +16,13 @@ from qframelesswindow import FramelessWindow, StandardTitleBar
 from qfluentwidgets import ColorDialog, ColorPickerButton, Action, FluentIcon, PrimaryPushSettingCard
 
 from qfluentexpand.common.icon import APPICON
+from qfluentexpand.window.fluent_window import FluentMainWindow, FramelessMainWindow, FramelessDialog
 from .Ui_SVGEditorDialog import Ui_Form
 from .utils.stylesheets import StyleSheet
 from .utils.svg import SVGParser
 
 
-class SVGEditorDialog(FramelessWindow, Ui_Form):
+class SVGEditorDialog(FramelessDialog, Ui_Form):
     """
     Class documentation goes here.
     """
@@ -35,15 +36,21 @@ class SVGEditorDialog(FramelessWindow, Ui_Form):
         """
         super().__init__(parent)
         self.setupUi(self)
-        self.gridLayout.setContentsMargins(5, 25, 5, 5)
+        # self.gridLayout.setContentsMargins(5, 25, 5, 5)
         StyleSheet.SVGEDITOR.apply(self)
 
-        self.CommandBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.initTitleBar()
+
         self.CommandBar.addAction(Action(FluentIcon.ADD, '打开', triggered=lambda: self.load_svg()))
         self.CommandBar.addAction(Action(FluentIcon.SAVE, '保存', triggered=lambda: self.save()))
         self.CommandBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.CommandBar.setButtonTight(False)
-        self.CommandBar.setMinimumWidth(150)
+        # self.CommandBar.setButtonTight(False)
+        self.CommandBar.resizeToSuitableWidth()
+        print(self.CommandBar.width())
+        for button in self.CommandBar.commandButtons:
+            button.setMinimumWidth(80)
+            button.show()
+        self.CommandBar.updateGeometry()
 
         self.card_color = PrimaryPushSettingCard(
             text="选择",
@@ -59,6 +66,13 @@ class SVGEditorDialog(FramelessWindow, Ui_Form):
         # SVG 图像项
         self.svg_item = None
         self.zoom_factor = 1.0  # 初始缩放比例
+
+    def initTitleBar(self):
+
+        self.setTitleBar(StandardTitleBar(self))
+        # self.setTitleBar(CustomTitleBar(self))
+        # self.setWindowTitle('SVG Editor')
+        self.titleBar.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
 
     def load_svg(self, file_path=None):
         if not file_path:
