@@ -1,7 +1,28 @@
 <RCC>
     <qresource prefix="/app">
     <file>google\icons\terminal_black_24.svg</file>
-
-<file>google\icons\terminal_white_24.svg</file>
+    <file>google\icons\terminal_white_24.svg</file>
+    <file>iconify\icons\admin-panel-settings_white_24.svg</file>
+<file>iconify\icons\admin-panel-settings_black_24.svg</file>
+<file>iconify\icons\settings-applications-sharp_white_24.svg</file>
+<file>iconify\icons\settings-applications-sharp_black_24.svg</file>
+<file>iconify\icons\settings-heart-outline_black_24.svg</file>
+<file>iconify\icons\settings-heart-outline_white_24.svg</file>
+<file>iconify\icons\settings-heart_black_24.svg</file>
+<file>iconify\icons\settings-heart_white_24.svg</file>
+<file>iconify\icons\settings-brightness-outline_white_24.svg</file>
+<file>iconify\icons\settings-brightness-outline_black_24.svg</file>
+<file>iconify\icons\settings-bluetooth_black_24.svg</file>
+<file>iconify\icons\settings-bluetooth_white_24.svg</file>
+<file>iconify\icons\settings-brightness_white_24.svg</file>
+<file>iconify\icons\settings-brightness_black_24.svg</file>
+<file>iconify\icons\settings-cinematic-blur-rounded_black_24.svg</file>
+<file>iconify\icons\settings-cinematic-blur-rounded_white_24.svg</file>
+<file>simpleicons\icons\365datascience_white_24.svg</file>
+<file>simpleicons\icons\365datascience_black_24.svg</file>
+<file>simpleicons\icons\4chan_black_24.svg</file>
+<file>simpleicons\icons\4chan_white_24.svg</file>
+<file>simpleicons\icons\aerlingus_black_24.svg</file>
+<file>simpleicons\icons\aerlingus_white_24.svg</file>
 </qresource>
 </RCC>
