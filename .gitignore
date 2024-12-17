@@ -101,3 +101,4 @@ dist/
 
 # lib
 libs/*
+libs/pyenv-win/.versions_cache.xml
