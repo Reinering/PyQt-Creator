@@ -57,7 +57,7 @@ from .utils.config import write_config
 from .utils.tool import startCMD
 from .compoments.menu import RecentFilesMenu
 from .compoments.info import Message, MessageBox as CustomMessageBox
-from .compoments.tree import FileSystemModel, FilesystemModel
+# from .compoments.tree import FileSystemModel, FilesystemModel
 from common.pyenv import PyVenvManager
 from common.py import PyInterpreter, PyPath
 from manage import CURRENT_SETTINGS, SETTINGS, LIBS, UI_CONFIG, PAGEWidgets, IMAGE_TYPES
