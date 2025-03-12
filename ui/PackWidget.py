@@ -295,6 +295,9 @@ class PackWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["pack"]["setup"]["filepath"]:
             self.button_filepath_setup.setText(CURRENT_SETTINGS["pack"]["setup"]["filepath"])
 
+    def setFSelectorParentFolder(self, folder):
+        self.button_filepath_main.setParentFolder(folder)
+
     def getPyPath(self):
         path = ""
         mode = self.comboBox_mode.currentText()
@@ -670,6 +673,10 @@ class PackWidget(QWidget, Ui_Form):
         if text == "跟随项目":
             self.widget_env.hide()
             # self.widget_env_main.hide()
+            if CURRENT_SETTINGS["project"]["project_path"]:
+                self.button_filepath_main.setParentFolder(CURRENT_SETTINGS["project"]["project_path"])
+            else:
+                self.button_filepath_main.setParentFolder('/')
         elif text == "跟随全局":
             self.widget_env.hide()
             # self.widget_env_main.show()

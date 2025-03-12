@@ -261,18 +261,18 @@ class ProjectWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["project"]["custom_python_path"]:
             self.button_filepath.setText(CURRENT_SETTINGS["project"]["custom_python_path"])
 
-    def initTree1(self, rootPath):
-        self.treeTitle.setText(f"项目目录 ({rootPath})")
-        fileModel = FilesystemModel()
-        fileModel.setRootPath(rootPath)
-        self.tree.setModel(fileModel)
-        self.tree.setEditTriggers(QTreeView.EditTrigger.NoEditTriggers)
-        # self.tree.setRootIndex(fileModel.index(rootPath))
-
-        # 隐藏列
-        self.tree.setColumnHidden(1, True)
-        self.tree.setColumnHidden(2, True)
-        self.tree.setColumnHidden(3, True)
+    # def initTree1(self, rootPath):
+    #     self.treeTitle.setText(f"项目目录 ({rootPath})")
+    #     fileModel = FilesystemModel()
+    #     fileModel.setRootPath(rootPath)
+    #     self.tree.setModel(fileModel)
+    #     self.tree.setEditTriggers(QTreeView.EditTrigger.NoEditTriggers)
+    #     # self.tree.setRootIndex(fileModel.index(rootPath))
+    #
+    #     # 隐藏列
+    #     self.tree.setColumnHidden(1, True)
+    #     self.tree.setColumnHidden(2, True)
+    #     self.tree.setColumnHidden(3, True)
 
     def initTree(self, rootPath):
         self.treeTitle.setText(f"项目目录 ({rootPath})")
@@ -508,6 +508,8 @@ class ProjectWidget(QWidget, Ui_Form):
             if not folderPath:
                 return
 
+            CURRENT_SETTINGS["project"]["project_path"] = folderPath
+            PAGEWidgets["pack"].setFSelectorParentFolder(folderPath)
             self.recentFilesMenu.addFile(folderPath)
             self.initTree(folderPath)
             write_config()
@@ -516,6 +518,8 @@ class ProjectWidget(QWidget, Ui_Form):
 
     def button_project_recently_open(self, folderPath):
         self.recentFilesMenu.addFile(folderPath)
+        CURRENT_SETTINGS["project"]["project_path"] = folderPath
+        PAGEWidgets["pack"].setFSelectorParentFolder(folderPath)
         write_config()
         self.initTree(folderPath)
 
