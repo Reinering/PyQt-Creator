@@ -11,7 +11,7 @@ import subprocess
 import psutil
 
 
-class PyVenvManager():
+class PyenvManager():
     """
     Python virtual environment manager
     """
@@ -95,6 +95,105 @@ class PyVenvManager():
         if not version:
             return (False, "Error: version is empty")
         command = [self.venvPath, 'global', version]
+        return self.cmd(command)
+
+    def lcoal_(self, version):
+        if not version:
+            return (False, "Error: version is empty")
+        command = [self.venvPath, 'local', version]
+        return self.cmd(command)
+
+    def help(self):
+        command = [self.venvPath, 'help']
+        return self.cmd(command)
+
+    def install_package(self, package_name):
+        pass
+
+
+class PyenvVenvManager():
+    """
+    Python virtual environment manager
+    """
+
+    def __init__(self, pyenv_root_path):
+        self.venvPath = os.path.join(pyenv_root_path, 'bin\\pyenv-venv.bat')
+        self.process = None
+
+    def setVenvPath(self, path):
+        self.venvPath = os.path.join(path, 'bin\\pyenv-venv.bat')
+
+    def setEnviron(self, **kwargs):
+        for key, value in kwargs.items():
+            os.environ[key] = value
+
+    def stop(self):
+        if self.process and not isinstance(self.process, subprocess.CompletedProcess):
+            self.process.terminate()
+            parent = psutil.Process(self.process.pid)
+            children = parent.children(recursive=True)
+            for child in children:
+                child.kill()
+            self.process.kill()
+
+    def cmd(self, cmd):
+        print(f"cmd: {cmd}")
+
+        self.process = subprocess.run(cmd, capture_output=True, text=True, shell=True)
+        if self.process.returncode == 0:
+            print(f"{self.process.stdout}")
+            return (True, f"{self.process.stdout}")
+        else:
+            print(f"Error: {self.process.stderr}")
+            return (False, f"Error: {self.process.stderr}")
+
+    def popen(self, cmd):
+        print(f"cmd: {cmd}")
+
+        self.process = subprocess.Popen(cmd, shell=True)
+        self.process.wait()
+        if self.process.returncode == 0:
+            print(f"{self.process.stdout}")
+            return [True, self.process.stdout]
+        else:
+            print(f"Error: {self.process.stderr}")
+            return (False, f"Error: {self.process.stderr}")
+
+    def list(self):
+        command = [self.venvPath, 'install', '--list']
+        return self.cmd(command)
+
+    def install(self, pyVer, envName):
+        if not pyVer:
+            return (False, "Error: pyenv version is empty")
+        if not envName:
+            return (False, "Error: pyenv env name is empty")
+
+        command = [self.venvPath, 'install', pyVer, envName]
+        return self.cmd(command)
+
+    def uninstall(self, env):
+        if not env:
+            return (False, "Error: env is empty")
+        command = [self.venvPath, 'uninstall', env]
+        return self.cmd(command)
+
+    def update(self):
+        command = [self.venvPath, 'update']
+        return self.cmd(command)
+
+    def envs(self):
+        command = [self.venvPath, 'list', 'envs']
+        return self.cmd(command)
+
+    def rehash(self):
+        command = [self.venvPath, 'rehash']
+        return self.cmd(command)
+
+    def shell(self, version):
+        if not version:
+            return (False, "Error: version is empty")
+        command = [self.venvPath, 'shell', version]
         return self.cmd(command)
 
     def lcoal_(self, version):

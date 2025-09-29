@@ -33,6 +33,7 @@ class RecentFilesMenu(RoundMenu):
         if len(self.recent_files) > self.max_files:
             self.recent_files.pop()
         self.updateMenu()
+
     def updateMenu(self):
         self.clear()
         for filepath in self.recent_files:

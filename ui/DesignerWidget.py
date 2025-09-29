@@ -40,7 +40,7 @@ from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .utils.tool import startCMD
 from .compoments.info import Message
-from common.pyenv import PyVenvManager
+from common.pyenv import PyenvManager
 from common.py import PyInterpreter, PyPath
 from qfluentexpand.tools import designer
 from manage import LIBS, SETTINGS, CURRENT_SETTINGS, REQUIREMENTS_URLS
@@ -447,7 +447,7 @@ class VenvManagerThread(QThread):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # self.venvManger = PyVenvManager(LIBS["pyenv"])
+        # self.venvManger = PyenvManager(LIBS["pyenv"])
         self.pyI = PyInterpreter()
         self.stopBool = False
 

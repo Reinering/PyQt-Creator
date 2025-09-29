@@ -22,10 +22,9 @@ from qfluentwidgets import (
     Theme, toggleTheme,
     LineEdit,
     RoundMenu, Action,
-    PushSettingCard
+    PushSettingCard,
+    FluentIcon
 )
-from qfluentwidgets.common.icon import FluentIcon
-from qfluentwidgets.common.style_sheet import FluentStyleSheet
 
 from qfluentexpand.components.widgets.card import (
     SettingCardWidget, PushSettingCardWidget, PrimaryPushSettingCardWidget, ComboBoxSettingCardWidget,
@@ -43,9 +42,11 @@ from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
 from .utils.tool import startCMD
-from common.pyenv import PyVenvManager
+from common.pyenv import PyenvManager, PyenvVenvManager
 from common.py import PyInterpreter, PyPath
-from manage import VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS
+from common.reg import *
+from common.utils import is_admin
+from manage import VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS, BUNDLE_DIR
 
 
 class SettingWidget(QWidget, Ui_Form):
@@ -77,7 +78,8 @@ class SettingWidget(QWidget, Ui_Form):
         self.venvMangerTh.signal_result.connect(self.receive_VMresult)
 
         self.initWidget()
-        self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+        self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+        self.venvMangerTh.setPyenvVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
         self.venvMangerTh.setCMD("init")
         self.venvMangerTh.start()
 
@@ -129,7 +131,16 @@ class SettingWidget(QWidget, Ui_Form):
         self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
         self.card_pyenv.addWidget(self.button_pyenv_path)
 
-        self.widget_pyenv_existing = SettingCardWidget('', '现有环境', '', self.envCard)
+
+        self.widget_pyenv_PATH = SettingCardWidget('', '添加全局环境变量', 'PATH: PYENV_HOME', self.card_pyenv)
+        self.button_add_PATH = PrimaryPushButton(QFluentIcon.googleIcon("Terminal"), "添加")
+        self.button_add_PATH.clicked.connect(self.on_button_add_PATH_clicked)
+        self.widget_pyenv_PATH.addStretch(1)
+        self.widget_pyenv_PATH.addWidget(self.button_add_PATH)
+        self.card_pyenv.addWidget(self.widget_pyenv_PATH)
+
+
+        self.widget_pyenv_existing = SettingCardWidget('', '现有环境', '', self.card_pyenv)
         self.spinner_existing = GifLabel(self.card_pyenv)
         self.spinner_existing.setGif(APPGIF.LOADING)
         self.spinner_existing.setFixedSize(30, 30)
@@ -140,6 +151,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.button_existing_uninstall = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
         menu = RoundMenu(parent=self.button_existing_uninstall)
+        menu.addAction(Action(FluentIcon.SETTING, '设置Global', triggered=self.existing_setGlobal))
         menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.existing_update))
         menu.addAction(Action(FluentIcon.LINK, '卸载', triggered=self.existing_uninstall))
         self.button_existing_uninstall.setMenu(menu)
@@ -149,7 +161,14 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_existing.addWidget(self.button_existing_uninstall)
         self.card_pyenv.addWidget(self.widget_pyenv_existing)
 
-        self.widget_pyenv_new = SettingCardWidget('', '安装新环境', '', self.envCard)
+        self.widget_pyenv_global = SettingCardWidget('', 'Global', '', self.card_pyenv)
+        self.lineEdit_global_ver = LineEdit(self.card_pyenv)
+        self.lineEdit_global_ver.setEnabled(False)
+        self.widget_pyenv_global.addStretch(1)
+        self.widget_pyenv_global.addWidget(self.lineEdit_global_ver)
+        self.card_pyenv.addWidget(self.widget_pyenv_global)
+
+        self.widget_pyenv_new = SettingCardWidget('', '安装新环境', '', self.card_pyenv)
         self.spinner_new = GifLabel(self.card_pyenv)
         self.spinner_new.setGif(APPGIF.LOADING)
         self.spinner_new.setFixedSize(30, 30)
@@ -171,16 +190,59 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_new.addWidget(self.button_new_install)
         self.card_pyenv.addWidget(self.widget_pyenv_new)
 
-        self.widget_pyenv_mirror_url = ComboBoxSettingCardWidget('', '更新源', '', self.envCard)
+        self.widget_pyenv_mirror_url = ComboBoxSettingCardWidget('', '更新源', '', self.card_pyenv)
         self.widget_pyenv_mirror_url.comboBox.setMinimumWidth(100)
         self.widget_pyenv_mirror_url.comboBox.setMaximumWidth(150)
         self.widget_pyenv_mirror_url.addItems(MIRRORS["pyenv"].keys())
         self.widget_pyenv_mirror_url.currentTextChanged.connect(self.on_comboBox_pyenv_mirror_url_currentTextChanged)
         self.card_pyenv.addWidget(self.widget_pyenv_mirror_url)
 
+        self.card_pyenv_venv = SettingGroupCard(FluentIcon.SETTING, "Pyenv-venv 虚拟环境管理",
+                                           "https://github.com/pyenv-win/pyenv-win-venv",
+                                           self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_pyenv_venv, 4, 0, 1, 1)
+
+        self.widget_pyenv_venv_existing = SettingCardWidget('', '现有环境', '', self.card_pyenv_venv)
+        self.spinner_venv_existing = GifLabel(self.card_pyenv_venv)
+        self.spinner_venv_existing.setGif(APPGIF.LOADING)
+        self.spinner_venv_existing.setFixedSize(30, 30)
+        self.spinner_venv_existing.hide()
+        self.comboBox_venv_existing = ComboBox(self.card_pyenv_venv)
+        self.comboBox_venv_existing.setMinimumWidth(100)
+        self.comboBox_venv_existing.currentTextChanged.connect(self.on_comboBox_venv_existing_currentTextChanged)
+
+        self.button_venv_existing_uninstall = PrimaryDropDownPushButton(FluentIcon.ADD_TO, '操作')
+        menu = RoundMenu(parent=self.button_venv_existing_uninstall)
+        menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.venv_existing_refresh))
+        menu.addAction(Action(FluentIcon.LINK, '卸载', triggered=self.venv_existing_uninstall))
+        self.button_venv_existing_uninstall.setMenu(menu)
+        self.widget_pyenv_venv_existing.addStretch(1)
+        self.widget_pyenv_venv_existing.addWidget(self.spinner_venv_existing)
+        self.widget_pyenv_venv_existing.addWidget(self.comboBox_venv_existing)
+        self.widget_pyenv_venv_existing.addWidget(self.button_venv_existing_uninstall)
+        self.card_pyenv_venv.addWidget(self.widget_pyenv_venv_existing)
+
+        self.widget_pyenv_venv_install = SettingCardWidget('', '创建新环境', '基于Pyenv-win当前python版本', self.card_pyenv_venv)
+        self.spinner_venv_install = GifLabel(self.card_pyenv_venv)
+        self.spinner_venv_install.setGif(APPGIF.LOADING)
+        self.spinner_venv_install.setFixedSize(30, 30)
+        self.spinner_venv_install.hide()
+        self.lineEdit_venv_install = LineEdit(self.card_pyenv_venv)
+        self.button_venv_install = PrimaryPushButton(QFluentIcon.googleIcon("Terminal"), "创建")
+        self.button_venv_install.clicked.connect(self.on_button_venv_install_clicked)
+        self.widget_pyenv_venv_install.addStretch(1)
+        self.widget_pyenv_venv_install.addWidget(self.spinner_venv_install)
+        self.widget_pyenv_venv_install.addWidget(self.lineEdit_venv_install)
+        self.widget_pyenv_venv_install.addWidget(self.button_venv_install)
+        self.card_pyenv_venv.addWidget(self.widget_pyenv_venv_install)
+
+
+
+
+
         self.card_pip = SettingGroupCard(FluentIcon.SETTING, "Pip 设置", "",
                                            self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_pip, 4, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_pip, 5, 0, 1, 1)
 
         self.widget_pip_mirror_url = ComboBoxSettingCardWidget('', '更新源', '', self.card_pip)
         self.widget_pip_mirror_url.comboBox.setMinimumWidth(100)
@@ -214,7 +276,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.card_editor = SettingGroupCard(FluentIcon.SETTING, "编辑设置", "",
                                            self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_editor, 5, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_editor, 6, 0, 1, 1)
 
         self.widget_editor = SettingCardWidget('', '编辑器', '可执行文件', self.card_editor)
         self.comboBox_editor_file = EditableComboBox(self.card_editor)
@@ -230,7 +292,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.card_about = SettingGroupCard(FluentIcon.SETTING, "关于", "",
                                           self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_about, 6, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_about, 7, 0, 1, 1)
 
         line_version = LineSettingCardWidget('', "版本", "", self.card_about)
         line_version.setText(VERSION)
@@ -266,6 +328,13 @@ class SettingWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["settings"]["mode"] in SETTINGS["settings"]["python_env_modes"]:
             self.comboBox_mode.setCurrentText(CURRENT_SETTINGS["settings"]["mode"])
 
+            if CURRENT_SETTINGS["settings"]["mode"] == "现有环境":
+                self.widget_env.show()
+                self.widget_teminal.show()
+                self.card_pyenv.hide()
+                self.card_pyenv_venv.hide()
+                self.card_pip.hide()
+
         if CURRENT_SETTINGS["settings"]["custom_python_path"]:
             self.button_filepath.setText(CURRENT_SETTINGS["settings"]["custom_python_path"])
 
@@ -277,6 +346,9 @@ class SettingWidget(QWidget, Ui_Form):
         if CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
             self.comboBox_existing.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_current_version"])
 
+        if CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"]:
+            self.comboBox_existing.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"])
+
         if CURRENT_SETTINGS["settings"]["pyenv_mirror_url"]:
             self.widget_pyenv_mirror_url.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_mirror_url"])
 
@@ -285,6 +357,9 @@ class SettingWidget(QWidget, Ui_Form):
 
         if CURRENT_SETTINGS["settings"]["editor"]:
             self.comboBox_editor_file.setCurrentText(CURRENT_SETTINGS["settings"]["editor"])
+
+        if check_path_in_path(os.path.join("%PYENV_HOME%", 'bin'), "system"):
+            self.button_add_PATH.setEnabled(False)
 
     def getPyPath(self):
         path = ""
@@ -313,7 +388,7 @@ class SettingWidget(QWidget, Ui_Form):
             Message.error("错误", "pyenv忙碌中，请稍后重试", self)
             return
 
-        self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+        self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
         self.venvMangerTh.setCMD("install", version)
         self.venvMangerTh.start()
         self.button_new_install.setEnabled(False)
@@ -326,12 +401,28 @@ class SettingWidget(QWidget, Ui_Form):
             Message.error("错误", "pyenv忙碌中，请稍后重试", self)
             return
 
-        self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+        self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
         self.venvMangerTh.setCMD("update")
         self.venvMangerTh.start()
         self.button_new_install.setEnabled(False)
         self.spinner_new.setState(True)
         self.spinner_new.show()
+
+    def existing_setGlobal(self):
+        if not self.comboBox_existing.currentText():
+            return
+
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+            return
+
+        self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+        self.venvMangerTh.setCMD("global", self.comboBox_existing.currentText())
+        self.venvMangerTh.start()
+        self.button_existing_uninstall.setEnabled(False)
+        self.spinner_existing.setState(True)
+        self.spinner_existing.show()
+        Message.info("设置", "设置中，请稍后", self)
 
     def existing_uninstall(self):
         if self.comboBox_existing.currentText():
@@ -339,7 +430,7 @@ class SettingWidget(QWidget, Ui_Form):
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
                 return
 
-            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("uninstall", self.comboBox_existing.currentText())
             self.venvMangerTh.start()
             self.button_existing_uninstall.setEnabled(False)
@@ -354,14 +445,15 @@ class SettingWidget(QWidget, Ui_Form):
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
                 return
 
-            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("versions")
             self.venvMangerTh.start()
             self.button_existing_uninstall.setEnabled(False)
             self.spinner_existing.setState(True)
             self.spinner_existing.show()
         else:
-            Message.error("错误", "Pyenv路径错误", self)
+            os.mkdir(os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "versions"))
+            # Message.error("错误", "Pyenv路径错误", self)
 
     def get_pip_list(self):
         if self.venvMangerTh.isRunning():
@@ -473,9 +565,15 @@ class SettingWidget(QWidget, Ui_Form):
         if text == "现有环境":
             self.widget_env.show()
             self.card_pyenv.hide()
+            self.card_pyenv_venv.hide()
         elif text == "Pyenv 环境":
             self.widget_env.hide()
             self.card_pyenv.show()
+            self.card_pyenv_venv.show()
+        elif text == "Pyenv-venv环境":
+            self.widget_env.hide()
+            self.card_pyenv.show()
+            self.card_pyenv_venv.show()
         else:
             pass
 
@@ -506,6 +604,25 @@ class SettingWidget(QWidget, Ui_Form):
             CURRENT_SETTINGS["settings"]["pyenv_path"] = text.replace("/", "\\")
             write_config()
 
+    def on_button_add_PATH_clicked(self):
+        if not is_admin():
+            Message.error("错误", "请以管理员权限运行", self)
+            return
+
+        if os.path.isabs(CURRENT_SETTINGS["settings"]["pyenv_path"]):
+            path = CURRENT_SETTINGS["settings"]["pyenv_path"]
+        else:
+            path = os.path.join(BUNDLE_DIR, CURRENT_SETTINGS["settings"]["pyenv_path"])
+
+
+        set_environment_variable("PYENV_HOME", path, "system")
+        append_to_path(os.path.join("%PYENV_HOME%", "bin"), "system")
+        append_to_path(os.path.join("%PYENV_HOME%", "shims"), "system")
+
+        Message.info("成功", "环境变量添加成功", self)
+
+        self.button_add_PATH.setEnabled(False)
+
     def on_comboBox_existing_currentTextChanged(self, text):
         if not self.initState:
             CURRENT_SETTINGS["settings"]["pyenv_current_version"] = text.replace("/", "\\")
@@ -523,6 +640,63 @@ class SettingWidget(QWidget, Ui_Form):
 
             write_config()
 
+    def venv_existing_refresh(self):
+        print("venv_existing_refresh")
+
+        if os.path.exists(os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "envs")):
+            if self.venvMangerTh.isRunning():
+                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+                return
+            self.venvMangerTh.setPyenvVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setCMD("list_envs")
+            self.venvMangerTh.start()
+            self.button_venv_existing_uninstall.setEnabled(False)
+            self.spinner_venv_existing.setState(True)
+            self.spinner_venv_existing.show()
+        else:
+            os.mkdir(os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "envs"))
+            # Message.error("错误", "Pyenv路径错误", self)
+
+    def venv_existing_uninstall(self):
+        if self.comboBox_venv_existing.currentText():
+            if self.venvMangerTh.isRunning():
+                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+                return
+
+            self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setCMD("uninstall_env", self.comboBox_venv_existing.currentText())
+            self.venvMangerTh.start()
+            self.button_venv_existing_uninstall.setEnabled(False)
+            self.spinner_venv_existing.show()
+            self.spinner_venv_existing.setState(True)
+            Message.info("卸载", "卸载中，请稍后", self)
+
+    def on_button_venv_install_clicked(self):
+        if not self.comboBox_existing.currentText():
+            Message.error("错误", "请选择pyenv环境", self)
+            return
+
+        if not self.lineEdit_venv_install.text():
+            Message.error("错误", "请输入pyenv-venv环境名称", self)
+            return
+
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+            return
+
+        self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+        self.venvMangerTh.setCMD("install_env", self.comboBox_existing.currentText(), self.lineEdit_venv_install.text())
+        self.venvMangerTh.start()
+        self.button_venv_install.setEnabled(False)
+        self.spinner_venv_install.show()
+        self.spinner_venv_install.setState(True)
+        Message.info("创建", "创建中，请稍后", self)
+
+    def on_comboBox_venv_existing_currentTextChanged(self, text):
+        if not self.initState:
+            CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"] = text.replace("/", "\\")
+            write_config()
+
     def on_comboBox_pip_mirror_url_currentTextChanged(self, text):
         CURRENT_SETTINGS["settings"]["pip_mirror_url"] = text
 
@@ -534,7 +708,7 @@ class SettingWidget(QWidget, Ui_Form):
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
                 return
 
-            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("uninstall", self.comboBox_existing.currentText())
             self.venvMangerTh.start()
             self.button_existing_uninstall.setEnabled(False)
@@ -574,6 +748,7 @@ class SettingWidget(QWidget, Ui_Form):
         write_config()
 
     def receive_VMresult(self, cmd, result, isClose=True):
+        print(f"receive_VMresult: {cmd}, {result}")
         logging.debug(f"receive_VMresult: {cmd}, {result}")
         if isinstance(result[1], list) and len(result[1]) > 5:
             output = result[1][-5:]
@@ -618,7 +793,7 @@ class SettingWidget(QWidget, Ui_Form):
                 return
 
             self.venvMangerTh.stop()
-            self.venvMangerTh.setVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setCMD("list")
             self.venvMangerTh.start()
             return
@@ -663,10 +838,82 @@ class SettingWidget(QWidget, Ui_Form):
             tmp = []
             for res in result:
                 res.strip()
-                tmp.append(res.strip())
+                if '*' == res[0]:
+                    tmp.append(res.split(' (')[0][1:].strip())
+                    self.lineEdit_global_ver.setText(res.split(' (')[0][1:])
+                else:
+                    tmp.append(res.strip())
             if tmp:
                 self.comboBox_existing.clear()
                 self.comboBox_existing.addItems(tmp)
+        elif cmd == "global":
+            self.button_existing_uninstall.setEnabled(True)
+            self.spinner_existing.setState(False)
+            self.spinner_existing.hide()
+
+            if not result[0]:
+                Message.error("错误", output, self)
+                return
+
+            self.lineEdit_global_ver.setText(self.comboBox_existing.currentText())
+
+            Message.info("成功", "设置Global成功", self)
+        elif cmd == "list_envs":
+            self.button_venv_existing_uninstall.setEnabled(True)
+            self.spinner_venv_existing.setState(False)
+            self.spinner_venv_existing.hide()
+
+            if not result[0]:
+                Message.error("错误", output, self)
+                return
+
+            if not result[1]:
+                Message.error("错误", "查询错误", self)
+                return
+
+            result = list(filter(None, result[1].split("\n")[1:]))
+            tmp = []
+            for res in result:
+                res.strip()
+                tmp.append(res.strip())
+            if tmp:
+                self.comboBox_venv_existing.clear()
+                self.comboBox_venv_existing.addItems(tmp)
+
+            if CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"] in tmp:
+                self.comboBox_venv_existing.setCurrentText(CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"])
+        elif cmd == "uninstall_env":
+            self.button_venv_existing_uninstall.setEnabled(True)
+            self.spinner_venv_existing.setState(False)
+            self.spinner_venv_existing.hide()
+
+            if not result[0]:
+                Message.error("错误", output, self)
+                return
+
+            Message.info("成功", "卸载成功", self)
+
+            self.venvMangerTh.stop()
+            self.venv_existing_refresh()
+            return
+        elif cmd == "install_env":
+            self.button_venv_install.setEnabled(True)
+            self.spinner_venv_install.setState(False)
+            self.spinner_venv_install.hide()
+
+            if not result[0]:
+                Message.error("错误", output, self)
+                return
+
+            if "already exists. Please choose another name for the env" in output:
+                Message.error("错误", "环境已存在", self)
+            else:
+                Message.info("成功", "创建成功", self)
+
+                self.venvMangerTh.stop()
+                self.venv_existing_refresh()
+                return
+
         elif cmd == "pip_list":
             self.button_pip_list.setEnabled(True)
             self.spinner_pip_list.setState(False)
@@ -735,7 +982,8 @@ class VenvManagerThread(QThread):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.venvManger = PyVenvManager(LIBS["pyenv"])
+        self.pyenvManger = PyenvManager(LIBS["pyenv"])
+        self.pyenvVenvManger = PyenvVenvManager(LIBS["pyenv"])
         self.pyI = PyInterpreter()
         self.stopBool = False
 
@@ -744,6 +992,7 @@ class VenvManagerThread(QThread):
             self.stopBool = True
             self.pyI.stop()
             self.terminate()
+            self.stopBool = False  # 增加：确保下次可正常启动
         except Exception as e:
             print(e)
 
@@ -752,40 +1001,59 @@ class VenvManagerThread(QThread):
         self.args = args
         self.kwargs = kwargs
 
-    def setVenvPath(self, path):
-        self.venvManger.setVenvPath(path)
+    def setPyenvPath(self, path):
+        self.pyenvManger.setVenvPath(path)
+
+    def setPyenvVenvPath(self, path):
+        self.pyenvVenvManger.setVenvPath(path)
 
     def setPyInterpreter(self, path):
         self.pyI.setInterpreter(path)
 
     def run(self):
+        self.stopBool = False  # 增加：每次启动线程时重置
         cmd = self.cmd
         if cmd == "py_version":
             result = self.pyI.version()
             self.signal_result.emit(cmd, result)
         elif cmd == "init":
-            result = self.venvManger.list()
+            result = self.pyenvManger.list()
             self.signal_result.emit("list", result, False)
-            result = self.venvManger.versions()
-            self.signal_result.emit("versions", result, True)
+            result = self.pyenvManger.versions()
+            self.signal_result.emit("versions", result, False)
+            result = self.pyenvVenvManger.envs()
+            self.signal_result.emit("list_envs", result, False)
+
             self.signal_result.emit("init", result, True)
         elif cmd == "list":
-            result = self.venvManger.list()
+            result = self.pyenvManger.list()
             self.signal_result.emit(cmd, result, True)
         elif cmd == "update":
-            result = self.venvManger.update()
+            result = self.pyenvManger.update()
             self.signal_result.emit(cmd, result, True)
         elif cmd == "install":
-            result = self.venvManger.install(self.args[0])
+            result = self.pyenvManger.install(self.args[0])
             self.signal_result.emit(cmd, result, True)
-            self.venvManger.rehash()
+            self.pyenvManger.rehash()
         elif cmd == "uninstall":
-            result = self.venvManger.uninstall(self.args[0])
+            result = self.pyenvManger.uninstall(self.args[0])
             self.signal_result.emit(cmd, result, True)
         elif cmd == "environ":
-            self.venvManger.setEnviron(**self.kwargs)
+            self.pyenvManger.setEnviron(**self.kwargs)
         elif cmd == "versions":
-            result = self.venvManger.versions()
+            result = self.pyenvManger.versions()
+            self.signal_result.emit(cmd, result, True)
+        elif cmd == "global":
+            result = self.pyenvManger.global_(self.args[0])
+            self.signal_result.emit(cmd, result, True)
+        elif cmd == "list_envs":
+            result = self.pyenvVenvManger.envs()
+            self.signal_result.emit(cmd, result, True)
+        elif cmd == "uninstall_env":
+            result = self.pyenvVenvManger.uninstall(self.args[0])
+            self.signal_result.emit(cmd, result, True)
+        elif cmd == "install_env":
+            result = self.pyenvVenvManger.install(self.args[0], self.args[1])
             self.signal_result.emit(cmd, result, True)
         elif cmd == "pip_list":
             result = self.pyI.pip(self.args[0])
@@ -805,6 +1073,4 @@ class VenvManagerThread(QThread):
             self.signal_result.emit(cmd, result, True)
         else:
             self.signal_result.emit(cmd, ["False", "未知命令"], True)
-
-
 

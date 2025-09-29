@@ -58,7 +58,7 @@ from .utils.tool import startCMD
 from .compoments.menu import RecentFilesMenu
 from .compoments.info import Message, MessageBox as CustomMessageBox
 # from .compoments.tree import FileSystemModel, FilesystemModel
-from common.pyenv import PyVenvManager
+from common.pyenv import PyenvManager
 from common.py import PyInterpreter, PyPath
 from manage import CURRENT_SETTINGS, SETTINGS, LIBS, UI_CONFIG, PAGEWidgets, IMAGE_TYPES
 
@@ -587,7 +587,7 @@ class ProjectWidget(QWidget, Ui_Form):
         pythonPath.append(path)
         pythonPath.append(filepath)
         pythonPath.append(pypath)
-        pythonPath.append(os.path.join(pypath, "python312.zip"))
+        # pythonPath.append(os.path.join(pypath, "python312.zip"))
         pythonPath.append(os.path.join(pypath, "DLLs"))
         pythonPath.append(os.path.join(pypath, "Lib"))
         pythonPath.append(os.path.join(pypath, "Lib", "site-packages"))
@@ -852,7 +852,7 @@ class VenvManagerThread(QThread):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # self.venvManger = PyVenvManager(LIBS["pyenv"])
+        # self.venvManger = PyenvManager(LIBS["pyenv"])
         self.pyI = PyInterpreter()
         self.stopBool = False
 

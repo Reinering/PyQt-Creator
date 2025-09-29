@@ -151,7 +151,7 @@ SETTINGS = {
         "language": ['Auto', 'zh_CN', 'en_US'],
         "dpi": ['Auto', '96', '120', '144', '192'],
         "update": ['CheckUpdateAtStartUp', 'CheckUpdateAtEnd'],
-        "python_env_modes": ["现有环境", "Pyenv 环境"],           # ["system", "venv", "pyenv", "conda"]
+        "python_env_modes": ["现有环境", "Pyenv 环境", "Pyenv-venv环境"],           # ["system", "pyenv", "pyenv-venv", "conda"]
         "pyenv_maxbit": ['x64', 'x86'],
     }
 }
@@ -197,6 +197,7 @@ CURRENT_SETTINGS = {
         "custom_python_path": "",
         "pyenv_path": LIBS["pyenv"],
         "pyenv_current_version": "",
+        "pyenv_venv_current_version": "",
         "pyenv_mirror_url": "origin",
         "pip_mirror_url": "origin",
         "editors": ["notepad"],
