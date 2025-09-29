@@ -359,7 +359,7 @@ class OtherWidget(QWidget, Ui_Form):
             Message.error("错误", "env忙碌中，请稍后重试", self)
             return
 
-        folder = self.button_env_folder.text()
+        folder = self.button_pipreqs_project.text()
         if not folder or folder == "选择":
             Message.error("错误", "请选择项目根目录", self)
             return
@@ -392,7 +392,7 @@ class OtherWidget(QWidget, Ui_Form):
             Message.error("错误", "env忙碌中，请稍后重试", self)
             return
 
-        folder = self.button_env_folder.text()
+        folder = self.button_pipreqs_project.text()
         if not folder or folder == "选择":
             Message.error("错误", "请选择项目根目录", self)
             return
@@ -417,7 +417,7 @@ class OtherWidget(QWidget, Ui_Form):
         Message.info("提示", "安装中，请稍后", self)
 
     def edit_requirements(self):
-        folder = self.button_env_folder.text()
+        folder = self.button_pipreqs_project.text()
         if not folder or folder == "选择":
             Message.error("错误", "请选择项目根目录", self)
             return
