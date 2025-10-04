@@ -23,6 +23,7 @@ RUNTIMEENV = None
 LOGLEVEL = 4
 
 LOGFILE = "logs/app.log"
+PIDFILE = "logs/pid.lock"
 
 os_platform = platform.system()
 maxbit = sys.maxsize
@@ -151,7 +152,7 @@ SETTINGS = {
         "language": ['Auto', 'zh_CN', 'en_US'],
         "dpi": ['Auto', '96', '120', '144', '192'],
         "update": ['CheckUpdateAtStartUp', 'CheckUpdateAtEnd'],
-        "python_env_modes": ["现有环境", "Pyenv 环境", "Pyenv-venv环境"],           # ["system", "pyenv", "pyenv-venv", "conda"]
+        "python_env_modes": ["现有环境", "Pyenv 环境", "Pyenv-venv 环境"],           # ["system", "pyenv", "pyenv-venv", "conda"]
         "pyenv_maxbit": ['x64', 'x86'],
     }
 }

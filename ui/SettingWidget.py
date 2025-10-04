@@ -41,7 +41,7 @@ from .compoments.info import Message
 from .Ui_SettingWidget import Ui_Form
 from .utils.stylesheets import StyleSheet
 from .utils.config import write_config
-from .utils.tool import startCMD
+from .utils.tool import *
 from common.pyenv import PyenvManager, PyenvVenvManager
 from common.py import PyInterpreter, PyPath
 from common.reg import *
@@ -128,7 +128,11 @@ class SettingWidget(QWidget, Ui_Form):
         self.button_pyenv_path = FolderSettingCardWidget('', "Pyenv 根目录", "pyenv-win", self.card_pyenv)
         self.button_pyenv_path.selector.setFixedWidth(200)
         self.button_pyenv_path.setReadOnly(False)
-        self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
+        # self.button_pyenv_path.textChanged.connect(self.on_button_pyenv_path_textChanged)
+        self.button_pyenv_path.returnPressed.connect(self.on_button_pyenv_path_returnPressed)
+        # self.button_pyenv_path_refresh = PrimaryPushButton(FluentIcon.UPDATE, "更新")
+        # self.button_pyenv_path_refresh.clicked.connect(self.on_button_pyenv_path_refresh_clicked)
+        # self.button_pyenv_path.addWidget(self.button_pyenv_path_refresh)
         self.card_pyenv.addWidget(self.button_pyenv_path)
 
 
@@ -235,6 +239,13 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_venv_install.addWidget(self.lineEdit_venv_install)
         self.widget_pyenv_venv_install.addWidget(self.button_venv_install)
         self.card_pyenv_venv.addWidget(self.widget_pyenv_venv_install)
+
+        self.widget_pyenv_venv_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.envCard)
+        self.button_venv_teminal = PrimaryPushButton(QFluentIcon.googleIcon("Terminal"), "激活并打开")
+        self.button_venv_teminal.clicked.connect(self.on_button_venv_teminal_clicked)
+        self.widget_pyenv_venv_teminal.addStretch(1)
+        self.widget_pyenv_venv_teminal.addWidget(self.button_venv_teminal)
+        self.card_pyenv_venv.addWidget(self.widget_pyenv_venv_teminal)
 
 
 
@@ -373,7 +384,12 @@ class SettingWidget(QWidget, Ui_Form):
             if not self.comboBox_existing.currentText():
                 Message.error("错误", "请设置Pyenv环境", self)
                 return path
-            path = os.path.join(LIBS["pyenv"], "versions", self.comboBox_existing.currentText(), "python.exe")
+            path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "versions", self.comboBox_existing.currentText(), "python.exe")
+        elif self.comboBox_mode.currentText() == "Pyenv-venv 环境":
+            if not self.comboBox_existing.currentText():
+                Message.error("错误", "请设置Pyenv-venv 环境", self)
+                return path
+            path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "envs", self.comboBox_venv_existing.currentText(), "Scripts", "python.exe")
         return path
 
     def new_install(self):
@@ -570,7 +586,7 @@ class SettingWidget(QWidget, Ui_Form):
             self.widget_env.hide()
             self.card_pyenv.show()
             self.card_pyenv_venv.show()
-        elif text == "Pyenv-venv环境":
+        elif text == "Pyenv-venv 环境":
             self.widget_env.hide()
             self.card_pyenv.show()
             self.card_pyenv_venv.show()
@@ -596,13 +612,55 @@ class SettingWidget(QWidget, Ui_Form):
             return
         if not Path(path).is_absolute():
             path = str(Path(path).absolute())
-
+        print("open cmd:", path)
         startCMD(path)
 
     def on_button_pyenv_path_textChanged(self, text):
-        if text:
+        if self.initState:
+            return
+
+        print("mark:", text, os.path.exists(text))
+        if text and os.path.exists(text):
+            print("mark")
             CURRENT_SETTINGS["settings"]["pyenv_path"] = text.replace("/", "\\")
             write_config()
+
+            if self.venvMangerTh.isRunning():
+                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+                return
+
+            print("set pyenv path:", CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setPyenvVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            print("set pyenv path:", self.venvMangerTh.pyenvManger.venvPath)
+            self.venvMangerTh.setCMD("init")
+            self.venvMangerTh.start()
+
+    def on_button_pyenv_path_returnPressed(self):
+        if self.initState:
+            return
+
+        text = self.button_pyenv_path.text()
+        if text and os.path.exists(text):
+            CURRENT_SETTINGS["settings"]["pyenv_path"] = text.replace("/", "\\")
+            write_config()
+
+            if self.venvMangerTh.isRunning():
+                Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+                return
+
+            self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setPyenvVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
+            self.venvMangerTh.setCMD("init")
+            self.venvMangerTh.start()
+
+    def on_button_pyenv_path_refresh_clicked(self):
+        if self.venvMangerTh.isRunning():
+            Message.error("错误", "pyenv忙碌中，请稍后重试", self)
+            return
+
+        self.venvMangerTh.setCMD("init")
+        self.venvMangerTh.start()
 
     def on_button_add_PATH_clicked(self):
         if not is_admin():
@@ -696,6 +754,17 @@ class SettingWidget(QWidget, Ui_Form):
         if not self.initState:
             CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"] = text.replace("/", "\\")
             write_config()
+
+    def on_button_venv_teminal_clicked(self):
+        if not self.comboBox_venv_existing.currentText():
+            Message.error("错误", "请设置pyenv-venv环境", self)
+            return
+
+        path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "bin", "pyenv-venv.bat")
+        if not Path(path).is_absolute():
+            path = str(Path(path).absolute())
+
+        os.system(f' start cmd.exe /K {path} activate {self.comboBox_venv_existing.currentText()}')
 
     def on_comboBox_pip_mirror_url_currentTextChanged(self, text):
         CURRENT_SETTINGS["settings"]["pip_mirror_url"] = text
@@ -876,8 +945,9 @@ class SettingWidget(QWidget, Ui_Form):
             for res in result:
                 res.strip()
                 tmp.append(res.strip())
+
+            self.comboBox_venv_existing.clear()
             if tmp:
-                self.comboBox_venv_existing.clear()
                 self.comboBox_venv_existing.addItems(tmp)
 
             if CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"] in tmp:
@@ -908,6 +978,7 @@ class SettingWidget(QWidget, Ui_Form):
             if "already exists. Please choose another name for the env" in output:
                 Message.error("错误", "环境已存在", self)
             else:
+                self.lineEdit_venv_install.clear()
                 Message.info("成功", "创建成功", self)
 
                 self.venvMangerTh.stop()

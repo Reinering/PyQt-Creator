@@ -14,6 +14,9 @@ import os
 import platform
 import time
 import simplejson as json
+import socket  # Windows 系统
+if os.name == "posix":
+    import fcntl  # Unix 系统
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSplashScreen, QMessageBox
@@ -23,7 +26,7 @@ from PySide6.QtWidgets import QApplication
 import qfluentwidgets
 
 from manage import (
-    UI_CONFIG, LOGLEVEL, LOGFILE, ROOT_PATH,
+    APPNAME, UI_CONFIG, LOGLEVEL, LOGFILE, PIDFILE, ROOT_PATH,
     SettingPath, SettingFile, CURRENT_SETTINGS,
     RUNTIMEENV, BUNDLE_DIR
 )
@@ -32,6 +35,7 @@ from common.pyinstaller import PyinstallerPackage
 from common.nuitka import NuitkaPackage
 from common.pipreqs import Pipreqs
 from common.config import diff_config
+from common.utils import is_admin
 
 
 # from pycrunch_trace.client.api import trace
@@ -68,12 +72,6 @@ def suppress_keyboard_interrupt_message():
             print('do something after Interrupt ...')
 
     sys.excepthook = new_hook
-
-def is_admin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
 
 def create_file(fullPath):
     """
@@ -123,13 +121,37 @@ def setTheme():
     qfluentwidgets.setTheme(theme)
 
 
+def acquire_lock():
+    lock_file = PIDFILE
+    if os.name == "posix":  # Unix 系统
+        fp = open(PIDFILE, "w")
+        try:
+            fcntl.flock(fp.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return fp
+        except IOError:
+            print("另一个 EXE 或脚本实例正在运行")
+            sys.exit(1)
+    elif os.name == "nt":  # Windows 系统
+        try:
+            if os.path.exists(lock_file):
+                os.unlink(lock_file)
+            fp = open(lock_file, "w")
+            fp.write(str(os.getpid()))
+            return fp
+        except OSError:
+            print("另一个 EXE 或脚本实例正在运行")
+            sys.exit(1)
+
+
 # @trace()
 def main(argv=None):
     os_platform = platform.system()
     if argv is None:
         argv = sys.argv
+
     try:
         try:
+            lock = acquire_lock()
 
             # opts, args = getopt.getopt(argv[1:], "h", ["help"])
             log(LOGLEVEL)
@@ -168,8 +190,9 @@ def main(argv=None):
             ui.show()
             if existPic:
                 splash.finish(ui)
-            sys.exit(app.exec())
 
+            lock.close()
+            sys.exit(app.exec())
         except getopt.error as msg:
             raise Usage(msg)
     except Usage as err:

@@ -35,3 +35,20 @@ def startCMD(pyInterpreter):
     os.environ["PYTHONPATH"] = (';').join(pythonPath)
 
     os.system(f' start cmd.exe /K cd /d {pypath}')
+
+def startCMD1(pyInterpreter):
+    (pypath, pyfilename) = os.path.split(pyInterpreter)
+
+    pythonPath = []
+    pythonPath.append(pyInterpreter)
+    pythonPath.append(pypath)
+    pythonPath.append(os.path.join(pypath, "scripts"))
+    pythonPath.append(os.path.join(pypath, "DLLs"))
+    pythonPath.append(os.path.join(pypath, "Lib"))
+    pythonPath.append(os.path.join(pypath, "Lib", "site-packages"))
+    pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "win32"))
+    pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "win32", "lib"))
+    pythonPath.append(os.path.join(pypath, "Lib", "site-packages", "Pythonwin"))
+    os.environ["PYTHONPATH"] = (';').join(pythonPath)
+
+    os.system(f' start cmd.exe /K {pypath}')
