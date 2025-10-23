@@ -11,6 +11,7 @@ import signal
 import psutil
 import subprocess
 import requests
+from pathlib import Path
 
 
 
@@ -67,6 +68,10 @@ class PyPath(Enum):
     PIPREQS = os.path.join(SCRIPTS, "pipreqs.exe")
 
     def path(self, interpreterPath=None):
+        if "envs" in interpreterPath and "Scripts" in interpreterPath:
+            path = Path(interpreterPath)
+            parent_dir = path.parent.parent
+            return os.path.join(parent_dir, self.value)
         if interpreterPath:
             (interpreterFolder, name) = os.path.split(interpreterPath)
             return os.path.join(interpreterFolder, self.value)

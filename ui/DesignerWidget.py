@@ -224,6 +224,11 @@ class DesignerWidget(QWidget, Ui_Form):
                     Message.error("错误", "请设置Pyenv环境", self)
                     return
                 path = os.path.join(LIBS["pyenv"], "versions", CURRENT_SETTINGS["settings"]["pyenv_current_version"], "python.exe")
+            elif CURRENT_SETTINGS["settings"]["mode"] == "Pyenv-venv 环境":
+                if not CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
+                    Message.error("错误", "请设置Pyenv-venv环境", self)
+                    return
+                path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "envs", CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"], "Scripts", "python.exe")
             else:
                 pass
         elif self.comboBox_mode.currentText() == "跟随项目":
@@ -243,8 +248,14 @@ class DesignerWidget(QWidget, Ui_Form):
                     if not CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
                         Message.error("错误", "请设置Pyenv环境", self)
                         return
-                    path = os.path.join(LIBS["pyenv"], "versions",
+                    path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "versions",
                                         CURRENT_SETTINGS["settings"]["pyenv_current_version"], "python.exe")
+                elif CURRENT_SETTINGS["settings"]["mode"] == "Pyenv-venv 环境":
+                    if not CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"]:
+                        Message.error("错误", "请设置Pyenv-venv环境", self)
+                        return
+                    path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "envs",
+                                       CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"], "Scripts", "python.exe")
                 else:
                     pass
         return path
