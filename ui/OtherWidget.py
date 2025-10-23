@@ -322,7 +322,7 @@ class OtherWidget(QWidget, Ui_Form):
                     if not CURRENT_SETTINGS["settings"]["pyenv_current_version"]:
                         Message.error("错误", "请设置Pyenv环境", self)
                         return
-                    path = os.path.join(LIBS["pyenv"], "versions",
+                    path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "versions",
                                         CURRENT_SETTINGS["settings"]["pyenv_current_version"], "python.exe")
                 elif CURRENT_SETTINGS["settings"]["mode"] == "Pyenv-venv 环境":
                     if not CURRENT_SETTINGS["settings"]["pyenv_venv_current_version"]:
