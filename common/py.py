@@ -55,7 +55,8 @@ class PyPath(Enum):
     PYSIDE6_RCC = os.path.join(SCRIPTS, "pyside6-rcc.exe")
 
     QFLUENTEXPAND = "Lib\\site-packages\\qfluentexpand"
-    DESIGNER_PYSIDE6 = os.path.join(QFLUENTEXPAND, "tools\\designer.py")
+    DESIGNER_PYSIDE6 = os.path.join(SCRIPTS, "designer.exe")
+    DESIGNER_PYSIDE6_1 = os.path.join(QFLUENTEXPAND, "tools\\designer.py")
     PYSIDE6_PLUGINS = os.path.join(QFLUENTEXPAND, "plugins")
 
     # pyinstaller
@@ -162,14 +163,6 @@ class PyInterpreter:
     def popen_shell(self, cmd):
         print(f"cmd: {cmd}")
 
-        # self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        # stdout, stderr = self.process.communicate()
-        # print(f"{stdout.decode('gbk'), stderr.decode('gbk')}")
-        # if self.process.returncode == 0:
-        #     return [True, f"{stdout.decode('gbk')}"]
-        # else:
-        #     return (False, f"Error: {stderr.decode('gbk')}", f"Log: {stdout.decode('gbk')}")
-
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         outs = []
         try:
@@ -204,6 +197,15 @@ class PyInterpreter:
         command = list(cmd)
         command.insert(0, self.interpreterPath)
         return self.cmd(command)
+
+    def py_popen1(self, cmd):
+        command = list(cmd)
+        command.insert(0, self.interpreterPath)
+        return self.popen(command)
+
+    def py_popen2(self, cmd):
+        command = list(cmd)
+        return self.popen(command)
 
     def version(self):
         return self.cmd([self.interpreterPath, '--version'])
