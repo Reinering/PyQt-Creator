@@ -287,7 +287,7 @@ class ProjectWidget(QWidget, Ui_Form):
         self.tree.setColumnHidden(2, True)
         self.tree.setColumnHidden(3, True)
 
-        self.menu = RoundMenu(self)
+        self.menu = RoundMenu(parent=self)
         self.menu_opened = False
 
     def on_menu_aboutToHide(self):
@@ -307,7 +307,7 @@ class ProjectWidget(QWidget, Ui_Form):
         self.right_click_timer.setSingleShot(True)
         self.right_click_timer.start(300)  # 300ms 防抖时间
 
-        self.menu = RoundMenu(self)
+        self.menu = RoundMenu(parent=self)
         self.menu.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         try:
             index = self.tree.indexAt(pos)
