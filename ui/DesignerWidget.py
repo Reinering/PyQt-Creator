@@ -105,6 +105,7 @@ class DesignerWidget(QWidget, Ui_Form):
         menu = RoundMenu(parent=self.button_open)
         menu.addAction(Action(FluentIcon.CONNECT, '原生', triggered=self.open_origin))
         menu.addAction(Action(FluentIcon.ALBUM, '插件', triggered=self.open_plugin))
+        menu.addAction(Action(FluentIcon.CLOSE, '停止', triggered=self.open_stop))
         self.button_open.setMenu(menu)
 
         hBoxLayout.addWidget(self.button_open, 0, Qt.AlignmentFlag.AlignRight)
@@ -260,6 +261,14 @@ class DesignerWidget(QWidget, Ui_Form):
                     pass
         return path
 
+    def open_stop(self):
+        if not self.venvMangerTh.isRunning():
+            return
+
+        self.venvMangerTh.stop()
+
+        Message.info("提示", "线程已停止", self)
+
     def open_origin(self):
         if self.venvMangerTh.isRunning():
             Message.error("错误", "env忙碌中，请稍后重试", self)
@@ -269,7 +278,6 @@ class DesignerWidget(QWidget, Ui_Form):
         if not path:
             Message.error("错误", "python解释器获取失败", self)
             return
-        print("mark", path)
         self.venvMangerTh.setPyInterpreter(path)
 
         if self.file_ui.text():
@@ -278,7 +286,7 @@ class DesignerWidget(QWidget, Ui_Form):
             self.venvMangerTh.setCMD("designer", PyPath.PYSIDE6_DESIGNER.path(path), )
         self.venvMangerTh.start()
 
-        self.button_open.setEnabled(False)
+        # self.button_open.setEnabled(False)
 
     def open_plugin(self):
         if self.venvMangerTh.isRunning():
@@ -292,12 +300,12 @@ class DesignerWidget(QWidget, Ui_Form):
 
         self.venvMangerTh.setPyInterpreter(path)
         if self.file_ui.text():
-            self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), self.file_ui.text())
+            self.venvMangerTh.setCMD("designer_plugin1", PyPath.DESIGNER_PYSIDE6.path(path), self.file_ui.text())
         else:
             self.venvMangerTh.setCMD("designer_plugin", PyPath.DESIGNER_PYSIDE6.path(path), )
         self.venvMangerTh.start()
 
-        self.button_open.setEnabled(False)
+        # self.button_open.setEnabled(False)
 
         Message.info("提示", "启动带插件的designer，有时会卡住，请耐心等候。正常开启后若要关闭请稍等20s...", self)
 
@@ -421,14 +429,17 @@ class DesignerWidget(QWidget, Ui_Form):
 
             Message.info("成功", "安装成功", self)
         elif cmd == "designer":
-            self.button_open.setEnabled(True)
+            # self.button_open.setEnabled(True)
             if not result[0]:
                 Message.error("错误", output, self)
                 return
         elif "designer_plugin" in cmd:
-            self.button_open.setEnabled(True)
+            # self.button_open.setEnabled(True)
             if not result[0]:
-                Message.error("错误", output, self)
+                if  output == str:
+                    Message.error("错误", output, self)
+                else:
+                    Message.error("错误", "运行错误", self)
                 return
         elif "thirdplugin" in cmd:
             self.button_designer_thirdplugin.setEnabled(True)
@@ -463,7 +474,12 @@ class VenvManagerThread(QThread):
         self.stopBool = False
 
     def stop(self):
-        self.stop = True
+        try:
+            self.stopBool = True
+            self.pyI.stop()
+            self.terminate()
+        except Exception as e:
+            print(e)
 
     def setCMD(self, cmd, *args, **kwargs):
         self.cmd = cmd
@@ -510,10 +526,10 @@ class VenvManagerThread(QThread):
             result = self.pyI.cmd(self.args)
             self.signal_result.emit(cmd, result)
         elif cmd == "designer_plugin":
-            result = self.pyI.py_popen(self.args)
+            result = self.pyI.py_popen1(self.args)
             self.signal_result.emit(cmd, result)
         elif cmd == "designer_plugin1":
-            result = designer.main()
+            result = self.pyI.py_popen2(self.args)
             self.signal_result.emit(cmd, result)
         else:
             self.signal_result.emit(cmd, ["False", "未知命令"])

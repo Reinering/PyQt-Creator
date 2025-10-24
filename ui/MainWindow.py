@@ -155,7 +155,7 @@ class MainWindow(FluentWindow, Ui_Form):
 
     # 添加托盘
     def addSystemTray(self):
-        self.trayIconMenu = RoundMenu(self)
+        self.trayIconMenu = RoundMenu(parent=self)
         self.settingAction = Action(FluentIcon.SETTING, "&设置", triggered=lambda: self.showSetting())
         self.trayIconMenu.addAction(self.settingAction)
         self.trayIconMenu.addSeparator()
