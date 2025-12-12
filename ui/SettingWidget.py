@@ -45,8 +45,9 @@ from .utils.tool import *
 from common.pyenv import PyenvManager, PyenvVenvManager
 from common.py import PyInterpreter, PyPath
 from common.reg import *
+from common.launch import getAutoLaunch, setAutoLaunch
 from common.utils import is_admin
-from manage import VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS, BUNDLE_DIR
+from manage import APPNAME, VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS, BUNDLE_DIR, EXECUTABLE_PATH
 
 
 class SettingWidget(QWidget, Ui_Form):
@@ -142,7 +143,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_PATH.addStretch(1)
         self.widget_pyenv_PATH.addWidget(self.button_add_PATH)
         self.card_pyenv.addWidget(self.widget_pyenv_PATH)
-
 
         self.widget_pyenv_existing = SettingCardWidget('', '现有环境', '', self.card_pyenv)
         self.spinner_existing = GifLabel(self.card_pyenv)
@@ -247,10 +247,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_venv_teminal.addWidget(self.button_venv_teminal)
         self.card_pyenv_venv.addWidget(self.widget_pyenv_venv_teminal)
 
-
-
-
-
         self.card_pip = SettingGroupCard(FluentIcon.SETTING, "Pip 设置", "",
                                            self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pip, 5, 0, 1, 1)
@@ -300,10 +296,21 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_editor.addWidget(self.comboBox_editor_file)
         self.card_editor.addWidget(self.widget_editor)
 
+        self.card_system = SettingGroupCard(FluentIcon.SETTING, "系统设置", "",
+                                         self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_system, 7, 0, 1, 1)
+
+        self.autoLaunch = SwitchSettingCardWidget(FluentIcon.PLAY, "自启动", "AutoLaunch", self.card_system)
+        self.autoLaunch.setOffText("Off")
+        self.autoLaunch.setOnText("On")
+        # self.autoLaunch.switch.checkedChanged.connect(self.on_autoLaunch_switch_checkedChanged)
+        self.card_system.addWidget(self.autoLaunch)
+
+
 
         self.card_about = SettingGroupCard(FluentIcon.SETTING, "关于", "",
                                           self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_about, 7, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_about, 8, 0, 1, 1)
 
         line_version = LineSettingCardWidget('', "版本", "", self.card_about)
         line_version.setText(VERSION)
@@ -371,6 +378,12 @@ class SettingWidget(QWidget, Ui_Form):
 
         if check_path_in_path(os.path.join("%PYENV_HOME%", 'bin'), "system"):
             self.button_add_PATH.setEnabled(False)
+
+        if getAutoLaunch(APPNAME):
+            self.autoLaunch.setChecked(True)
+        else:
+            self.autoLaunch.setChecked(False)
+        self.autoLaunch.switch.checkedChanged.connect(self.on_autoLaunch_switch_checkedChanged)
 
     def getPyPath(self):
         path = ""
@@ -815,6 +828,9 @@ class SettingWidget(QWidget, Ui_Form):
             CURRENT_SETTINGS["settings"]["theme"] = "Light"
 
         write_config()
+
+    def on_autoLaunch_switch_checkedChanged(self, state):
+        setAutoLaunch(APPNAME, EXECUTABLE_PATH, enable=state)
 
     def receive_VMresult(self, cmd, result, isClose=True):
         print(f"receive_VMresult: {cmd}, {result}")

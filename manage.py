@@ -68,18 +68,18 @@ UI_CONFIG = {
     }
 }
 
-# if getattr(sys, 'frozen', False):
-#     BUNDLE_DIR = sys._MEIPASS
-#     RUNTIMEENV = "bundle"
-#     UI_CONFIG["startLogo"] = os.path.join(BUNDLE_DIR, UI_CONFIG["startLogo"])
-#
-#     LIBSPATH = os.path.join(BUNDLE_DIR, "libs")
-# else:
-
-BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
+RUNTIMEENV = "scripts"
+BUNDLE_DIR = ROOT_PATH
+EXECUTABLE_PATH = None
 
 if getattr(sys, 'frozen', False) or '__compiled__' in globals():
     print("可能是打包的 EXE 文件")
+    RUNTIMEENV = "bundle"
+    BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
+    EXECUTABLE_PATH = os.path.abspath(sys.executable)
+else:
+    EXECUTABLE_PATH = sys.argv[0]
+
 
 LIBSPATH = os.path.join("libs")
 
