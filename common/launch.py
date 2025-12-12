@@ -7,6 +7,7 @@ email: nbxlc@hotmail.com
 
 
 import os
+import sys
 import platform
 
 
@@ -34,10 +35,13 @@ def getAutoLaunch(app_name):
     else:
         return False
 
-def setAutoLaunch(app_name, app_path, enable=True):
+def setAutoLaunch(app_name, app_path, enable=True, isHidden=False):
     if os_platform == "Windows":
         from .reg import set_reg_value, delete_reg_value
         if enable:
+            if isHidden:
+                app_path = f'"{app_path}" --hidden'
+
             set_reg_value(
                 r"Software\Microsoft\Windows\CurrentVersion\Run",
                 app_name,
@@ -67,3 +71,12 @@ def setAutoLaunch(app_name, app_path, enable=True):
             add_login_item(app_name, app_path)
         else:
             remove_login_item(app_name)
+
+def create_startup_shortcut(app_name, app_path):
+    import shutil
+
+    startup_folder = os.path.join(os.environ['APPDATA'], 'Microsoft\\Windows\\Start Menu\\Programs\\Startup')
+    shortcut_path = os.path.join(startup_folder, app_name + '.lnk')
+
+    # 将自身的可执行文件复制到启动文件夹
+    shutil.copy2(app_path, shortcut_path)

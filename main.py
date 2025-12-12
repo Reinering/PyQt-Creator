@@ -26,7 +26,7 @@ from PySide6.QtWidgets import QApplication
 import qfluentwidgets
 
 from manage import (
-    APPNAME, UI_CONFIG, LOGLEVEL, LOGFILE, PIDFILE, ROOT_PATH,
+    UI_CONFIG, LOGLEVEL, LOGFILE, PIDFILE, ROOT_PATH,
     SettingPath, SettingFile, CURRENT_SETTINGS,
     RUNTIMEENV, BUNDLE_DIR
 )
@@ -145,7 +145,7 @@ def acquire_lock():
 
 # @trace()
 def main(argv=None):
-    os_platform = platform.system()
+
     if argv is None:
         argv = sys.argv
 
@@ -191,6 +191,9 @@ def main(argv=None):
             if existPic:
                 splash.finish(ui)
 
+            if '--hidden' in sys.argv:
+                ui.hide()
+
             lock.close()
             sys.exit(app.exec())
         except getopt.error as msg:
@@ -207,7 +210,7 @@ if __name__ == "__main__":
     suppress_keyboard_interrupt_message()
 
     # 判断程序运行环境: pyinstaller or pycharm
-    if RUNTIMEENV == "pyinstaller":
+    if RUNTIMEENV == "bundle":
         # running in a bundle
         # # 强制以管理员权限运行
         if is_admin():

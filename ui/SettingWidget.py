@@ -830,7 +830,7 @@ class SettingWidget(QWidget, Ui_Form):
         write_config()
 
     def on_autoLaunch_switch_checkedChanged(self, state):
-        setAutoLaunch(APPNAME, EXECUTABLE_PATH, enable=state)
+        setAutoLaunch(APPNAME, EXECUTABLE_PATH, enable=state, isHidden=True)
 
     def receive_VMresult(self, cmd, result, isClose=True):
         print(f"receive_VMresult: {cmd}, {result}")
