@@ -68,7 +68,6 @@ UI_CONFIG = {
     }
 }
 
-RUNTIMEENV = "scripts"
 BUNDLE_DIR = ROOT_PATH
 EXECUTABLE_PATH = None
 
@@ -77,9 +76,9 @@ if getattr(sys, 'frozen', False) or '__compiled__' in globals():
     RUNTIMEENV = "bundle"
     BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
     EXECUTABLE_PATH = os.path.abspath(sys.executable)
+    ROOT_PATH = os.path.dirname(EXECUTABLE_PATH)
 else:
     EXECUTABLE_PATH = sys.argv[0]
-
 
 LIBSPATH = os.path.join("libs")
 
