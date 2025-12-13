@@ -36,6 +36,19 @@ ROOT_PATH = os.getcwd()
 
 EncodingFormat = 'gbk'
 
+BUNDLE_DIR = ROOT_PATH
+EXECUTABLE_PATH = None
+
+if getattr(sys, 'frozen', False) or '__compiled__' in globals():
+    print("可能是打包的 EXE 文件")
+    RUNTIMEENV = "bundle"
+    BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
+    EXECUTABLE_PATH = os.path.abspath(sys.executable)
+    ROOT_PATH = os.path.dirname(EXECUTABLE_PATH)
+else:
+    EXECUTABLE_PATH = sys.argv[0]
+
+
 SettingPath = "./data"
 SettingFile = "setting.json"
 
@@ -67,18 +80,6 @@ UI_CONFIG = {
         "ThemeMode": "Dark"
     }
 }
-
-BUNDLE_DIR = ROOT_PATH
-EXECUTABLE_PATH = None
-
-if getattr(sys, 'frozen', False) or '__compiled__' in globals():
-    print("可能是打包的 EXE 文件")
-    RUNTIMEENV = "bundle"
-    BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
-    EXECUTABLE_PATH = os.path.abspath(sys.executable)
-    ROOT_PATH = os.path.dirname(EXECUTABLE_PATH)
-else:
-    EXECUTABLE_PATH = sys.argv[0]
 
 LIBSPATH = os.path.join("libs")
 

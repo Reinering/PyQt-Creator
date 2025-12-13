@@ -22,7 +22,8 @@ from qfluentwidgets import (
     ScrollArea,
     CardWidget, IconWidget, ComboBox,
     RoundMenu,
-    Action
+    Action,
+    LineEdit
 )
 from qfluentwidgets.common.icon import isDarkTheme, FluentIconBase, FluentIconBase as FIF, FluentIcon
 
@@ -161,6 +162,7 @@ class OtherWidget(QWidget, Ui_Form):
         menu.addAction(Action(FluentIcon.PRINT, '安装', triggered=self.pipreqs_install))
         menu.addAction(Action(FluentIcon.UPDATE, '更新', triggered=self.pipreqs_upgrade))
         menu.addAction(Action(FluentIcon.ROBOT, '卸载', triggered=self.pipreqs_uninstall))
+        menu.addAction(Action(FluentIcon.ROBOT, '配置', triggered=self.pipreqs_edit))
         self.button_pipreqs.setMenu(menu)
         widget_pipreqs.addStretch(1)
         widget_pipreqs.addWidget(self.spinner_pipreqs)
@@ -345,6 +347,13 @@ class OtherWidget(QWidget, Ui_Form):
     def pipreqs_uninstall(self):
         if self.pipreqs("pipreqs_uninstall", "pipreqs"):
             Message.info("提示", "卸载中，请稍后", self)
+
+    def pipreqs_edit(self):
+        if not os.path.exists(os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")):
+            Message.error("错误", "配置文件不存在", self)
+            return
+
+        threading.Thread(target=lambda: subprocess.Popen(f'notepad {os.path.join(ROOT_PATH, SettingPath, "pipreqs.json")}', shell=True, creationflags=subprocess.CREATE_NO_WINDOW)).start()
 
     def pipreqs(self, cmd, args):
         if self.venvMangerTh.isRunning():
