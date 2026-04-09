@@ -151,10 +151,12 @@ def main(argv=None):
 
     try:
         try:
+            # log enable
+            log(LOGLEVEL)
+
             lock = acquire_lock()
 
             # opts, args = getopt.getopt(argv[1:], "h", ["help"])
-            log(LOGLEVEL)
             app = QApplication(sys.argv)
             app.setAttribute(Qt.ApplicationAttribute.AA_DontCreateNativeWidgetSiblings)
 
@@ -167,9 +169,6 @@ def main(argv=None):
 
             # 设置theme
             setTheme()
-
-            # log enable
-            log(LOGLEVEL)
 
             # internationalization i18n setting
             # fluentTranslator = FluentTranslator(UI_CONFIG["MainWindow"]["Language"])

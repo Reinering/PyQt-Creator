@@ -38,21 +38,32 @@ class PyPath(Enum):
 
     # pyqt5
     PYQT5 = "Lib\\site-packages\\PyQt5"
+    QT5_APPLICATIONS = "Lib\\site-packages\\qt5_applications"
     PYQT5_DESIGNER = os.path.join(PYQT5, "designer.exe")
     PYQT5_UIC = os.path.join(SCRIPTS, "pyuic6.exe")
     PYQT5_RCC = os.path.join(SCRIPTS, "pyrcc5.exe")
+    PYQT5_LUPDATE = os.path.join(SCRIPTS, "pylupdate5.exe")
+    PYQT5_LINGUIST = os.path.join(QT5_APPLICATIONS, "Qt", "bin", "linguist.exe")
+    PYQT5_LRELEASE = os.path.join(QT5_APPLICATIONS, "Qt", "bin", "lrelease.exe")
 
     # pyqt6
     PYQT6 = "Lib\\site-packages\\PyQt6"
+    QT6_APPLICATIONS = "Lib\\site-packages\\qt6_applications"
     PYQT6_DESIGNER = os.path.join(PYQT6, "designer.exe")
     PYQT6_UIC = os.path.join(SCRIPTS, "pyuic6.exe")
     PYQT6_RCC = os.path.join(SCRIPTS, "pyrcc6.exe")
+    PYQT6_LUPDATE = os.path.join(SCRIPTS, "pylupdate6.exe")
+    PYQT6_LINGUIST = os.path.join(QT6_APPLICATIONS, "Qt", "bin", "linguist.exe")
+    PYQT6_LRELEASE = os.path.join(QT6_APPLICATIONS, "Qt", "bin", "lrelease.exe")
 
     # pyside6
     PYSIDE6 = "Lib\\site-packages\\PySide6"
     PYSIDE6_DESIGNER = os.path.join(PYSIDE6, "designer.exe")
     PYSIDE6_UIC = os.path.join(SCRIPTS, "pyside6-uic.exe")
     PYSIDE6_RCC = os.path.join(SCRIPTS, "pyside6-rcc.exe")
+    PYSIDE6_LINGUIST = os.path.join(SCRIPTS, "pyside6-linguist.exe")
+    PYSIDE6_LRELEASE = os.path.join(SCRIPTS, "pyside6-lrelease.exe")
+    PYSIDE6_LUPDATE = os.path.join(SCRIPTS, "pyside6-lupdate.exe")
 
     QFLUENTEXPAND = "Lib\\site-packages\\qfluentexpand"
     DESIGNER_PYSIDE6 = os.path.join(SCRIPTS, "designer.exe")
@@ -206,6 +217,9 @@ class PyInterpreter:
     def py_popen2(self, cmd):
         command = list(cmd)
         return self.popen(command)
+
+    def py_popen3(self, cmd):
+        return self.popen(cmd)
 
     def version(self):
         return self.cmd([self.interpreterPath, '--version'])

@@ -168,6 +168,9 @@ class MainWindow(FluentWindow, Ui_Form):
         self.trayIcon.activated.connect(self.handle_click)
         self.trayIcon.show()
 
+    def showSetting(self):
+        pass
+
     # 显示或最小化
     def switchWindowState(self):
         if self.windowsState == "show":

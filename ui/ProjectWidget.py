@@ -27,7 +27,7 @@ from PIL import Image
 from pathlib import Path
 
 from qfluentwidgets import (
-    CardWidget,
+    CardWidget, SubtitleLabel, LineEdit,
     TitleLabel, CaptionLabel, BodyLabel, StrongBodyLabel,
     ComboBox,
     PrimaryPushButton, TransparentDropDownPushButton, PrimaryDropDownPushButton,
@@ -36,7 +36,7 @@ from qfluentwidgets import (
     Action,
     RoundMenu,
     setFont,
-    MessageBox
+    MessageBox, MessageBoxBase
 )
 from qfluentwidgets.common.icon import FluentIcon
 from qfluentexpand.components.card.settingcard import SettingGroupCard
@@ -48,6 +48,7 @@ from qfluentexpand.icongenie.icon import QFluentIcon
 # from qfluentexpand.components.widgets.menu import RoundMenu
 
 from .Ui_ProjectWidget import Ui_Form
+from common.utils import get_all_source_files
 from .GenerateCodeDialog import GenerateCodeDialog
 from .SVGViewerDialog import SVGViewerDialog
 from .SVGEditorDialog import SVGEditorDialog
@@ -354,6 +355,7 @@ class ProjectWidget(QWidget, Ui_Form):
                         # menu.addMenu(submenu_designer)
                         # submenu_designer.addAction(Action(FluentIcon.PASTE, 'designer', triggered=lambda path=file_path: self.tree_ui_designer(file_path)))
 
+                        self.menu.addAction(Action(FluentIcon.CODE, 'lupdate', triggered=lambda path=file_path: self.tree_lupdate(file_path)))
                         self.menu.addAction(Action(FluentIcon.CODE, '编译', triggered=lambda path=file_path: self.tree_ui_complie(file_path)))
                         self.menu.addAction(Action(FluentIcon.CODE, '生成代码', triggered=lambda path=file_path: self.tree_generate_code(file_path)))
                     elif suffix == ".qrc":
@@ -370,8 +372,16 @@ class ProjectWidget(QWidget, Ui_Form):
                         if suffix == ".py":
                             self.menu.addAction(Action(FluentIcon.PRINT, '运行', triggered=lambda path=file_path: self.tree_py_run(file_path)))
                             self.menu.addAction(Action(FluentIcon.ROBOT, '打包成exe', triggered=lambda path=file_path: self.tree_py_pack(file_path)))
+                            self.menu.addAction(Action(FluentIcon.PRINT, 'lupdate', triggered=lambda path=file_path: self.tree_lupdate(file_path)))
+                        elif suffix == ".ui":
+                            self.menu.addAction(Action(FluentIcon.PRINT, 'lupdate', triggered=lambda path=file_path: self.tree_lupdate(file_path)))
+                        elif suffix == ".ts":
+                            self.menu.addAction(Action(FluentIcon.PRINT, 'linguist', triggered=lambda path=file_path: self.tree_linguist(file_path)))
+                            self.menu.addAction(Action(FluentIcon.PRINT, 'lrelease', triggered=lambda path=file_path: self.tree_lrelease(file_path)))
+
                 else:
                     # menu.addSeparator()
+                    self.menu.addAction(Action(FluentIcon.PRINT, 'lupdate', triggered=lambda path=file_path: self.tree_lupdate(file_path)))
                     pass
 
                 # menu.addAction(Action(FluentIcon.COPY, '通过vscode打开', triggered=lambda path=file_path: self.tree_open_vscode(file_path)))
@@ -576,6 +586,116 @@ class ProjectWidget(QWidget, Ui_Form):
             print(e)
             logging.error(e)
             Message.error("错误", "编辑器打开失败", self)
+
+    def tree_lupdate(self, file_path):
+        if not file_path:
+            Message.error("错误", "文件/路径不能为空", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+
+        dialog = FilePathMessageBox(self)
+        if dialog.exec():
+            if dialog.urlLineEdit.text() == '':
+                return
+        else:
+            return
+
+        filename = dialog.urlLineEdit.text()
+
+        cmd = []
+        if self.comboBox_project_type.currentText() == "PySide2":
+            cmd.append(PyPath.PYSIDE6_LUPDATE.path(path))
+        elif self.comboBox_project_type.currentText() == "PySide6":
+            cmd.append(PyPath.PYSIDE6_LUPDATE.path(path))
+        elif self.comboBox_project_type.currentText() == "PyQt5":
+            cmd.append(PyPath.PYQT5_LUPDATE.path(path))
+        elif self.comboBox_project_type.currentText() == "PyQt6":
+            cmd.append(PyPath.PYQT6_LUPDATE.path(path))
+
+        if os.path.isfile(file_path):
+            (filePath, fileName) = os.path.split(file_path)
+            (name, suffix) = os.path.splitext(file_path)
+
+            cmd.append(file_path)
+            cmd.append('-ts')
+            cmd.append(os.path.join(filePath, filename + '.ts'))
+        else:
+            files = get_all_source_files(file_path)
+            if (len(files) == 0):
+                return
+
+            cmd.extend(files)
+            cmd.append('-ts')
+            cmd.append(os.path.join(file_path, filename + '.ts'))
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("lupdate", ' '.join(cmd))
+        self.venvMangerTh.start()
+
+        self.spinner_project.setState(True)
+        self.spinner_project.show()
+
+    def tree_linguist(self, file_path):
+        if not file_path:
+            Message.error("错误", "文件路径不能为空", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+
+        cmd = ''
+        if self.comboBox_project_type.currentText() == "PySide2":
+            cmd = PyPath.PYSIDE6_LINGUIST.path(path)
+        elif self.comboBox_project_type.currentText() == "PySide6":
+            cmd = PyPath.PYSIDE6_LINGUIST.path(path)
+        elif self.comboBox_project_type.currentText() == "PyQt5":
+            cmd = PyPath.PYQT5_LINGUIST.path(path)
+        elif self.comboBox_project_type.currentText() == "PyQt6":
+            cmd = PyPath.PYQT6_LINGUIST.path(path)
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("linguist", cmd, file_path)
+        self.venvMangerTh.start()
+
+        self.spinner_project.setState(True)
+        self.spinner_project.show()
+
+    def tree_lrelease(self, file_path):
+        if not file_path:
+            Message.error("错误", "文件路径不能为空", self)
+            return
+
+        path = self.getPyPath()
+        if not path:
+            Message.error("错误", "python解释器获取失败", self)
+            return False
+
+        cmd = ''
+        if self.comboBox_project_type.currentText() == "PySide2":
+            cmd = PyPath.PYSIDE6_LRELEASE.path(path)
+        elif self.comboBox_project_type.currentText() == "PySide6":
+            cmd = PyPath.PYSIDE6_LRELEASE.path(path)
+        elif self.comboBox_project_type.currentText() == "PyQt5":
+            cmd = PyPath.PYQT5_LRELEASE.path(path)
+        elif self.comboBox_project_type.currentText() == "PyQt6":
+            cmd = PyPath.PYQT6_LRELEASE.path(path)
+
+        (filePath, fileName) = os.path.split(file_path)
+        (name, suffix) = os.path.splitext(file_path)
+        outFile = os.path.join(filePath, name + '.qm')
+
+        self.venvMangerTh.setPyInterpreter(path)
+        self.venvMangerTh.setCMD("lrelease", cmd, file_path, '-qm', outFile)
+        self.venvMangerTh.start()
+
+        self.spinner_project.setState(True)
+        self.spinner_project.show()
 
     def tree_py_run(self, file_path):
 
@@ -823,7 +943,10 @@ class ProjectWidget(QWidget, Ui_Form):
         if isinstance(result[1], list) and len(result[1]) > 5:
             output = result[1][-5:]
         else:
-            output = result[1]
+            if isinstance(result[1], list):
+                output = '\n'.join(result[1])
+            else:
+                output = result[1]
 
         if cmd == "init":
             pass
@@ -834,7 +957,7 @@ class ProjectWidget(QWidget, Ui_Form):
             self.label_ver.setText("版本: " + result[1].strip('\n'))
             CURRENT_SETTINGS["project"]["custom_python_path"] = self.button_filepath.text()
             write_config()
-        elif "generate_code" in cmd or "compile_rcc" in cmd:
+        elif "generate_code" in cmd or "compile_rcc" in cmd or "lupdate" in cmd or "lrelease" in cmd:
             self.spinner_project.setState(False)
             self.spinner_project.hide()
 
@@ -844,6 +967,13 @@ class ProjectWidget(QWidget, Ui_Form):
 
             Message.info("提示", "生成成功", self)
         elif "designer" in cmd:
+            if not result[0]:
+                Message.error("错误", output, self)
+                return
+        elif "linguist" in cmd:
+            self.spinner_project.setState(False)
+            self.spinner_project.hide()
+
             if not result[0]:
                 Message.error("错误", output, self)
                 return
@@ -908,5 +1038,31 @@ class VenvManagerThread(QThread):
         elif cmd == "designer_plugin":
             result = self.pyI.py_popen(self.args)
             self.signal_result.emit(cmd, result)
+        elif cmd == "lupdate":
+            result = self.pyI.py_popen3(self.args[0])
+            self.signal_result.emit(cmd, result)
+        elif cmd == "lrelease" or cmd == "linguist":
+            result = self.pyI.py_popen(self.args)
+            self.signal_result.emit(cmd, result)
         else:
             self.signal_result.emit(cmd, ["False", "未知命令"])
+
+
+class FilePathMessageBox(MessageBoxBase):
+    """ Custom message box """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.titleLabel = SubtitleLabel('输入生成的文件名')
+        self.urlLineEdit = LineEdit()
+
+        self.urlLineEdit.setPlaceholderText('输入文件名(可含相对路径)')
+        self.urlLineEdit.setClearButtonEnabled(True)
+
+        # 将组件添加到布局中
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.urlLineEdit)
+
+        # 设置对话框的最小宽度
+        self.widget.setMinimumWidth(350)
+
