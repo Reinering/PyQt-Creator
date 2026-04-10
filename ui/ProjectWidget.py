@@ -818,6 +818,20 @@ class ProjectWidget(QWidget, Ui_Form):
             Message.error("错误", "python解释器获取失败", self)
             return False
 
+        (filePath, fileName) = os.path.split(file_path)
+        (file_name, suffix) = os.path.splitext(fileName)
+
+        writeFolder = ''
+
+        dialog = FolderMessageBox(filePath, self)
+        if dialog.exec():
+            if dialog.folder.text() != '':
+                writeFolder = dialog.folder.text()
+            else:
+                writeFolder = filePath
+        else:
+            return
+
         cmd = ''
         if self.comboBox_project_type.currentText() == "PySide2":
             cmd = PyPath.PYSIDE6_RCC.path(path)
@@ -828,9 +842,8 @@ class ProjectWidget(QWidget, Ui_Form):
         elif self.comboBox_project_type.currentText() == "PyQt6":
             Message.info("提示", "PyQt6没有rcc,使用PySide6的rcc进行编译", self)
             cmd = PyPath.PYSIDE6_RCC.path(path)
-        (filePath, fileName) = os.path.split(file_path)
-        (file_name, suffix) = os.path.splitext(fileName)
-        outFile = os.path.join(filePath, file_name + '_rc.py')
+
+        outFile = os.path.join(writeFolder, file_name + '_rc.py')
 
         self.venvMangerTh.setPyInterpreter(path)
         self.venvMangerTh.setCMD("compile_rcc", cmd, file_path, '-o', outFile, self.comboBox_project_type.currentText())
@@ -1059,6 +1072,25 @@ class VenvManagerThread(QThread):
             self.signal_result.emit(cmd, result)
         else:
             self.signal_result.emit(cmd, ["False", "未知命令"])
+
+
+class FolderMessageBox(MessageBoxBase):
+    """ Custom message box """
+
+    def __init__(self, ParentFolder = '/', parent=None):
+        super().__init__(parent)
+        self.titleLabel = SubtitleLabel('生成的文件目录', self)
+        self.viewLayout.addWidget(self.titleLabel)
+
+        self.folder = FolderPathSelector(self)
+        self.folder.setPlaceholderText("选择输出目录(默认为当前目录)")
+        self.folder.setParentFolder(ParentFolder)
+        self.folder.setReadOnly(False)
+        self.folder.setMinimumWidth(300)
+        self.viewLayout.addWidget(self.folder)
+
+        # 设置对话框的最小宽度
+        self.widget.setMinimumWidth(350)
 
 
 class FilePathMessageBox(MessageBoxBase):
