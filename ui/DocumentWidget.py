@@ -126,6 +126,15 @@ class DocumentWidget(QWidget, Ui_Form):
         self.card_setuptools.clicked.connect(self.open_setuptools)
         self.gridLayout1.addWidget(self.card_setuptools, 4, 0, 1, 1)
 
+        self.card_i18n = PrimaryPushSettingCard(
+            text="打开",
+            icon=APPICON.SOURCE,
+            title="I18N",
+            content="文档"
+        )
+        # self.card_i18n.clicked.connect(self.open_setuptools)
+        self.gridLayout1.addWidget(self.card_i18n, 5, 0, 1, 1)
+
         verticalSpacer = QSpacerItem(0, 1000, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.gridLayout1.addItem(verticalSpacer)
 
