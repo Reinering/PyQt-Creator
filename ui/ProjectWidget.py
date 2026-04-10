@@ -39,8 +39,9 @@ from qfluentwidgets import (
     MessageBox, MessageBoxBase
 )
 from qfluentwidgets.common.icon import FluentIcon
+from qfluentexpand.components.combox.combo_box import MSEComboBox, MSECComboBox, MSComboBox
 from qfluentexpand.components.card.settingcard import SettingGroupCard
-from qfluentexpand.components.line.selector import FilePathSelector
+from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
 from qfluentexpand.components.label.label import GifLabel
 from qfluentexpand.common.gif import APPGIF
 from qfluentexpand.components.widgets.card import SettingCardWidget, ComboBoxSettingCardWidget, FileSettingCardWidget
@@ -597,14 +598,26 @@ class ProjectWidget(QWidget, Ui_Form):
             Message.error("错误", "python解释器获取失败", self)
             return False
 
-        dialog = FilePathMessageBox(self)
+        parentFolder = '/'
+        if os.path.isfile(file_path):
+            (filePath, fileName) = os.path.split(file_path)
+            (name, suffix) = os.path.splitext(file_path)
+
+            parentFolder = filePath
+        else:
+            parentFolder = file_path
+
+
+        dialog = FilePathMessageBox(parentFolder, self)
         if dialog.exec():
-            if dialog.urlLineEdit.text() == '':
+            if len(dialog.mSEComboBox.selectedTexts()) == 0:
                 return
         else:
             return
 
-        filename = dialog.urlLineEdit.text()
+        writeFolder = parentFolder
+        if dialog.folder.text() != '':
+            writeFolder = dialog.folder.text()
 
         cmd = []
         if self.comboBox_project_type.currentText() == "PySide2":
@@ -617,22 +630,22 @@ class ProjectWidget(QWidget, Ui_Form):
             cmd.append(PyPath.PYQT6_LUPDATE.path(path))
 
         if os.path.isfile(file_path):
-            (filePath, fileName) = os.path.split(file_path)
-            (name, suffix) = os.path.splitext(file_path)
-
             cmd.append(file_path)
-            cmd.append('-ts')
-            cmd.append(os.path.join(filePath, filename + '.ts'))
+            for text in dialog.mSEComboBox.selectedTexts():
+                cmd.append('-ts')
+                cmd.append(os.path.join(writeFolder, text + '.ts'))
         else:
             files = get_all_source_files(file_path)
             if (len(files) == 0):
                 return
-
             cmd.extend(files)
-            cmd.append('-ts')
-            cmd.append(os.path.join(file_path, filename + '.ts'))
+
+            for text in dialog.mSEComboBox.selectedTexts():
+                cmd.append('-ts')
+                cmd.append(os.path.join(writeFolder, text + '.ts'))
 
         self.venvMangerTh.setPyInterpreter(path)
+        # self.venvMangerTh.setCMD("lupdate", cmd[0], "-recursive", file_path, "-extensions", " py,ui", '-ts', os.path.join(file_path, filename + '.ts'))
         self.venvMangerTh.setCMD("lupdate", ' '.join(cmd))
         self.venvMangerTh.start()
 
@@ -1051,17 +1064,26 @@ class VenvManagerThread(QThread):
 class FilePathMessageBox(MessageBoxBase):
     """ Custom message box """
 
-    def __init__(self, parent=None):
+    def __init__(self, ParentFolder = '/', parent=None):
         super().__init__(parent)
-        self.titleLabel = SubtitleLabel('输入生成的文件名')
-        self.urlLineEdit = LineEdit()
-
-        self.urlLineEdit.setPlaceholderText('输入文件名(可含相对路径)')
-        self.urlLineEdit.setClearButtonEnabled(True)
-
-        # 将组件添加到布局中
+        self.titleLabel = SubtitleLabel('生成语言文件', self)
         self.viewLayout.addWidget(self.titleLabel)
-        self.viewLayout.addWidget(self.urlLineEdit)
+
+        self.folder = FolderPathSelector(self)
+        self.folder.setPlaceholderText("选择输出目录(默认为当前目录)")
+        self.folder.setParentFolder(ParentFolder)
+        self.folder.setReadOnly(False)
+        self.folder.setMinimumWidth(300)
+        self.viewLayout.addWidget(self.folder)
+
+        items = ['zh_CN', 'en_US']
+        self.mSEComboBox = MSComboBox(self)
+        self.mSEComboBox.setMinimumWidth(300)
+        self.mSEComboBox.setPlaceholderText("选择需要生成的语言")
+        self.mSEComboBox.addItems(items)
+        self.mSEComboBox.setCurrentIndex(-1)
+        self.mSEComboBox.setRowSize(3)
+        self.viewLayout.addWidget(self.mSEComboBox)
 
         # 设置对话框的最小宽度
         self.widget.setMinimumWidth(350)
