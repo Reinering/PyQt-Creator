@@ -115,13 +115,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_env.addWidget(self.button_filepath)
         self.envCard.addWidget(self.widget_env)
 
-        self.widget_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.envCard)
-        self.button_teminal = PrimaryPushButton(QFluentIcon.googleIcon("Terminal"), "打开")
-        self.button_teminal.clicked.connect(self.on_button_teminal_clicked)
-        self.widget_teminal.addStretch(1)
-        self.widget_teminal.addWidget(self.button_teminal)
-        self.envCard.addWidget(self.widget_teminal)
-
         self.card_pyenv = SettingGroupCard(FluentIcon.SETTING, "Pyenv 虚拟环境管理", "https://github.com/pyenv-win/pyenv-win",
                                           self.scrollAreaWidgetContents)
         self.gridLayout1.addWidget(self.card_pyenv, 3, 0, 1, 1)
@@ -200,6 +193,14 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_pyenv_mirror_url.addItems(MIRRORS["pyenv"].keys())
         self.widget_pyenv_mirror_url.currentTextChanged.connect(self.on_comboBox_pyenv_mirror_url_currentTextChanged)
         self.card_pyenv.addWidget(self.widget_pyenv_mirror_url)
+
+        self.widget_teminal = SettingCardWidget('', '命令行窗口', 'cmd', self.card_pyenv)
+        self.button_teminal = PrimaryPushButton(QFluentIcon.googleIcon("Terminal"), "打开")
+        self.button_teminal.clicked.connect(self.on_button_teminal_clicked)
+        self.widget_teminal.addStretch(1)
+        self.widget_teminal.addWidget(self.button_teminal)
+        self.card_pyenv.addWidget(self.widget_teminal)
+
 
         self.card_pyenv_venv = SettingGroupCard(FluentIcon.SETTING, "Pyenv-venv 虚拟环境管理",
                                            "https://github.com/pyenv-win/pyenv-win-venv",
@@ -305,7 +306,6 @@ class SettingWidget(QWidget, Ui_Form):
         self.autoLaunch.setOnText("On")
         # self.autoLaunch.switch.checkedChanged.connect(self.on_autoLaunch_switch_checkedChanged)
         self.card_system.addWidget(self.autoLaunch)
-
 
 
         self.card_about = SettingGroupCard(FluentIcon.SETTING, "关于", "",
@@ -619,7 +619,11 @@ class SettingWidget(QWidget, Ui_Form):
             write_config()
 
     def on_button_teminal_clicked(self):
-        path = self.getPyPath()
+        if not self.comboBox_existing.currentText():
+            Message.error("错误", "请设置pyenv环境", self)
+            return
+
+        path = os.path.join(CURRENT_SETTINGS["settings"]["pyenv_path"], "versions", self.comboBox_existing.currentText(), "python.exe")
         if not path:
             Message.error("错误", "python解释器获取失败", self)
             return
