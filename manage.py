@@ -206,7 +206,7 @@ CURRENT_SETTINGS = {
     }
 }
 
-
+# font icons
 material = QFluentManager.google
 # material.setLibrary("material-symbols")
 material.setRootPath(BUNDLE_DIR)
@@ -220,3 +220,12 @@ iconify.initialize()
 simpleicons = QFluentManager.simpleicons
 simpleicons.setRootPath(BUNDLE_DIR)
 simpleicons.initialize()
+
+# stylesheets dir
+if not RUNTIMEENV:
+    if not os.path.exists(os.path.join(BUNDLE_DIR, 'resources', "stylesheets")):
+        os.makedirs(os.path.join(BUNDLE_DIR, 'resources', "stylesheets"))
+    if not os.path.exists(os.path.join(BUNDLE_DIR, 'resources', "stylesheets", "dark")):
+        os.makedirs(os.path.join(BUNDLE_DIR, 'resources', "stylesheets", "dark"))
+    if not os.path.exists(os.path.join(BUNDLE_DIR, 'resources', "stylesheets", "light")):
+        os.makedirs(os.path.join(BUNDLE_DIR, 'resources', "stylesheets", "light"))
