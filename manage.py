@@ -90,6 +90,8 @@ PAGEWidgets = {
     "designer": '',
     "pack": '',
     "other": '',
+    "tools": '',
+    "document": '',
     "settings": '',
 }
 

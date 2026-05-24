@@ -20,6 +20,7 @@ class AppIcon(FluentIconBase, Enum):
     DESIGNER = "designer"
     PACK = "pack"
     OTHER = "other"
+    TOOLS = "tools"
     CONSOLE = "console"
     DOCUMENT = "document"
     SETTINGS = "settings"

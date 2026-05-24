@@ -26,6 +26,7 @@ from .DocumentWidget import DocumentWidget
 from .SettingWidget import SettingWidget
 from .ConsoleWidget import ConsoleWidget
 from .OtherWidget import OtherWidget
+from .ToolsWidget import ToolsWidget
 
 from .utils.icon import AppIcon
 from .utils.stylesheets import StyleSheet
@@ -84,6 +85,9 @@ class MainWindow(FluentWindow, Ui_Form):
         self.other = OtherWidget(self)
         PAGEWidgets["other"] = self.other
 
+        self.tools = ToolsWidget(self)
+        PAGEWidgets["tools"] = self.tools
+
         self.console = ConsoleWidget(self)
         PAGEWidgets["console"] = self.console
 
@@ -121,6 +125,12 @@ class MainWindow(FluentWindow, Ui_Form):
             self.other,
             AppIcon.OTHER,
             "Other",
+            NavigationItemPosition.SCROLL
+        )
+        self.addSubInterface(
+            self.tools,
+            AppIcon.TOOLS,
+            "Tools",
             NavigationItemPosition.SCROLL
         )
         self.addSubInterface(

@@ -21,6 +21,7 @@ class StyleSheet(StyleSheetBase, Enum):
     PACK = "PACK"
     OTHER = "OTHER"
     CONSOLE = "CONSOLE"
+    TOOLS = "TOOLS"
     DOCUMENT = "DOCUMENT"
     SETTING = "SETTING"
     GENERATE = "generate"

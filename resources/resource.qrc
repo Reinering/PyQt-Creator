@@ -16,6 +16,8 @@
     <file>stylesheets/dark/pack.qss</file>
     <file>stylesheets/light/other.qss</file>
     <file>stylesheets/dark/other.qss</file>
+    <file>stylesheets/light/tools.qss</file>
+    <file>stylesheets/dark/tools.qss</file>
     <file>stylesheets/light/console.qss</file>
     <file>stylesheets/dark/console.qss</file>
     <file>stylesheets/light/document.qss</file>
@@ -43,6 +45,8 @@
     <file>icons/light/pack.svg</file>
     <file>icons/dark/other.svg</file>
     <file>icons/light/other.svg</file>
+    <file>icons/dark/tools.svg</file>
+    <file>icons/light/tools.svg</file>
     <file>icons/dark/console.svg</file>
     <file>icons/light/console.svg</file>
     <file>icons/dark/document.svg</file>
