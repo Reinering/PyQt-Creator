@@ -156,6 +156,14 @@ SETTINGS = {
         "update": ['CheckUpdateAtStartUp', 'CheckUpdateAtEnd'],
         "python_env_modes": ["现有环境", "Pyenv 环境", "Pyenv-venv 环境"],           # ["system", "pyenv", "pyenv-venv", "conda"]
         "pyenv_maxbit": ['x64', 'x86'],
+        "shortcuts": [
+            {
+                "id": 0,
+                "title": '',
+                "combo": [],
+                "action": ''
+            }
+        ]
     }
 }
 
@@ -205,6 +213,13 @@ CURRENT_SETTINGS = {
         "pip_mirror_url": "origin",
         "editors": ["notepad"],
         "editor": "notepad",
+        "shortcuts": [
+            {
+                "id": 0,
+                "title": "快速显示/隐藏",
+                "combo": []
+            }
+        ]
     }
 }
 

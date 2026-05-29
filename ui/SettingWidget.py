@@ -7,10 +7,11 @@ Module implementing SettingWidget.
 """
 
 
-from PySide6.QtCore import Slot, Qt, QThread, Signal
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtCore import Slot, Qt, QThread, Signal, QObject
+from PySide6.QtGui import QIcon, QFont, QShortcut, QKeySequence
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QMessageBox
 import os
+import keyboard
 from copy import copy
 import logging
 from pathlib import Path
@@ -30,6 +31,7 @@ from qfluentexpand.components.widgets.card import (
     SettingCardWidget, PushSettingCardWidget, PrimaryPushSettingCardWidget, ComboBoxSettingCardWidget,
     FileSettingCardWidget, FolderSettingCardWidget, LineSettingCardWidget, HyperlinkCardWidget, SwitchSettingCardWidget
 )
+from qfluentexpand.components.line.editor import ShortcutRecorderLineEdit
 from qfluentexpand.components.combox.combo_box import MSComboBox, EditableComboBox
 from qfluentexpand.components.card.settingcard import SettingGroupCard, FileSelectorSettingCard
 from qfluentexpand.components.line.selector import FilePathSelector, FolderPathSelector
@@ -47,7 +49,7 @@ from common.py import PyInterpreter, PyPath
 from common.reg import *
 from common.launch import getAutoLaunch, setAutoLaunch
 from common.utils import is_admin
-from manage import APPNAME, VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS, BUNDLE_DIR, EXECUTABLE_PATH
+from manage import APPNAME, VERSION, PackageTime, LIBS, MIRRORS, SETTINGS, CURRENT_SETTINGS, BUNDLE_DIR, EXECUTABLE_PATH, PAGEWidgets
 
 
 class SettingWidget(QWidget, Ui_Form):
@@ -68,6 +70,7 @@ class SettingWidget(QWidget, Ui_Form):
         self.setObjectName("setting")
 
         self.initState = True
+        self.shortcuts = {}
 
         self.gridLayout1 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout1.setObjectName(u"gridLayout")
@@ -297,9 +300,28 @@ class SettingWidget(QWidget, Ui_Form):
         self.widget_editor.addWidget(self.comboBox_editor_file)
         self.card_editor.addWidget(self.widget_editor)
 
+        self.card_shortcuts = SettingGroupCard(FluentIcon.SETTING, "快捷键", "",
+                                         self.scrollAreaWidgetContents)
+        self.gridLayout1.addWidget(self.card_shortcuts, 7, 0, 1, 1)
+
+        for item in CURRENT_SETTINGS["settings"]["shortcuts"]:
+            widget_shortcut = SettingCardWidget('', item["title"], '', self.card_shortcuts)
+            lineEdit_shortcut = ShortcutRecorderLineEdit(self.card_shortcuts)
+            lineEdit_shortcut.setReadOnly(True)
+            lineEdit_shortcut.setEnabled(False)
+            lineEdit_shortcut.setText(' + '.join(item["combo"]))
+            lineEdit_shortcut.textChanged.connect(lambda: self.on_lineEdit_shortcut_currentTextChanged(item["id"], lineEdit_shortcut.text()))
+            button_shortcut_edit = PrimaryPushButton(QFluentIcon.googleIcon("Terminal"), "编辑")
+            button_shortcut_edit.clicked.connect(lambda: lineEdit_shortcut.setEnabled(False) if lineEdit_shortcut.isEnabled() else lineEdit_shortcut.setEnabled(True))
+
+            widget_shortcut.addStretch(1)
+            widget_shortcut.addWidget(lineEdit_shortcut)
+            widget_shortcut.addWidget(button_shortcut_edit)
+            self.card_shortcuts.addWidget(widget_shortcut)
+
         self.card_system = SettingGroupCard(FluentIcon.SETTING, "系统设置", "",
                                          self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_system, 7, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_system, 8, 0, 1, 1)
 
         self.autoLaunch = SwitchSettingCardWidget(FluentIcon.PLAY, "自启动", "AutoLaunch", self.card_system)
         self.autoLaunch.setOffText("Off")
@@ -310,7 +332,7 @@ class SettingWidget(QWidget, Ui_Form):
 
         self.card_about = SettingGroupCard(FluentIcon.SETTING, "关于", "",
                                           self.scrollAreaWidgetContents)
-        self.gridLayout1.addWidget(self.card_about, 8, 0, 1, 1)
+        self.gridLayout1.addWidget(self.card_about, 9, 0, 1, 1)
 
         line_version = LineSettingCardWidget('', "版本", "", self.card_about)
         line_version.setText(VERSION)
@@ -379,11 +401,48 @@ class SettingWidget(QWidget, Ui_Form):
         if check_path_in_path(os.path.join("%PYENV_HOME%", 'bin'), "system"):
             self.button_add_PATH.setEnabled(False)
 
+        if SETTINGS["settings"]["shortcuts"]:
+            self.initShortcut()
+
+        if CURRENT_SETTINGS["settings"]["shortcuts"]:
+            self.initGlobalShortcut()
+
         if getAutoLaunch(APPNAME):
             self.autoLaunch.setChecked(True)
         else:
             self.autoLaunch.setChecked(False)
         self.autoLaunch.switch.checkedChanged.connect(self.on_autoLaunch_switch_checkedChanged)
+
+    def initGlobalShortcut(self):
+        for item in CURRENT_SETTINGS["settings"]["shortcuts"]:
+            if item["id"] == 0 and item["combo"]:
+                # 实例化信号触发器
+                trigger = GlobalHotkeyTrigger()
+                trigger.hotkey_triggered.connect(self.on_show_hide_mainWindow)
+
+                # 注册全局快捷键 (哪怕程序最小化也有效)
+                # 注意：keyboard.add_hotkey 是在子线程运行的，所以用 lambda 触发 Qt 信号
+                keyboard.add_hotkey('+'.join(item["combo"]), lambda: trigger.hotkey_triggered.emit())
+
+                self.shortcuts[item['id']] = trigger
+
+    def initShortcut(self):
+        for item in SETTINGS["settings"]["shortcuts"]:
+            if item["id"] == 0 and hasattr(self, item["action"]):
+                shortcut = QShortcut(QKeySequence("+".join(item["combo"])), self)
+                shortcut.activated.connect(getattr(self, item["action"]))
+                shortcut.activatedAmbiguously.connect(lambda: Message.error("错误", "按键冲突", self))
+
+    def closeEvent(self, event):
+        # 注销所有全局快捷键，避免残留
+        keyboard.unhook_all()
+        event.accept()
+
+        # 窗口关闭时终止线程
+        if self.venvMangerTh:
+            self.venvMangerTh.terminate()
+
+        super().closeEvent(event)
 
     def getPyPath(self):
         path = ""
@@ -636,9 +695,7 @@ class SettingWidget(QWidget, Ui_Form):
         if self.initState:
             return
 
-        print("mark:", text, os.path.exists(text))
         if text and os.path.exists(text):
-            print("mark")
             CURRENT_SETTINGS["settings"]["pyenv_path"] = text.replace("/", "\\")
             write_config()
 
@@ -646,10 +703,8 @@ class SettingWidget(QWidget, Ui_Form):
                 Message.error("错误", "pyenv忙碌中，请稍后重试", self)
                 return
 
-            print("set pyenv path:", CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setPyenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
             self.venvMangerTh.setPyenvVenvPath(CURRENT_SETTINGS["settings"]["pyenv_path"])
-            print("set pyenv path:", self.venvMangerTh.pyenvManger.venvPath)
             self.venvMangerTh.setCMD("init")
             self.venvMangerTh.start()
 
@@ -835,6 +890,42 @@ class SettingWidget(QWidget, Ui_Form):
 
     def on_autoLaunch_switch_checkedChanged(self, state):
         setAutoLaunch(APPNAME, EXECUTABLE_PATH, enable=state, isHidden=True)
+
+    def on_lineEdit_shortcut_currentTextChanged(self, id, text):
+        for item in CURRENT_SETTINGS["settings"]["shortcuts"]:
+            if item["id"] == id :
+                if '+'.join(item["combo"]) == text:
+                    return
+
+                try:
+                    keyboard.remove_hotkey('+'.join(item["combo"]))
+                    print(f"成功注销旧全局快捷键: {item["title"]}")
+                except KeyError:
+                    pass  # 防止因未注册成功导致的异常
+
+                if id == 0:
+                    try:
+                        keyboard.add_hotkey(text, lambda: self.shortcuts[id].hotkey_triggered.emit())
+                        # 更新当前保存的快捷键记录
+                        item["combo"] = text.split(' + ')
+
+                        Message.info("成功", f"{item["title"]} 全局快捷键已更新为: {text}", self)
+                    except Exception as e:
+                        Message.error("错误", f"{item["title"]} 注册失败 (可能被系统占用): {text}", self)
+
+                break
+
+        write_config()
+
+    def on_show_hide_mainWindow(self):
+        if PAGEWidgets["main"].windowsState == "show":
+            PAGEWidgets["main"].windowsState = "min"
+            PAGEWidgets["main"].hide()
+        elif PAGEWidgets["main"].windowsState == "min":
+            PAGEWidgets["main"].windowsState = "show"
+            PAGEWidgets["main"].show()
+        else:
+            pass
 
     def receive_VMresult(self, cmd, result, isClose=True):
         print(f"receive_VMresult: {cmd}, {result}")
@@ -1065,6 +1156,12 @@ class SettingWidget(QWidget, Ui_Form):
 
         if isClose:
             self.venvMangerTh.stop()
+
+
+# 因为 keyboard 库是在独立线程中监听的，
+# 需要用 Qt 的信号（Signal）机制把事件安全地传回主线程（UI线程）
+class GlobalHotkeyTrigger(QObject):
+    hotkey_triggered = Signal()
 
 
 class VenvManagerThread(QThread):
