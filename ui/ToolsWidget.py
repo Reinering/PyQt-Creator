@@ -88,8 +88,6 @@ class ToolsWidget(QWidget, Ui_Form):
         self.widget_mousePosition_show.addWidget(self.button_mousePosition_show)
         self.floatingBallCard.addWidget(self.widget_mousePosition_show)
 
-
-
     def on_button_floatingBall_show_clicked(self):
         if not self.floatingBallStatus:
             self.floatingBall = FloatingBall()
@@ -122,6 +120,7 @@ class ToolsWidget(QWidget, Ui_Form):
 
         self.menu.addAction(Action(FluentIcon.COPY, '开启/关闭', triggered=self.on_button_mousePosition_show_clicked))
         self.menu.addAction(Action(FluentIcon.COPY, '复制', triggered=lambda: pyperclip.copy(self.floatingBall.text())))
+        self.menu.addAction(Action(FluentIcon.COPY, '隐藏', triggered=lambda: self.on_button_floatingBall_show_clicked()))
 
         self.menu.exec(self.floatingBall.mapToGlobal(pos))
 
